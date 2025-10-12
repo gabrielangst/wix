@@ -245,9 +245,13 @@
                         <span>Editar Viagem</span>
                     </button>
                     <button onclick="openModal('index-modal')" class="flex items-center gap-2 text-sm bg-white/20 text-white font-semibold px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-marked"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path><polyline points="10 2 10 10 14 7 18 10 18 2"></polyline></svg>
-    <span>Índice</span>
-</button>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-marked"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path><polyline points="10 2 10 10 14 7 18 10 18 2"></polyline></svg>
+                        <span>Índice</span>
+                    </button>
+                    <button onclick="scrollToSectionAndClose('shared-expenses-panel', null)" class="flex items-center gap-2 text-sm bg-white/20 text-white font-semibold px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt-text"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M14 8H8"/><path d="M16 12H8"/><path d="M11 16H8"/></svg>
+                        <span>Divisão de Despesas</span>
+                    </button>
                     <button id="custom-link-btn" style="display: none;" class="flex items-center gap-2 text-sm bg-white/20 text-white font-semibold px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>
                         <span></span> </button>
@@ -288,7 +292,7 @@
             </main>
 
             <section id="documents-panel" class="mt-8 bg-white p-6 rounded-xl shadow-lg">
-                <div class="flex justify-between items-center cursor-pointer" onclick="toggleDocumentsPanel()">
+                <div class="flex justify-between items-center cursor-pointer" onclick="toggleGenericPanel('documents-panel')">
                     <h2 class="text-2xl font-semibold">Documentos</h2>
                     <button id="documents-toggle-btn" class="text-slate-500 hover:text-slate-800 p-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-up"><path d="m18 15-6-6-6 6"></path></svg>
@@ -352,6 +356,56 @@
                         </div>
                     <div id="spending-total-display" class="mt-4 pt-4 border-t-2 border-slate-200 text-xl font-bold text-slate-900 text-right">
                         </div>
+                </div>
+            </section>
+            <section id="shared-expenses-panel" class="mt-8 bg-white p-6 rounded-xl shadow-lg">
+                <div class="flex justify-between items-center cursor-pointer" onclick="toggleGenericPanel('shared-expenses-panel')">
+                    <h2 class="text-2xl font-semibold">Divisão de Despesas do Grupo</h2>
+                    <button class="panel-toggle-btn text-slate-500 hover:text-slate-800 p-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-up"><path d="m18 15-6-6-6 6"></path></svg>
+                    </button>
+                </div>
+                <div class="panel-content mt-4">
+                    <form id="add-expense-form" class="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-4 mb-6">
+                        <h3 class="font-semibold text-lg text-slate-800 border-b pb-2">Adicionar Nova Despesa</h3>
+                        <div>
+                            <label for="expense-description" class="block text-sm font-medium text-slate-600">Descrição</that's>
+                            <input type="text" id="expense-description" placeholder="Ex: Jantar de boas-vindas" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="expense-amount" class="block text-sm font-medium text-slate-600">Valor Total (R$)</label>
+                                <input type="number" id="expense-amount" placeholder="150.00" min="0.01" step="0.01" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
+                            </div>
+                            <div>
+                                <label for="expense-payer" class="block text-sm font-medium text-slate-600">Quem Pagou? (Credor)</label>
+                                <select id="expense-payer" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required></select>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center">
+                                <label class="block text-sm font-medium text-slate-600">Quem deve pagar?</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="select-all-participants" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    <label for="select-all-participants" class="text-sm font-medium text-slate-600 cursor-pointer">Marcar Todos</label>
+                                </div>
+                            </div>
+                            <div id="expense-participants-checkboxes" class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 border p-3 rounded-md bg-white">
+                                </div>
+                        </div>
+                        <div class="text-right">
+                             <button type="submit" class="bg-indigo-600 text-white font-semibold px-5 py-2 rounded-lg shadow-md hover:bg-indigo-700 transition-colors">Adicionar Despesa</button>
+                        </div>
+                    </form>
+
+                    <div id="shared-expenses-list" class="space-y-3">
+                        </div>
+
+                    <div class="mt-6 pt-4 border-t text-center">
+                        <button onclick="calculateExpenseSummary()" class="bg-green-600 text-white font-bold px-6 py-3 rounded-lg shadow-lg hover:bg-green-700 transition-transform hover:scale-105">
+                            Calcular Resumo Final de Contas
+                        </button>
+                    </div>
                 </div>
             </section>
         </div>
@@ -1049,6 +1103,68 @@
         </div>
     </div>
 
+    </div> <div id="view-expense-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md m-4">
+            <h3 id="view-expense-description" class="text-2xl font-semibold text-slate-800 mb-2"></h3>
+            <p class="text-lg font-medium text-slate-600 mb-4">Total: <span id="view-expense-amount" class="font-bold text-indigo-600"></span></p>
+            <p class="text-sm text-slate-500 mb-4">Pago por: <span id="view-expense-payer" class="font-semibold"></span></p>
+            
+            <div class="border-t pt-4">
+                <h4 class="font-semibold text-slate-700 mb-2">Divisão entre os responsáveis:</h4>
+                <div id="view-expense-participants-list" class="space-y-2 text-sm">
+                    </div>
+            </div>
+
+            <div class="pt-6 flex justify-end">
+                <button type="button" onclick="closeModal('view-expense-modal')" class="px-6 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="expense-summary-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-lg m-4">
+            <h3 class="text-2xl font-semibold text-slate-800 mb-4">Resumo Final de Contas</h3>
+            <p class="text-sm text-slate-500 mb-4">Este é o jeito mais simples de acertar as contas. Cada pessoa só precisa fazer um pagamento para quem ela deve.</p>
+            <div id="expense-summary-results" class="space-y-3">
+                </div>
+            <div class="pt-6 flex justify-end">
+                <button type="button" onclick="closeModal('expense-summary-modal')" class="px-6 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-expense-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-lg m-4">
+            <h3 class="text-2xl font-semibold mb-6">Editar Despesa</h3>
+            <form id="edit-expense-form" class="space-y-4">
+                <input type="hidden" id="edit-expense-id">
+                <div>
+                    <label for="edit-expense-description" class="block text-sm font-medium text-slate-600">Descrição</label>
+                    <input type="text" id="edit-expense-description" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="edit-expense-amount" class="block text-sm font-medium text-slate-600">Valor Total (R$)</label>
+                        <input type="number" id="edit-expense-amount" min="0.01" step="0.01" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
+                    </div>
+                    <div>
+                        <label for="edit-expense-payer" class="block text-sm font-medium text-slate-600">Quem Pagou? (Credor)</label>
+                        <select id="edit-expense-payer" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required></select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600">Quem deve pagar?</label>
+                    <div id="edit-expense-participants-checkboxes" class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 border p-3 rounded-md bg-white">
+                        </div>
+                </div>
+                <div class="pt-6 flex justify-end gap-3">
+                    <button type="button" onclick="closeModal('edit-expense-modal')" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-semibold">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script type="module">
         // Importações do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -1158,7 +1274,192 @@
             console.error("Firebase config is not available.");
         }
 
-        // ... (coloque junto com suas outras funções)
+        // --- FUNÇÕES DE DIVISÃO DE DESPESAS ---
+
+        function renderSharedExpenses(trip) {
+            const travelers = trip.travelers || [];
+            const expenses = trip.sharedExpenses || [];
+            
+            const payerSelect = document.getElementById('expense-payer');
+            const participantsContainer = document.getElementById('expense-participants-checkboxes');
+            const expenseListContainer = document.getElementById('shared-expenses-list');
+
+            // 1. Popula as opções de viajantes (Pagador e Responsáveis)
+            payerSelect.innerHTML = '<option value="" disabled selected>Selecione...</option>';
+            participantsContainer.innerHTML = '';
+
+            if (travelers.length === 0) {
+                participantsContainer.innerHTML = '<p class="text-sm text-slate-400 col-span-full">Cadastre viajantes em "Editar Viagem" para adicionar despesas.</p>';
+            } else {
+                travelers.forEach(traveler => {
+                    // Adiciona ao <select> de quem pagou
+                    const option = document.createElement('option');
+                    option.value = traveler.name;
+                    option.textContent = traveler.name;
+                    payerSelect.appendChild(option);
+
+                    // Adiciona os checkboxes de quem participou
+                    const checkboxDiv = document.createElement('div');
+                    checkboxDiv.className = 'flex items-center gap-2';
+                    checkboxDiv.innerHTML = `
+                        <input type="checkbox" id="participant-${traveler.name.replace(/\s+/g, '-')}" value="${traveler.name}" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <label for="participant-${traveler.name.replace(/\s+/g, '-')}" class="text-sm text-slate-700">${traveler.name}</label>
+                    `;
+                    participantsContainer.appendChild(checkboxDiv);
+                });
+
+                const selectAllCheckbox = document.getElementById('select-all-participants');
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.dispatchEvent(new Event('change')); // Dispara o evento para marcar os outros
+            }
+
+            // 2. Renderiza a lista de despesas já adicionadas
+            expenseListContainer.innerHTML = '';
+            if (expenses.length === 0) {
+                expenseListContainer.innerHTML = '<p class="text-center text-sm text-slate-500 py-4">Nenhuma despesa de grupo adicionada ainda.</p>';
+            } else {
+                expenses.forEach(expense => {
+                    const expenseElement = document.createElement('div');
+                    expenseElement.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-slate-50 border border-slate-200 cursor-pointer';
+                    expenseElement.onclick = () => openExpenseDetailsModal(expense.id);
+
+                    expenseElement.innerHTML = `
+                        <div>
+                            <p class="font-semibold text-slate-800">${expense.description}</p>
+                            <p class="text-sm text-slate-500">Total: ${formatCurrency(expense.amount)} | Pago por: ${expense.payerName}</p>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="text-xs bg-slate-200 text-slate-600 font-medium px-2 py-1 rounded-full">${expense.participants.length} pessoas</span>
+                            <button onclick="event.stopPropagation(); openEditExpenseModal('${expense.id}')" class="text-slate-400 hover:text-blue-600 p-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                            </button>
+                            <button onclick="event.stopPropagation(); deleteSharedExpense('${expense.id}')" class="text-slate-400 hover:text-red-600 p-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+                    `;
+                    expenseListContainer.appendChild(expenseElement);
+                });
+            }
+        }
+        
+        window.openExpenseDetailsModal = (expenseId) => {
+            const trip = tripsData.find(t => t.id === currentTripId);
+            const expense = (trip.sharedExpenses || []).find(e => e.id === expenseId);
+            if (!expense) return;
+
+            document.getElementById('view-expense-description').textContent = expense.description;
+            document.getElementById('view-expense-amount').textContent = formatCurrency(expense.amount);
+            document.getElementById('view-expense-payer').textContent = expense.payerName;
+            
+            const participantsList = document.getElementById('view-expense-participants-list');
+            participantsList.innerHTML = '';
+            
+            const share = expense.amount / expense.participants.length;
+            
+            expense.participants.forEach(name => {
+                const isPayer = name === expense.payerName;
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center p-2 bg-slate-50 rounded-md';
+                item.innerHTML = `
+                    <span>${name} ${isPayer ? '(Pagou)' : ''}</span>
+                    <span class="font-semibold">${isPayer ? 'Paga sua parte' : `Deve ${formatCurrency(share)}`}</span>
+                `;
+                participantsList.appendChild(item);
+            });
+
+            openModal('view-expense-modal');
+        }
+
+        window.deleteSharedExpense = (expenseId) => {
+            showConfirmDelete('Tem certeza que deseja excluir esta despesa compartilhada?', async () => {
+                const trip = tripsData.find(t => t.id === currentTripId);
+                const updatedExpenses = (trip.sharedExpenses || []).filter(e => e.id !== expenseId);
+                const updates = { [`/${currentTripId}/sharedExpenses`]: updatedExpenses };
+                await update(tripsRef, updates);
+                closeModal('confirm-delete-modal');
+            });
+        };
+
+        // Adicione estas funções junto com as outras de despesas
+        
+        window.openEditExpenseModal = (expenseId) => {
+            const trip = tripsData.find(t => t.id === currentTripId);
+            const expense = (trip.sharedExpenses || []).find(e => e.id === expenseId);
+            if (!expense) return;
+
+            // Preenche os campos simples
+            document.getElementById('edit-expense-id').value = expense.id;
+            document.getElementById('edit-expense-description').value = expense.description;
+            document.getElementById('edit-expense-amount').value = expense.amount;
+
+            const payerSelect = document.getElementById('edit-expense-payer');
+            const participantsContainer = document.getElementById('edit-expense-participants-checkboxes');
+            payerSelect.innerHTML = '';
+            participantsContainer.innerHTML = '';
+
+            // Popula as listas de viajantes no modal de edição
+            (trip.travelers || []).forEach(traveler => {
+                // Adiciona ao <select> de quem pagou
+                const option = document.createElement('option');
+                option.value = traveler.name;
+                option.textContent = traveler.name;
+                if (traveler.name === expense.payerName) {
+                    option.selected = true;
+                }
+                payerSelect.appendChild(option);
+
+                // Adiciona os checkboxes e marca os que participaram
+                const isParticipant = expense.participants.includes(traveler.name);
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'flex items-center gap-2';
+                checkboxDiv.innerHTML = `
+                    <input type="checkbox" id="edit-participant-${traveler.name.replace(/\s+/g, '-')}" value="${traveler.name}" ${isParticipant ? 'checked' : ''} class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="edit-participant-${traveler.name.replace(/\s+/g, '-')}" class="text-sm text-slate-700">${traveler.name}</label>
+                `;
+                participantsContainer.appendChild(checkboxDiv);
+            });
+
+            openModal('edit-expense-modal');
+        };
+
+        // Adicione este listener junto com os outros no final do script
+        document.getElementById('edit-expense-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const trip = tripsData.find(t => t.id === currentTripId);
+            if (!trip) return;
+
+            const expenseId = document.getElementById('edit-expense-id').value;
+            
+            const updatedExpense = {
+                id: expenseId,
+                description: document.getElementById('edit-expense-description').value,
+                amount: parseFloat(document.getElementById('edit-expense-amount').value),
+                payerName: document.getElementById('edit-expense-payer').value,
+                participants: []
+            };
+
+            document.querySelectorAll('#edit-expense-participants-checkboxes input[type="checkbox"]:checked').forEach(checkbox => {
+                updatedExpense.participants.push(checkbox.value);
+            });
+            
+            if (updatedExpense.participants.length === 0) {
+                alert('Uma despesa deve ter ao menos um responsável.');
+                return;
+            }
+
+            const currentExpenses = trip.sharedExpenses || [];
+            const expenseIndex = currentExpenses.findIndex(ex => ex.id === expenseId);
+
+            if (expenseIndex > -1) {
+                currentExpenses[expenseIndex] = updatedExpense;
+                const updates = { [`/${currentTripId}/sharedExpenses`]: currentExpenses };
+                await update(tripsRef, updates);
+                closeModal('edit-expense-modal');
+            } else {
+                alert('Erro: não foi possível encontrar a despesa para atualizar.');
+            }
+        });
 
         // --- FUNÇÕES DE GERENCIAMENTO DE VIAJANTES ---
 
@@ -1248,6 +1549,10 @@
                 }
                 selectElement.appendChild(option);
             });
+        }
+
+        window.toggleGenericPanel = (panelId) => {
+            document.getElementById(panelId).classList.toggle('collapsed');
         }
         
         // --- FUNÇÕES DE RENDERIZAÇÃO ---
@@ -1376,6 +1681,7 @@
             renderDailyItinerary(trip);
             renderLodgingCoverageStatus(trip);
             renderSpendingPanel(trip);
+            renderSharedExpenses(trip);
 
             const flightTemplate = (flight, index, allFlights) => `
                 <div>
@@ -3046,6 +3352,47 @@ cost: document.getElementById('edit-activity-cost').value,
             closeModal('edit-note-modal');
         });
 
+        // ... (depois do listener do 'edit-note-form')
+
+        document.getElementById('add-expense-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const trip = tripsData.find(t => t.id === currentTripId);
+            if (!trip) return;
+
+            const description = document.getElementById('expense-description').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const payerName = document.getElementById('expense-payer').value;
+
+            const participants = [];
+            document.querySelectorAll('#expense-participants-checkboxes input[type="checkbox"]:checked').forEach(checkbox => {
+                participants.push(checkbox.value);
+            });
+
+            if (!description || !amount || !payerName || participants.length === 0) {
+                alert('Por favor, preencha todos os campos e selecione ao menos um responsável.');
+                return;
+            }
+
+            const newExpense = {
+                id: Date.now().toString(),
+                description,
+                amount,
+                payerName,
+                participants
+            };
+
+            const currentExpenses = trip.sharedExpenses || [];
+            currentExpenses.push(newExpense);
+            const updates = { [`/${currentTripId}/sharedExpenses`]: currentExpenses };
+            await update(tripsRef, updates);
+
+            e.target.reset(); // Limpa o formulário
+
+            const selectAllCheckbox = document.getElementById('select-all-participants');
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.dispatchEvent(new Event('change'));
+        });
+
 
         document.getElementById('confirm-delete-btn').addEventListener('click', () => {
             if (typeof onConfirmAction === 'function') {
@@ -3069,6 +3416,113 @@ cost: document.getElementById('edit-activity-cost').value,
                 backToTopBtn.classList.add('hidden');
                 openIndexBtn.classList.add('hidden');
             }
+        });
+
+        window.calculateExpenseSummary = () => {
+            const trip = tripsData.find(t => t.id === currentTripId);
+            const travelers = trip.travelers || [];
+            const expenses = trip.sharedExpenses || [];
+            const resultsContainer = document.getElementById('expense-summary-results');
+            resultsContainer.innerHTML = '';
+
+            if (travelers.length === 0 || expenses.length === 0) {
+                resultsContainer.innerHTML = '<p class="text-center text-slate-600">Não há viajantes ou despesas suficientes para calcular um resumo.</p>';
+                openModal('expense-summary-modal');
+                return;
+            }
+
+            // 1. Inicializa o balanço de cada viajante
+            const balances = {};
+            travelers.forEach(t => {
+                balances[t.name] = { paid: 0, owes: 0, balance: 0 };
+            });
+
+            // 2. Calcula quanto cada um pagou e quanto deveria ter pago
+            expenses.forEach(expense => {
+                // Adiciona ao total pago por quem foi o credor
+                if (balances[expense.payerName]) {
+                    balances[expense.payerName].paid += expense.amount;
+                }
+                
+                // Divide o custo entre os participantes
+                const share = expense.amount / expense.participants.length;
+                expense.participants.forEach(participantName => {
+                    if (balances[participantName]) {
+                        balances[participantName].owes += share;
+                    }
+                });
+            });
+
+            // 3. Calcula o balanço final (positivo = credor, negativo = devedor)
+            Object.keys(balances).forEach(name => {
+                balances[name].balance = balances[name].paid - balances[name].owes;
+            });
+            
+            // 4. Separa em credores e devedores
+            const creditors = [];
+            const debtors = [];
+            Object.entries(balances).forEach(([name, data]) => {
+                if (data.balance > 0.01) { // Usar uma pequena tolerância para evitar erros de ponto flutuante
+                    creditors.push({ name, amount: data.balance });
+                } else if (data.balance < -0.01) {
+                    debtors.push({ name, amount: -data.balance });
+                }
+            });
+
+            // 5. Calcula as transações otimizadas
+            const transactions = [];
+            debtors.sort((a, b) => b.amount - a.amount);
+            creditors.sort((a, b) => b.amount - a.amount);
+
+            let i = 0, j = 0;
+            while (i < debtors.length && j < creditors.length) {
+                const debtor = debtors[i];
+                const creditor = creditors[j];
+                const amountToTransfer = Math.min(debtor.amount, creditor.amount);
+
+                if (amountToTransfer > 0.01) {
+                   transactions.push({ from: debtor.name, to: creditor.name, amount: amountToTransfer });
+                }
+
+                debtor.amount -= amountToTransfer;
+                creditor.amount -= amountToTransfer;
+
+                if (debtor.amount < 0.01) i++;
+                if (creditor.amount < 0.01) j++;
+            }
+
+            // 6. Mostra os resultados
+            if (transactions.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="text-center p-4 bg-green-100 text-green-800 rounded-lg">
+                        <p class="font-semibold text-lg">Tudo certo!</p>
+                        <p>Todas as despesas estão quitadas entre os viajantes.</p>
+                    </div>`;
+            } else {
+                transactions.forEach(t => {
+                    const transactionEl = document.createElement('div');
+                    transactionEl.className = 'flex items-center justify-between p-3 bg-slate-100 rounded-lg';
+                    transactionEl.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-slate-800">${t.from}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-500"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                            <span class="font-bold text-slate-800">${t.to}</span>
+                        </div>
+                        <span class="text-lg font-bold text-indigo-600">${formatCurrency(t.amount)}</span>
+                    `;
+                    resultsContainer.appendChild(transactionEl);
+                });
+            }
+
+            openModal('expense-summary-modal');
+        }
+
+        // --- LISTENER PARA O CHECKBOX "MARCAR TODOS" ---
+        document.getElementById('select-all-participants').addEventListener('change', function(e) {
+            const isChecked = e.target.checked;
+            document.querySelectorAll('#expense-participants-checkboxes input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
         });
 
     </script>
