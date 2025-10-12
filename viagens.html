@@ -401,9 +401,12 @@
                     <div id="shared-expenses-list" class="space-y-3">
                         </div>
 
-                    <div class="mt-6 pt-4 border-t text-center">
-                        <button onclick="calculateExpenseSummary()" class="bg-green-600 text-white font-bold px-6 py-3 rounded-lg shadow-lg hover:bg-green-700 transition-transform hover:scale-105">
+                    <div class="mt-6 pt-4 border-t flex flex-col items-center gap-3">
+                        <button onclick="calculateExpenseSummary()" class="w-full max-w-sm bg-blue-600 text-white font-bold px-6 py-3 rounded-lg shadow-lg hover:bg-blue-700 transition-transform hover:scale-105">
                             Calcular Resumo Final de Contas
+                        </button>
+                        <button onclick="showSpendingPerPerson()" class="w-full max-w-sm bg-orange-500 text-white font-bold px-6 py-3 rounded-lg shadow-lg hover:bg-orange-600 transition-transform hover:scale-105">
+                            Verificar despesas por pessoa
                         </button>
                     </div>
                 </div>
@@ -1165,6 +1168,20 @@
         </div>
     </div>
 
+    <div id="spending-per-person-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md m-4">
+            <h3 class="text-2xl font-semibold text-slate-800 mb-4">Total Pago por Pessoa</h3>
+            <p class="text-sm text-slate-500 mb-4">Esta lista mostra o valor total da responsabilidade (quota-parte) de cada viajante, somando sua parte em todas as despesas em que participou.</p>
+            
+            <div id="spending-per-person-results" class="space-y-2 border-t pt-4">
+                </div>
+
+            <div class="pt-6 flex justify-end">
+                <button type="button" onclick="closeModal('spending-per-person-modal')" class="px-6 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         // Importações do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -1329,7 +1346,7 @@
                             <p class="text-sm text-slate-500">Total: ${formatCurrency(expense.amount)} | Pago por: ${expense.payerName}</p>
                         </div>
                         <div class="flex items-center gap-1">
-                            <span class="text-xs bg-slate-200 text-slate-600 font-medium px-2 py-1 rounded-full">${expense.participants.length} pessoas</span>
+                            <span class="text-xs bg-slate-200 text-slate-600 font-medium px-2 py-1 rounded-full">${expense.participants.length}</span>
                             <button onclick="event.stopPropagation(); openEditExpenseModal('${expense.id}')" class="text-slate-400 hover:text-blue-600 p-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                             </button>
@@ -1461,6 +1478,62 @@
             }
         });
 
+        window.showSpendingPerPerson = () => {
+            const trip = tripsData.find(t => t.id === currentTripId);
+            const travelers = trip.travelers || [];
+            const expenses = trip.sharedExpenses || [];
+            const resultsContainer = document.getElementById('spending-per-person-results');
+            resultsContainer.innerHTML = '';
+
+            if (travelers.length === 0) {
+                resultsContainer.innerHTML = '<p class="text-center text-slate-600">Nenhum viajante cadastrado.</p>';
+                openModal('spending-per-person-modal');
+                return;
+            }
+            
+            // 1. Inicializa um objeto para guardar o total da responsabilidade de cada pessoa.
+            const responsibilityTotals = {};
+            travelers.forEach(t => {
+                responsibilityTotals[t.name] = 0;
+            });
+
+            // 2. MODIFICADO: Percorre as despesas para somar a QUOTA de cada participante.
+            expenses.forEach(expense => {
+                const numberOfParticipants = expense.participants.length;
+                if (numberOfParticipants > 0) {
+                    // Calcula o valor da quota individual para esta despesa
+                    const share = expense.amount / numberOfParticipants;
+                    
+                    // Adiciona o valor da quota ao total de cada participante daquela despesa
+                    expense.participants.forEach(participantName => {
+                        if (responsibilityTotals.hasOwnProperty(participantName)) {
+                            responsibilityTotals[participantName] += share;
+                        }
+                    });
+                }
+            });
+
+            // 3. Ordena os viajantes por quem teve a maior responsabilidade de custo.
+            const sortedResponsibilities = Object.entries(responsibilityTotals).sort(([, a], [, b]) => b - a);
+
+            // 4. Monta o HTML para mostrar esses totais no novo modal.
+            if (sortedResponsibilities.length === 0) {
+                 resultsContainer.innerHTML = '<p class="text-center text-slate-600">Nenhuma despesa de grupo encontrada.</p>';
+            } else {
+                sortedResponsibilities.forEach(([name, total]) => {
+                    const spendingEl = document.createElement('div');
+                    spendingEl.className = 'flex justify-between items-center p-2 bg-slate-50 rounded-md text-base';
+                    spendingEl.innerHTML = `
+                        <span class="font-medium text-slate-700">${name}</span>
+                        <span class="font-bold text-slate-800">${formatCurrency(total)}</span>
+                    `;
+                    resultsContainer.appendChild(spendingEl);
+                });
+            }
+
+            openModal('spending-per-person-modal');
+        };
+        
         // --- FUNÇÕES DE GERENCIAMENTO DE VIAJANTES ---
 
         function renderTravelersList(tripId) {
