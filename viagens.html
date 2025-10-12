@@ -759,6 +759,7 @@
                     <label for="edit-trip-image-url" class="block text-sm font-medium text-slate-600">URL da Imagem</label>
                     <input type="url" id="edit-trip-image-url" placeholder="https://exemplo.com/imagem.jpg" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 </div>
+                ...
                 <div class="flex items-center gap-4">
                     <div class="flex-1">
                         <label for="edit-trip-start-date" class="block text-sm font-medium text-slate-600">Data de Início</label>
@@ -769,6 +770,23 @@
                         <input type="date" id="edit-trip-end-date" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required="">
                     </div>
                 </div>
+
+                <div class="border-t pt-4 mt-2">
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Gerenciar Viajantes</label>
+                    <div id="travelers-list" class="space-y-2 mb-3 max-h-40 overflow-y-auto">
+                        </div>
+                    <div class="flex items-end gap-2 p-2 bg-slate-50 rounded-md">
+                        <div class="flex-grow">
+                            <label for="traveler-name" class="block text-xs font-medium text-slate-500">Nome</label>
+                            <input type="text" id="traveler-name" placeholder="Nome do Viajante" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm">
+                        </div>
+                        <div class="flex-grow">
+                            <label for="traveler-email" class="block text-xs font-medium text-slate-500">E-mail</label>
+                            <input type="email" id="traveler-email" placeholder="email@exemplo.com" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm">
+                        </div>
+                        <button type="button" onclick="addTraveler()" class="flex-shrink-0 bg-green-600 text-white font-semibold px-4 h-10 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-300 self-center">Adicionar</button>
+                    </div>
+                </div>                
                  <div class="border-t pt-4 mt-2">
                     <label class="block text-sm font-medium text-slate-600 mb-1">Link Personalizado (Opcional)</label>
                     <div>
@@ -947,10 +965,11 @@
                     <label for="note-title" class="block text-sm font-medium text-slate-600">Nome da Anotação</label>
                     <input type="text" id="note-title" placeholder="Ex: Dica de restaurante do amigo" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
                 </div>
-                <div class="autocomplete-container">
-                   <label for="note-author" class="block text-sm font-medium text-slate-600">Nome (de quem incluiu)</label>
-                   <input type="text" id="note-author" placeholder="Ex: João" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
-            </div>
+                <div>
+                    <label for="note-author" class="block text-sm font-medium text-slate-600">Incluído por</label>
+                    <select id="note-author" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                        </select>
+                </div>
                 <div>
                     <label for="note-description" class="block text-sm font-medium text-slate-600">Descrição</label>
                     <textarea id="note-description" rows="3" placeholder="Anotações, detalhes, etc." class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm"></textarea>
@@ -982,9 +1001,10 @@
                     <label for="edit-note-title" class="block text-sm font-medium text-slate-600">Nome da Anotação</label>
                     <input type="text" id="edit-note-title" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
                 </div>
-                <div class="autocomplete-container">
-                    <label for="edit-note-author" class="block text-sm font-medium text-slate-600">Nome (de quem incluiu)</label>
-                  <input type="text" id="edit-note-author" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
+                <div>
+                    <label for="edit-note-author" class="block text-sm font-medium text-slate-600">Incluído por</label>
+                    <select id="edit-note-author" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                        </select>
                 </div>
                 <div>
                     <label for="edit-note-description" class="block text-sm font-medium text-slate-600">Descrição</label>
@@ -1138,55 +1158,95 @@
             console.error("Firebase config is not available.");
         }
 
-        // NOVO: Função para gerenciar o autocomplete do campo de autor
-        function setupAuthorAutocomplete(inputId) {
-            const input = document.getElementById(inputId);
-            if (!input) return;
+        // ... (coloque junto com suas outras funções)
 
-            input.addEventListener('input', function() {
-                const trip = tripsData.find(t => t.id === currentTripId);
-                const notes = trip ? trip.notes || [] : [];
-                const existingAuthors = [...new Set(notes.map(note => note.author).filter(Boolean))];
-                
-                const value = this.value;
-                closeAutocomplete();
+        // --- FUNÇÕES DE GERENCIAMENTO DE VIAJANTES ---
 
-                if (!value) return;
+        function renderTravelersList(tripId) {
+            const listElement = document.getElementById('travelers-list');
+            listElement.innerHTML = '';
+            const trip = tripsData.find(t => t.id === tripId);
+            const travelers = trip?.travelers || [];
 
-                const suggestions = existingAuthors.filter(author => 
-                    author.toLowerCase().includes(value.toLowerCase())
-                );
-
-                if (suggestions.length === 0) return;
-
-                const suggestionsDiv = document.createElement('div');
-                suggestionsDiv.setAttribute('class', 'autocomplete-suggestions');
-                this.parentNode.appendChild(suggestionsDiv);
-
-                suggestions.forEach(suggestion => {
-                    const item = document.createElement('div');
-                    item.setAttribute('class', 'autocomplete-suggestion-item');
-                    item.textContent = suggestion;
-                    item.addEventListener('click', function() {
-                        input.value = this.textContent;
-                        closeAutocomplete();
-                    });
-                    suggestionsDiv.appendChild(item);
-                });
-            });
-
-            function closeAutocomplete() {
-                const existingSuggestions = input.parentNode.querySelector('.autocomplete-suggestions');
-                if (existingSuggestions) {
-                    existingSuggestions.remove();
-                }
+            if (travelers.length === 0) {
+                listElement.innerHTML = `<p class="text-sm text-slate-400 text-center py-2">Nenhum viajante adicionado.</p>`;
+                return;
             }
+
+            travelers.forEach((traveler, index) => {
+                const travelerElement = document.createElement('div');
+                travelerElement.className = 'flex items-center justify-between p-2 bg-slate-100 rounded-md';
+                travelerElement.innerHTML = `
+                    <div>
+                        <p class="font-semibold text-slate-800">${traveler.name}</p>
+                        <p class="text-xs text-slate-500">${traveler.email}</p>
+                    </div>
+                    <button type="button" onclick="removeTraveler(${index})" class="text-red-500 hover:text-red-700 p-1">
+                        <svg xmlns="http://www.w.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                `;
+                listElement.appendChild(travelerElement);
+            });
+        }
+
+        window.addTraveler = async () => {
+            const nameInput = document.getElementById('traveler-name');
+            const emailInput = document.getElementById('traveler-email');
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+
+            if (!name || !email) {
+                alert('Por favor, preencha o nome e o e-mail do viajante.');
+                return;
+            }
+
+            const trip = tripsData.find(t => t.id === currentTripId);
+            const currentTravelers = trip.travelers || [];
             
-            // Fecha o dropdown se o usuário clicar fora
-            document.addEventListener('click', function(e) {
-                if (e.target !== input) {
-                    closeAutocomplete();
+            const newTraveler = { name, email };
+            const updatedTravelers = [...currentTravelers, newTraveler];
+
+            const updates = { [`/${currentTripId}/travelers`]: updatedTravelers };
+            await update(tripsRef, updates);
+
+            // Limpa os campos após adicionar
+            nameInput.value = '';
+            emailInput.value = '';
+            renderTravelersList(currentTripId);
+            // O listener do onValue irá chamar renderTravelersList automaticamente
+        };
+
+        window.removeTraveler = async (index) => {
+            const trip = tripsData.find(t => t.id === currentTripId);
+            const currentTravelers = trip.travelers || [];
+            
+            currentTravelers.splice(index, 1); // Remove o viajante pelo índice
+
+            const updates = { [`/${currentTripId}/travelers`]: currentTravelers };
+            await update(tripsRef, updates);
+            renderTravelersList(currentTripId);
+        };
+                 
+
+        function populateTravelersDropdown(selectElementId, selectedAuthorName = null) {
+            const selectElement = document.getElementById(selectElementId);
+            selectElement.innerHTML = '<option value="" disabled>Selecione um viajante</option>';
+            const trip = tripsData.find(t => t.id === currentTripId);
+            const travelers = trip?.travelers || [];
+
+            if (travelers.length === 0) {
+                selectElement.innerHTML = '<option value="" disabled>Adicione viajantes em "Editar Viagem"</option>';
+                return;
+            }
+
+            travelers.forEach(traveler => {
+                const option = document.createElement('option');
+                option.value = traveler.name;
+                option.textContent = traveler.name;
+                if (traveler.name === selectedAuthorName) {
+                    option.selected = true;
                 }
+                selectElement.appendChild(option);
             });
         }
         
@@ -1748,8 +1808,6 @@
             }, error => {
                 console.error("Error listening to Realtime Database:", error);
             });
-            setupAuthorAutocomplete('note-author');
-            setupAuthorAutocomplete('edit-note-author');
         }
 
           function setupIconPickers() {
@@ -2065,6 +2123,10 @@ window.scrollToSectionAndClose = (targetId, modalId) => {
             const modal = document.getElementById(modalId);
             modal.classList.replace('hidden', 'flex');
 
+            if (modalId === 'add-note-modal') {
+                populateTravelersDropdown('note-author');
+            }
+
             if (currentTripId) {
                 const trip = tripsData.find(t => t.id === currentTripId);
                 if (trip && trip.startDate) {
@@ -2130,6 +2192,8 @@ window.scrollToSectionAndClose = (targetId, modalId) => {
             document.getElementById('edit-trip-image-url').value = trip.imageUrl || '';
             document.getElementById('edit-trip-link-text').value = trip.customLinkText || '';
             document.getElementById('edit-trip-link-url').value = trip.customLinkUrl || '';
+
+            renderTravelersList(currentTripId); // <-- ADICIONE ESTA LINHA AQUI
 
             openModal('edit-trip-modal');
         };
@@ -2228,7 +2292,7 @@ window.scrollToSectionAndClose = (targetId, modalId) => {
             currentEditingItemId = noteId;
             document.getElementById('edit-note-id').value = note.id;
             document.getElementById('edit-note-title').value = note.title;
-            document.getElementById('edit-note-author').value = note.author || '';
+            populateTravelersDropdown('edit-note-author', note.author);
             document.getElementById('edit-note-description').value = note.description || '';
             document.getElementById('edit-note-link').value = note.link || '';
             
