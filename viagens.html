@@ -1161,43 +1161,41 @@
     </div>
 
     <div id="edit-expense-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
-        <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-lg m-4">
-            <h3 class="text-2xl font-semibold mb-6">Editar Despesa</h3>
-            <form id="edit-expense-form" class="space-y-4">
-                <input type="hidden" id="edit-expense-id">
+    <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-lg m-4">
+        <h3 class="text-2xl font-semibold mb-6">Editar Despesa</h3>
+        <form id="edit-expense-form" class="space-y-4">
+            <input type="hidden" id="edit-expense-id">
+            <div>
+                <label for="edit-expense-description" class="block text-sm font-medium text-slate-600">Descrição</label>
+                <input type="text" id="edit-expense-description" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label for="edit-expense-description" class="block text-sm font-medium text-slate-600">Descrição</label>
-                    <input type="text" id="edit-expense-description" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label for="edit-expense-amount" class="block text-sm font-medium text-slate-600">Valor Total</label>
-                        <input type="number" id="edit-expense-amount" min="0.01" step="0.01" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
-                    </div>
-                    <div>
-                        <label for="edit-expense-currency" class="block text-sm font-medium text-slate-600">Moeda</label>
-                        <select id="edit-expense-currency" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required></select>
-                        <input type="text" id="edit-expense-currency-custom" maxlength="6" placeholder="Ex: ARS" class="hidden mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
-                    </div>
-                    <div>
-                        <label for="edit-expense-payer" class="block text-sm font-medium text-slate-600">Quem Pagou? (Credor)</label>
-                        <select id="edit-expense-payer" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required></select>
-                    </div>
-                </div>
+                    <label for="edit-expense-amount" class="block text-sm font-medium text-slate-600">Valor Total</label>
+                    <input type="number" id="edit-expense-amount" min="0.01" step="0.01" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-600">Quem deve pagar?</label>
-                    <div id="edit-expense-participants-checkboxes" class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 border p-3 rounded-md bg-white">
-                        </div>
+                    <label for="edit-expense-currency" class="block text-sm font-medium text-slate-600">Moeda</label>
+                    <select id="edit-expense-currency" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required></select>
+                    <input type="text" id="edit-expense-currency-custom" maxlength="6" placeholder="Ex: ARS" class="hidden mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
                 </div>
-                <div class="pt-6 flex justify-end gap-3">
-                    <button type="button" onclick="closeModal('edit-expense-modal')" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-semibold">Salvar Alterações</button>
+                <div>
+                    <label for="edit-expense-payer" class="block text-sm font-medium text-slate-600">Quem Pagou? (Credor)</label>
+                    <select id="edit-expense-payer" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required></select>
                 </div>
-            </form>
-        </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600">Quem deve pagar?</label>
+                <div id="edit-expense-participants-checkboxes" class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 border p-3 rounded-md bg-white">
+                </div>
+            </div>
+            <div class="pt-6 flex justify-end gap-3">
+                <button type="button" onclick="closeModal('edit-expense-modal')" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-semibold">Salvar Alterações</button>
+            </div>
+        </form>
     </div>
+</div>
 
     <div id="spending-per-person-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
     <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md m-4 overflow-y-auto max-h-screen">
