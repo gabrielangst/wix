@@ -201,6 +201,11 @@
         .autocomplete-suggestion-item:hover {
             background-color: #f1f5f9;
         }
+
+        .paid-transaction {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800">
@@ -225,7 +230,7 @@
                 <h2 class="text-2xl font-bold text-slate-800 mb-4">Todas as Viagens</h2>
                 <div id="trips-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 
-                <p class="text-center text-sm text-slate-500 mt-8">v1.0075 | 12/10/2025, 16:07</p>
+                <p class="text-center text-sm text-slate-500 mt-8">v1.0076 | 12/10/2025, 22:17</p>
 
             </main>
         </div>
@@ -248,7 +253,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-marked"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path><polyline points="10 2 10 10 14 7 18 10 18 2"></polyline></svg>
                         <span>Índice</span>
                     </button>
-                    <button onclick="scrollToSectionAndClose('shared-expenses-panel', null)" class="flex items-center gap-2 text-sm bg-white/20 text-white font-semibold px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
+                    <button onclick="scrollToSectionAndClose('spending-panel', null)" class="flex items-center gap-2 text-sm bg-white/20 text-white font-semibold px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt-text"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M14 8H8"/><path d="M16 12H8"/><path d="M11 16H8"/></svg>
                         <span>Divisão de Despesas</span>
                     </button>
@@ -372,10 +377,15 @@
                             <label for="expense-description" class="block text-sm font-medium text-slate-600">Descrição</that's>
                             <input type="text" id="expense-description" placeholder="Ex: Jantar de boas-vindas" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label for="expense-amount" class="block text-sm font-medium text-slate-600">Valor Total (R$)</label>
+                                <label for="expense-amount" class="block text-sm font-medium text-slate-600">Valor Total</label>
                                 <input type="number" id="expense-amount" placeholder="150.00" min="0.01" step="0.01" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
+                            </div>
+                            <div>
+                                <label for="expense-currency" class="block text-sm font-medium text-slate-600">Moeda</label>
+                                <select id="expense-currency" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required></select>
+                                <input type="text" id="expense-currency-custom" maxlength="6" placeholder="Ex: ARS" class="hidden mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
                             </div>
                             <div>
                                 <label for="expense-payer" class="block text-sm font-medium text-slate-600">Quem Pagou? (Credor)</label>
@@ -424,7 +434,7 @@
             <button onclick="scrollToSectionAndClose('documents-panel', 'index-modal')" class="w-full text-left p-3 rounded-lg hover:bg-slate-100 transition-colors font-medium">Documentos</button>
             <button onclick="scrollToSectionAndClose('daily-itinerary-panel', 'index-modal')" class="w-full text-left p-3 rounded-lg hover:bg-slate-100 transition-colors font-medium">Roteiro</button>
             <button id="index-btn-notes" onclick="scrollToSectionAndClose('notes-panel', 'index-modal')" class="w-full text-left p-3 rounded-lg hover:bg-slate-100 transition-colors font-medium">Anotações</button>
-            <button onclick="scrollToSectionAndClose('spending-panel', 'index-modal')" class="w-full text-left p-3 rounded-lg hover:bg-slate-100 transition-colors font-medium">Resumo de Gastos</button>
+            <button onclick="scrollToSectionAndClose('spending-panel', 'index-modal')" class="w-full text-left p-3 rounded-lg hover:bg-slate-100 transition-colors font-medium">Divisão de Despesas</button>
         </div>
         <div class="pt-6 flex justify-end">
             <button type="button" onclick="closeModal('index-modal')" class="px-6 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300 transition-colors">Fechar</button>
@@ -1146,14 +1156,21 @@
                     <input type="text" id="edit-expense-description" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label for="edit-expense-amount" class="block text-sm font-medium text-slate-600">Valor Total (R$)</label>
+                        <label for="edit-expense-amount" class="block text-sm font-medium text-slate-600">Valor Total</label>
                         <input type="number" id="edit-expense-amount" min="0.01" step="0.01" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required>
+                    </div>
+                    <div>
+                        <label for="edit-expense-currency" class="block text-sm font-medium text-slate-600">Moeda</label>
+                        <select id="edit-expense-currency" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required></select>
+                        <input type="text" id="edit-expense-currency-custom" maxlength="6" placeholder="Ex: ARS" class="hidden mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
                     </div>
                     <div>
                         <label for="edit-expense-payer" class="block text-sm font-medium text-slate-600">Quem Pagou? (Credor)</label>
                         <select id="edit-expense-payer" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required></select>
                     </div>
+                </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-600">Quem deve pagar?</label>
@@ -1215,6 +1232,81 @@
         let reorganizationMode = 'days'; // 'days' ou 'activities'
 
 
+        // Adicione esta constante perto de suas outras variáveis globais
+        const PREDEFINED_CURRENCIES = [
+            "BRL", "USD", "EUR", "JPY", "GBP", "AUD", 
+            "CAD", "CHF", "CNY", "CC/IOF"
+        ];
+
+        window.toggleSettlementPaid = async (checkbox, from, to, currency) => {
+            const trip = tripsData.find(t => t.id === currentTripId);
+            if (!trip) return;
+
+            // 1. Cria um ID único para a transação (ex: "Maria_João_BRL")
+            const transactionId = `${from}_${to}_${currency}`;
+            
+            // 2. Pega a lista de pagamentos já realizados ou cria uma nova
+            const currentPaidSettlements = trip.paidSettlements || [];
+
+            if (checkbox.checked) {
+                // 3. Se o checkbox foi MARCADO, adiciona o ID à lista (se já não estiver lá)
+                if (!currentPaidSettlements.includes(transactionId)) {
+                    currentPaidSettlements.push(transactionId);
+                }
+            } else {
+                // 4. Se o checkbox foi DESMARCADO, remove o ID da lista
+                const index = currentPaidSettlements.indexOf(transactionId);
+                if (index > -1) {
+                    currentPaidSettlements.splice(index, 1);
+                }
+            }
+
+            // 5. Salva a lista atualizada no banco de dados
+            const updates = { [`/${currentTripId}/paidSettlements`]: currentPaidSettlements };
+            await update(tripsRef, updates);
+
+            // 6. Atualiza o estilo visual do item instantaneamente
+            const transactionElement = checkbox.closest('.transaction-item');
+            if (transactionElement) {
+                transactionElement.classList.toggle('paid-transaction', checkbox.checked);
+            }
+        };
+
+        // Adicione esta função auxiliar
+        function populateCurrencySelect(selectId, customInputId, selectedCurrency = "BRL") {
+            const select = document.getElementById(selectId);
+            const customInput = document.getElementById(customInputId);
+            select.innerHTML = '';
+
+            PREDEFINED_CURRENCIES.forEach(currency => {
+                const option = document.createElement('option');
+                option.value = currency;
+                option.textContent = currency;
+                select.appendChild(option);
+            });
+            select.innerHTML += '<option value="custom">Outra (especificar)</option>';
+
+            // Lógica para selecionar a moeda correta ou mostrar o campo customizado
+            if (PREDEFINED_CURRENCIES.includes(selectedCurrency)) {
+                select.value = selectedCurrency;
+                customInput.classList.add('hidden');
+                customInput.value = '';
+            } else {
+                select.value = 'custom';
+                customInput.classList.remove('hidden');
+                customInput.value = selectedCurrency;
+            }
+
+            select.onchange = () => {
+                if (select.value === 'custom') {
+                    customInput.classList.remove('hidden');
+                } else {
+                    customInput.classList.add('hidden');
+                }
+            };
+        }
+
+
         // Função Utilitária
         function formatDate(dateString, options = { day: 'numeric', month: 'short', year: 'numeric' }) {
             if(!dateString) return 'Data indefinida';
@@ -1222,14 +1314,25 @@
             return date.toLocaleDateString('pt-BR', { timeZone: 'UTC', ...options });
         }
         
-        function formatCurrency(value) {
+        function formatCurrency(value, currency = 'BRL') {
             if (typeof value !== 'number') {
                 value = parseFloat(value);
             }
             if (isNaN(value)) {
-                return 'R$ 0,00';
+                return currency === 'BRL' ? 'R$ 0,00' : '$ 0,00';
             }
-            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            if (currency === 'BRL') {
+                // Se for Real, usa a formatação completa com R$
+                return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            } else {
+                // Para outras moedas, formata o número no padrão brasileiro (com vírgula) e adiciona o $
+                const formattedNumber = value.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                return `$ ${formattedNumber}`;
+            }
         }
 
         // Definições de Ícones (sem alterações)
@@ -1301,61 +1404,77 @@
             const participantsContainer = document.getElementById('expense-participants-checkboxes');
             const expenseListContainer = document.getElementById('shared-expenses-list');
 
-            // 1. Popula as opções de viajantes (Pagador e Responsáveis)
+            // 1. Popula os campos do formulário de ADIÇÃO
+            populateCurrencySelect('expense-currency', 'expense-currency-custom');
             payerSelect.innerHTML = '<option value="" disabled selected>Selecione...</option>';
             participantsContainer.innerHTML = '';
 
             if (travelers.length === 0) {
-                participantsContainer.innerHTML = '<p class="text-sm text-slate-400 col-span-full">Cadastre viajantes em "Editar Viagem" para adicionar despesas.</p>';
+                participantsContainer.innerHTML = '<p class="text-sm text-slate-400 col-span-full">Cadastre viajantes para adicionar despesas.</p>';
             } else {
                 travelers.forEach(traveler => {
-                    // Adiciona ao <select> de quem pagou
                     const option = document.createElement('option');
                     option.value = traveler.name;
                     option.textContent = traveler.name;
-                    payerSelect.appendChild(option);
+                    payerSelect.appendChild(option.cloneNode(true));
 
-                    // Adiciona os checkboxes de quem participou
                     const checkboxDiv = document.createElement('div');
                     checkboxDiv.className = 'flex items-center gap-2';
-                    checkboxDiv.innerHTML = `
-                        <input type="checkbox" id="participant-${traveler.name.replace(/\s+/g, '-')}" value="${traveler.name}" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                        <label for="participant-${traveler.name.replace(/\s+/g, '-')}" class="text-sm text-slate-700">${traveler.name}</label>
-                    `;
+                    checkboxDiv.innerHTML = `<input type="checkbox" id="participant-${traveler.name.replace(/\s+/g, '-')}" value="${traveler.name}" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="participant-${traveler.name.replace(/\s+/g, '-')}" class="text-sm text-slate-700">${traveler.name}</label>`;
                     participantsContainer.appendChild(checkboxDiv);
                 });
-
                 const selectAllCheckbox = document.getElementById('select-all-participants');
                 selectAllCheckbox.checked = true;
-                selectAllCheckbox.dispatchEvent(new Event('change')); // Dispara o evento para marcar os outros
+                selectAllCheckbox.dispatchEvent(new Event('change'));
             }
 
-            // 2. Renderiza a lista de despesas já adicionadas
+            // 2. AGRUPA despesas por moeda e renderiza a lista
             expenseListContainer.innerHTML = '';
             if (expenses.length === 0) {
                 expenseListContainer.innerHTML = '<p class="text-center text-sm text-slate-500 py-4">Nenhuma despesa de grupo adicionada ainda.</p>';
             } else {
-                expenses.forEach(expense => {
-                    const expenseElement = document.createElement('div');
-                    expenseElement.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-slate-50 border border-slate-200 cursor-pointer';
-                    expenseElement.onclick = () => openExpenseDetailsModal(expense.id);
+                const expensesByCurrency = expenses.reduce((acc, expense) => {
+                    const currency = expense.currency || 'BRL';
+                    if (!acc[currency]) {
+                        acc[currency] = [];
+                    }
+                    acc[currency].push(expense);
+                    return acc;
+                }, {});
 
-                    expenseElement.innerHTML = `
-                        <div>
-                            <p class="font-semibold text-slate-800">${expense.description}</p>
-                            <p class="text-sm text-slate-500">Total: ${formatCurrency(expense.amount)} | Pago por: ${expense.payerName}</p>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <span class="text-xs bg-slate-200 text-slate-600 font-medium px-2 py-1 rounded-full">${expense.participants.length}</span>
-                            <button onclick="event.stopPropagation(); openEditExpenseModal('${expense.id}')" class="text-slate-400 hover:text-blue-600 p-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                            </button>
-                            <button onclick="event.stopPropagation(); deleteSharedExpense('${expense.id}')" class="text-slate-400 hover:text-red-600 p-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            </button>
-                        </div>
-                    `;
-                    expenseListContainer.appendChild(expenseElement);
+                // Ordena as moedas (BRL primeiro, depois as outras)
+                const sortedCurrencies = Object.keys(expensesByCurrency).sort((a, b) => {
+                    if (a === 'BRL') return -1;
+                    if (b === 'BRL') return 1;
+                    return a.localeCompare(b);
+                });
+
+                sortedCurrencies.forEach(currency => {
+                    const currencyExpenses = expensesByCurrency[currency];
+                    
+                    // Cria o cabeçalho do grupo de moeda
+                    const currencyHeader = document.createElement('div');
+                    currencyHeader.className = 'mt-4 mb-2';
+                    currencyHeader.innerHTML = `<h4 class="inline-block bg-slate-200 text-slate-800 text-md font-bold px-3 py-1 rounded-md">${currency}</h4>`;
+                    expenseListContainer.appendChild(currencyHeader);
+
+                    currencyExpenses.forEach(expense => {
+                        const expenseElement = document.createElement('div');
+                        expenseElement.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-slate-50 border border-slate-200 cursor-pointer';
+                        expenseElement.onclick = () => openExpenseDetailsModal(expense.id);
+
+                        expenseElement.innerHTML = `
+                            <div>
+                                <p class="font-semibold text-slate-800">${expense.description}</p>
+                                <p class="text-sm text-slate-500">Total: ${formatCurrency(expense.amount, expense.currency)} | Pago por: ${expense.payerName}</p>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-xs bg-slate-200 text-slate-600 font-medium px-2 py-1 rounded-full">${expense.participants.length}</span>
+                                <button onclick="event.stopPropagation(); openEditExpenseModal('${expense.id}')" class="text-slate-400 hover:text-blue-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                                <button onclick="event.stopPropagation(); deleteSharedExpense('${expense.id}')" class="text-slate-400 hover:text-red-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                            </div>`;
+                        expenseListContainer.appendChild(expenseElement);
+                    });
                 });
             }
         }
@@ -1366,7 +1485,7 @@
             if (!expense) return;
 
             document.getElementById('view-expense-description').textContent = expense.description;
-            document.getElementById('view-expense-amount').textContent = formatCurrency(expense.amount);
+            document.getElementById('view-expense-amount').textContent = formatCurrency(expense.amount, expense.currency);
             document.getElementById('view-expense-payer').textContent = expense.payerName;
             
             const participantsList = document.getElementById('view-expense-participants-list');
@@ -1379,9 +1498,9 @@
                 const item = document.createElement('div');
                 item.className = 'flex justify-between items-center p-2 bg-slate-50 rounded-md';
                 item.innerHTML = `
-                    <span>${name} ${isPayer ? '(Pagou)' : ''}</span>
-                    <span class="font-semibold">${isPayer ? 'Paga sua parte' : `Deve ${formatCurrency(share)}`}</span>
-                `;
+                <span>${name} ${isPayer ? '(Pagou)' : ''}</span>
+                <span class="font-semibold">${isPayer ? 'Paga sua parte' : `Deve ${formatCurrency(share, expense.currency)}`}</span>
+            `;
                 participantsList.appendChild(item);
             });
 
@@ -1409,6 +1528,8 @@
             document.getElementById('edit-expense-id').value = expense.id;
             document.getElementById('edit-expense-description').value = expense.description;
             document.getElementById('edit-expense-amount').value = expense.amount;
+
+            populateCurrencySelect('edit-expense-currency', 'edit-expense-currency-custom', expense.currency);
 
             const payerSelect = document.getElementById('edit-expense-payer');
             const participantsContainer = document.getElementById('edit-expense-participants-checkboxes');
@@ -1448,10 +1569,17 @@
 
             const expenseId = document.getElementById('edit-expense-id').value;
             
+            const currencySelect = document.getElementById('edit-expense-currency');
+            let currency = currencySelect.value;
+            if (currency === 'custom') {
+                currency = document.getElementById('edit-expense-currency-custom').value.toUpperCase().trim() || 'CUSTOM';
+            }
+
             const updatedExpense = {
                 id: expenseId,
                 description: document.getElementById('edit-expense-description').value,
                 amount: parseFloat(document.getElementById('edit-expense-amount').value),
+                currency, // <-- CAMPO NOVO
                 payerName: document.getElementById('edit-expense-payer').value,
                 participants: []
             };
@@ -1481,55 +1609,73 @@
         window.showSpendingPerPerson = () => {
             const trip = tripsData.find(t => t.id === currentTripId);
             const travelers = trip.travelers || [];
-            const expenses = trip.sharedExpenses || [];
             const resultsContainer = document.getElementById('spending-per-person-results');
             resultsContainer.innerHTML = '';
 
-            if (travelers.length === 0) {
-                resultsContainer.innerHTML = '<p class="text-center text-slate-600">Nenhum viajante cadastrado.</p>';
+            // Passo 1: Agrupar despesas por moeda
+            const expensesByCurrency = (trip.sharedExpenses || []).reduce((acc, expense) => {
+                const currency = expense.currency || 'BRL';
+                if (!acc[currency]) {
+                    acc[currency] = [];
+                }
+                acc[currency].push(expense);
+                return acc;
+            }, {});
+
+            // Ordena as moedas para uma exibição consistente
+            const sortedCurrencies = Object.keys(expensesByCurrency).sort((a, b) => {
+                if (a === 'BRL') return -1;
+                if (b === 'BRL') return 1;
+                return a.localeCompare(b);
+            });
+
+            if (sortedCurrencies.length === 0) {
+                resultsContainer.innerHTML = '<p class="text-center text-slate-600">Nenhuma despesa de grupo foi adicionada para verificar.</p>';
                 openModal('spending-per-person-modal');
                 return;
             }
-            
-            // 1. Inicializa um objeto para guardar o total da responsabilidade de cada pessoa.
-            const responsibilityTotals = {};
-            travelers.forEach(t => {
-                responsibilityTotals[t.name] = 0;
-            });
 
-            // 2. MODIFICADO: Percorre as despesas para somar a QUOTA de cada participante.
-            expenses.forEach(expense => {
-                const numberOfParticipants = expense.participants.length;
-                if (numberOfParticipants > 0) {
-                    // Calcula o valor da quota individual para esta despesa
-                    const share = expense.amount / numberOfParticipants;
-                    
-                    // Adiciona o valor da quota ao total de cada participante daquela despesa
-                    expense.participants.forEach(participantName => {
-                        if (responsibilityTotals.hasOwnProperty(participantName)) {
-                            responsibilityTotals[participantName] += share;
-                        }
-                    });
-                }
-            });
+            // Passo 2: Calcular a responsabilidade de cada pessoa para cada moeda
+            sortedCurrencies.forEach(currency => {
+                const currencyExpenses = expensesByCurrency[currency];
 
-            // 3. Ordena os viajantes por quem teve a maior responsabilidade de custo.
-            const sortedResponsibilities = Object.entries(responsibilityTotals).sort(([, a], [, b]) => b - a);
-
-            // 4. Monta o HTML para mostrar esses totais no novo modal.
-            if (sortedResponsibilities.length === 0) {
-                 resultsContainer.innerHTML = '<p class="text-center text-slate-600">Nenhuma despesa de grupo encontrada.</p>';
-            } else {
-                sortedResponsibilities.forEach(([name, total]) => {
-                    const spendingEl = document.createElement('div');
-                    spendingEl.className = 'flex justify-between items-center p-2 bg-slate-50 rounded-md text-base';
-                    spendingEl.innerHTML = `
-                        <span class="font-medium text-slate-700">${name}</span>
-                        <span class="font-bold text-slate-800">${formatCurrency(total)}</span>
-                    `;
-                    resultsContainer.appendChild(spendingEl);
+                const responsibilityTotals = {};
+                travelers.forEach(t => {
+                    responsibilityTotals[t.name] = 0;
                 });
-            }
+
+                currencyExpenses.forEach(expense => {
+                    const numberOfParticipants = expense.participants.length;
+                    if (numberOfParticipants > 0) {
+                        const share = expense.amount / numberOfParticipants;
+                        expense.participants.forEach(participantName => {
+                            if (responsibilityTotals.hasOwnProperty(participantName)) {
+                                responsibilityTotals[participantName] += share;
+                            }
+                        });
+                    }
+                });
+
+                const sortedResponsibilities = Object.entries(responsibilityTotals).sort(([, a], [, b]) => b - a);
+                
+                // Passo 3: Exibir os resultados agrupados por moeda
+                const currencyHeader = document.createElement('div');
+                currencyHeader.innerHTML = `<h4 class="text-lg font-bold text-slate-800 bg-slate-100 px-3 py-2 rounded-md mt-4 first:mt-0">${currency}</h4>`;
+                resultsContainer.appendChild(currencyHeader);
+
+                sortedResponsibilities.forEach(([name, total]) => {
+                    // Só exibe pessoas que tiveram algum custo
+                    if (total > 0.01) {
+                        const spendingEl = document.createElement('div');
+                        spendingEl.className = 'flex justify-between items-center p-2 bg-slate-50 rounded-md text-base';
+                        spendingEl.innerHTML = `
+                            <span class="font-medium text-slate-700">${name}</span>
+                            <span class="font-bold text-slate-800">${formatCurrency(total, currency)}</span>
+                        `;
+                        resultsContainer.appendChild(spendingEl);
+                    }
+                });
+            });
 
             openModal('spending-per-person-modal');
         };
@@ -3446,13 +3592,20 @@ cost: document.getElementById('edit-activity-cost').value,
                 return;
             }
 
-            const newExpense = {
-                id: Date.now().toString(),
-                description,
-                amount,
-                payerName,
-                participants
-            };
+            const currencySelect = document.getElementById('expense-currency');
+                let currency = currencySelect.value;
+                if (currency === 'custom') {
+                    currency = document.getElementById('expense-currency-custom').value.toUpperCase().trim() || 'CUSTOM';
+                }
+
+                const newExpense = {
+                    id: Date.now().toString(),
+                    description,
+                    amount,
+                    currency, // <-- CAMPO NOVO
+                    payerName,
+                    participants
+                };
 
             const currentExpenses = trip.sharedExpenses || [];
             currentExpenses.push(newExpense);
@@ -3494,101 +3647,101 @@ cost: document.getElementById('edit-activity-cost').value,
         window.calculateExpenseSummary = () => {
             const trip = tripsData.find(t => t.id === currentTripId);
             const travelers = trip.travelers || [];
-            const expenses = trip.sharedExpenses || [];
             const resultsContainer = document.getElementById('expense-summary-results');
             resultsContainer.innerHTML = '';
 
-            if (travelers.length === 0 || expenses.length === 0) {
-                resultsContainer.innerHTML = '<p class="text-center text-slate-600">Não há viajantes ou despesas suficientes para calcular um resumo.</p>';
+            const expensesByCurrency = (trip.sharedExpenses || []).reduce((acc, expense) => {
+                const currency = expense.currency || 'BRL';
+                if (!acc[currency]) acc[currency] = [];
+                acc[currency].push(expense);
+                return acc;
+            }, {});
+            
+            const sortedCurrencies = Object.keys(expensesByCurrency).sort((a, b) => a === 'BRL' ? -1 : b === 'BRL' ? 1 : a.localeCompare(b));
+
+            if (sortedCurrencies.length === 0) {
+                resultsContainer.innerHTML = '<p class="text-center text-slate-600">Nenhuma despesa de grupo foi adicionada para calcular o resumo.</p>';
                 openModal('expense-summary-modal');
                 return;
             }
 
-            // 1. Inicializa o balanço de cada viajante
-            const balances = {};
-            travelers.forEach(t => {
-                balances[t.name] = { paid: 0, owes: 0, balance: 0 };
-            });
+            // Pega a lista de pagamentos já realizados
+            const paidSettlements = trip.paidSettlements || [];
 
-            // 2. Calcula quanto cada um pagou e quanto deveria ter pago
-            expenses.forEach(expense => {
-                // Adiciona ao total pago por quem foi o credor
-                if (balances[expense.payerName]) {
-                    balances[expense.payerName].paid += expense.amount;
+            sortedCurrencies.forEach(currency => {
+                const currencyExpenses = expensesByCurrency[currency];
+
+                const balances = {};
+                travelers.forEach(t => { balances[t.name] = 0; });
+
+                currencyExpenses.forEach(expense => {
+                    balances[expense.payerName] += expense.amount;
+                    const share = expense.amount / expense.participants.length;
+                    expense.participants.forEach(participantName => {
+                        balances[participantName] -= share;
+                    });
+                });
+
+                const creditors = [];
+                const debtors = [];
+                Object.entries(balances).forEach(([name, balance]) => {
+                    if (balance > 0.01) creditors.push({ name, amount: balance });
+                    else if (balance < -0.01) debtors.push({ name, amount: -balance });
+                });
+
+                const transactions = [];
+                let i = 0, j = 0;
+                while (i < debtors.length && j < creditors.length) {
+                    const amountToTransfer = Math.min(debtors[i].amount, creditors[j].amount);
+                    if (amountToTransfer > 0.01) {
+                        transactions.push({ from: debtors[i].name, to: creditors[j].name, amount: amountToTransfer });
+                    }
+                    debtors[i].amount -= amountToTransfer;
+                    creditors[j].amount -= amountToTransfer;
+                    if (debtors[i].amount < 0.01) i++;
+                    if (creditors[j].amount < 0.01) j++;
                 }
                 
-                // Divide o custo entre os participantes
-                const share = expense.amount / expense.participants.length;
-                expense.participants.forEach(participantName => {
-                    if (balances[participantName]) {
-                        balances[participantName].owes += share;
-                    }
-                });
-            });
+                const currencyHeader = document.createElement('div');
+                currencyHeader.innerHTML = `<h4 class="text-lg font-bold text-slate-800 bg-slate-100 px-3 py-2 rounded-md mt-4 first:mt-0">${currency}</h4>`;
+                resultsContainer.appendChild(currencyHeader);
 
-            // 3. Calcula o balanço final (positivo = credor, negativo = devedor)
-            Object.keys(balances).forEach(name => {
-                balances[name].balance = balances[name].paid - balances[name].owes;
-            });
-            
-            // 4. Separa em credores e devedores
-            const creditors = [];
-            const debtors = [];
-            Object.entries(balances).forEach(([name, data]) => {
-                if (data.balance > 0.01) { // Usar uma pequena tolerância para evitar erros de ponto flutuante
-                    creditors.push({ name, amount: data.balance });
-                } else if (data.balance < -0.01) {
-                    debtors.push({ name, amount: -data.balance });
+                if (transactions.length === 0) {
+                    const noTransactionsEl = document.createElement('p');
+                    noTransactionsEl.className = 'text-sm text-slate-500 p-2';
+                    noTransactionsEl.textContent = 'Nenhum acerto de contas necessário para esta moeda.';
+                    resultsContainer.appendChild(noTransactionsEl);
+                } else {
+                    transactions.forEach(t => {
+                        // Cria um ID único para a transação e verifica se ela já foi paga
+                        const transactionId = `${t.from}_${t.to}_${currency}`;
+                        const isPaid = paidSettlements.includes(transactionId);
+
+                        const transactionEl = document.createElement('div');
+                        // Adiciona classes para o estilo visual
+                        transactionEl.className = `transaction-item flex items-center justify-between p-3 bg-slate-50 rounded-lg ${isPaid ? 'paid-transaction' : ''}`;
+                        
+                        transactionEl.innerHTML = `
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" onchange="toggleSettlementPaid(this, '${t.from}', '${t.to}', '${currency}')" 
+                                       ${isPaid ? 'checked' : ''} 
+                                       class="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                                
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-slate-800">${t.from}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-500"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                                    <span class="font-bold text-slate-800">${t.to}</span>
+                                </div>
+                            </div>
+                            <span class="text-lg font-bold text-indigo-600">${formatCurrency(t.amount, currency)}</span>
+                        `;
+                        resultsContainer.appendChild(transactionEl);
+                    });
                 }
             });
-
-            // 5. Calcula as transações otimizadas
-            const transactions = [];
-            debtors.sort((a, b) => b.amount - a.amount);
-            creditors.sort((a, b) => b.amount - a.amount);
-
-            let i = 0, j = 0;
-            while (i < debtors.length && j < creditors.length) {
-                const debtor = debtors[i];
-                const creditor = creditors[j];
-                const amountToTransfer = Math.min(debtor.amount, creditor.amount);
-
-                if (amountToTransfer > 0.01) {
-                   transactions.push({ from: debtor.name, to: creditor.name, amount: amountToTransfer });
-                }
-
-                debtor.amount -= amountToTransfer;
-                creditor.amount -= amountToTransfer;
-
-                if (debtor.amount < 0.01) i++;
-                if (creditor.amount < 0.01) j++;
-            }
-
-            // 6. Mostra os resultados
-            if (transactions.length === 0) {
-                resultsContainer.innerHTML = `
-                    <div class="text-center p-4 bg-green-100 text-green-800 rounded-lg">
-                        <p class="font-semibold text-lg">Tudo certo!</p>
-                        <p>Todas as despesas estão quitadas entre os viajantes.</p>
-                    </div>`;
-            } else {
-                transactions.forEach(t => {
-                    const transactionEl = document.createElement('div');
-                    transactionEl.className = 'flex items-center justify-between p-3 bg-slate-100 rounded-lg';
-                    transactionEl.innerHTML = `
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-slate-800">${t.from}</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-500"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                            <span class="font-bold text-slate-800">${t.to}</span>
-                        </div>
-                        <span class="text-lg font-bold text-indigo-600">${formatCurrency(t.amount)}</span>
-                    `;
-                    resultsContainer.appendChild(transactionEl);
-                });
-            }
 
             openModal('expense-summary-modal');
-        }
+        };
 
         // --- LISTENER PARA O CHECKBOX "MARCAR TODOS" ---
         document.getElementById('select-all-participants').addEventListener('change', function(e) {
