@@ -232,7 +232,7 @@
                 <h2 class="text-2xl font-bold text-slate-800 mb-4">Todas as Viagens</h2>
                 <div id="trips-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 
-                <p class="text-center text-sm text-slate-500 mt-8">v1.0076 | 12/10/2025, 22:17</p>
+                <p class="text-center text-sm text-slate-500 mt-8">v1.0077 | 13/10/2025, 08:18</p>
 
             </main>
         </div>
@@ -257,7 +257,11 @@
                     </button>
                     <button onclick="scrollToSectionAndClose('spending-panel', null)" class="flex items-center gap-2 text-sm bg-white/20 text-white font-semibold px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt-text"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M14 8H8"/><path d="M16 12H8"/><path d="M11 16H8"/></svg>
-                        <span>Divisão de Despesas</span>
+                        <span>Despesas</span>
+                    </button>
+                    <button onclick="scrollToItinerary()" class="flex items-center gap-2 text-sm bg-white/20 text-white font-semibold px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-collapse"><path d="m3 10 2.5-2.5L3 5"></path><path d="m3 19 2.5-2.5L3 14"></path><path d="M10 6h11"></path><path d="M10 12h11"></path><path d="M10 18h11"></path></svg>
+                        <span>Roteiro</span>
                     </button>
                     <button id="custom-link-btn" style="display: none;" class="flex items-center gap-2 text-sm bg-white/20 text-white font-semibold px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>
@@ -1787,6 +1791,7 @@
         }
         
         // --- FUNÇÕES DE RENDERIZAÇÃO ---
+        // VERSÃO NOVA
         function renderTripLists() {
             const featuredTripsPanel = document.getElementById('featured-trips-panel');
             const featuredTripsList = document.createElement('div');
@@ -1802,7 +1807,8 @@
             if(featuredTrips.length > 0) {
                 featuredTripsPanel.innerHTML = `<h2 class="text-2xl font-bold text-slate-800 mb-4">Viagens Destacadas</h2>`;
                 featuredTrips.forEach(trip => {
-                    featuredTripsList.appendChild(createTripCard(trip));
+                    // Passa 'true' para indicar que é o card grande do painel de destaque
+                    featuredTripsList.appendChild(createTripCard(trip, true));
                 });
                 featuredTripsPanel.appendChild(featuredTripsList);
             }
@@ -1816,15 +1822,37 @@
             }
 
             tripsData.forEach(trip => {
-                tripsList.appendChild(createTripCard(trip));
+                // Passa 'false' para indicar que são os cards da lista principal (pequenos)
+                tripsList.appendChild(createTripCard(trip, false));
             });
         }
         
-        function createTripCard(trip) {
+        // VERSÃO NOVA - USE ESTA
+        // VERSÃO NOVA E FINAL
+        function createTripCard(trip, isFeaturedCard) {
             const tripCard = document.createElement('div');
             tripCard.className = 'trip-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer transform hover:-translate-y-1 transition-transform duration-300 relative';
             tripCard.onclick = () => showTripDetails(trip.id);
             
+            let imageContainerClasses = 'h-48'; // Altura padrão para cards grandes
+            let textContainerClasses = 'p-6'; // Padding padrão
+            let titleClasses = 'text-2xl'; // Tamanho do título padrão
+
+            // Se NÃO for um card do painel de destaque, aplica os estilos reduzidos
+            if (!isFeaturedCard) {
+                imageContainerClasses = 'h-24'; // Altura reduzida
+                textContainerClasses = 'p-4';  // Padding reduzido
+                titleClasses = 'text-xl';     // Título menor
+
+                const today = new Date();
+                today.setUTCHours(0, 0, 0, 0); 
+                const tripEndDate = new Date(trip.endDate + 'T00:00:00Z');
+
+                if (tripEndDate < today) {
+                    imageContainerClasses += ' grayscale'; // Efeito preto e branco para viagens passadas
+                }
+            }
+
             const starIcon = trip.featured ? 
                 `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` : 
                 `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
@@ -1841,11 +1869,11 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                     </button>
                 </div>
-                <div class="h-48 bg-cover bg-center" style="background-image: url('${trip.imageUrl}')"></div>
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold text-slate-900">${trip.name}</h3>
-                    <p class="text-slate-500 mt-1">${trip.destination}</p>
-                    <div class="mt-4 text-sm font-medium text-slate-600">
+                <div class="${imageContainerClasses} bg-cover bg-center transition-all duration-300" style="background-image: url('${trip.imageUrl}')"></div>
+                <div class="${textContainerClasses}">
+                    <h3 class="${titleClasses} font-bold text-slate-900 truncate">${trip.name}</h3>
+                    <p class="text-slate-500 mt-1 text-sm truncate">${trip.destination}</p>
+                    <div class="mt-2 text-xs font-medium text-slate-600">
                        ${formatDate(trip.startDate)} - ${formatDate(trip.endDate)}
                     </div>
                 </div>
@@ -2608,6 +2636,7 @@ let dividerHtml = '';
         window.showTripsView = () => {
             document.getElementById('trips-view').classList.remove('hidden');
             document.getElementById('details-view').classList.add('hidden');
+            document.getElementById('back-to-trips-btn').classList.add('hidden'); 
             currentTripId = null;
         }
 
@@ -2622,6 +2651,7 @@ let dividerHtml = '';
             renderTripDetails(tripId);
             document.getElementById('trips-view').classList.add('hidden');
             document.getElementById('details-view').classList.remove('hidden');
+            document.getElementById('back-to-trips-btn').classList.remove('hidden');
         }
         
         window.toggleDocumentsPanel = () => {
@@ -3772,6 +3802,10 @@ cost: document.getElementById('edit-activity-cost').value,
 <button id="open-index-btn" onclick="openModal('index-modal')" class="hidden fixed bottom-8 left-24 z-40 w-12 h-12 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-colors flex items-center justify-center">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
 </button>
-
+<button id="back-to-trips-btn" onclick="showTripsView()" class="hidden fixed top-8 left-8 z-40 w-12 h-12 bg-slate-600 text-white rounded-full shadow-lg hover:bg-slate-700 transition-colors flex items-center justify-center">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+</button>
+<br>
+<br>
 </body>
 </html>
