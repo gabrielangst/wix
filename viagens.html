@@ -3459,6 +3459,7 @@ window.saveDivider = async function(tripId, categoryKey, value) {
         document.getElementById('add-transport-form').addEventListener('submit', (e) => { e.preventDefault(); addDetail('transport'); });
         document.getElementById('add-lodging-form').addEventListener('submit', (e) => { e.preventDefault(); addDetail('lodging'); });
 
+        // VERSÃO NOVA - USE ESTA
         document.getElementById('edit-trip-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             if (!currentTripId) return;
@@ -3473,6 +3474,21 @@ window.saveDivider = async function(tripId, categoryKey, value) {
             };
             const tripToUpdateRef = ref(db, `public_trips/${currentTripId}`);
             await update(tripToUpdateRef, updates);
+
+            // --- INÍCIO DAS NOVAS LINHAS ---
+
+            // 1. Atualiza os dados na variável local para refletir a mudança instantaneamente.
+            const tripIndex = tripsData.findIndex(t => t.id === currentTripId);
+            if (tripIndex > -1) tripsData[tripIndex] = { ...tripsData[tripIndex], ...updates };
+
+            // 2. Força o redesenho da tela de detalhes (que está visível).
+            renderTripDetails(currentTripId);
+
+            // 3. Força o redesenho da lista de viagens (que está escondida) para que o card esteja atualizado quando você voltar.
+            renderTripLists();
+
+            // --- FIM DAS NOVAS LINHAS ---
+
             closeModal('edit-trip-modal');
         });
 
