@@ -237,7 +237,7 @@
     <div id="past-trips-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         </div>
     
-    <p class="text-center text-sm text-slate-500 mt-8">v1.0078 | 13/10/2025, 10:46</p>
+    <p class="text-center text-sm text-slate-500 mt-8">v1.0079 | 13/10/2025, 20:57</p>
 </main>
         </div>
 
@@ -330,13 +330,13 @@
                         <div id="reorg-actions-container" class="hidden items-center gap-2">
                             <div class="flex items-center gap-1 bg-slate-300 p-1 rounded-lg">
                                 <button id="reorg-mode-days-btn" onclick="switchReorganizationType('days')" class="reorg-mode-btn text-xs font-bold px-3 py-1 rounded-md">Dias</button>
-                                <button id="reorg-mode-activities-btn" onclick="switchReorganizationType('activities')" class="reorg-mode-btn text-xs font-bold px-3 py-1 rounded-md">Ativ.</button>
+                                <button id="reorg-mode-activities-btn" onclick="switchReorganizationType('activities')" class="reorg-mode-btn text-xs font-bold px-3 py-1 rounded-md">Ativid.</button>
                             </div>
                             <button onclick="toggleReorganizationMode(true)" class="text-sm bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-300 transition-colors">Cancelar</button>
                             <button onclick="toggleReorganizationMode(false)" class="text-sm bg-blue-600 text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors">OK</button>
                         </div>
                          <button id="reorg-start-btn" onclick="toggleReorganizationMode(false)" class="text-sm bg-slate-600 text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-700 transition-colors">Reordenar</button>
-                        <button id="scroll-to-top-btn" onclick="scrollToTop()" class="text-sm bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-300 transition-colors">Subir</button>
+                        
                     </div>
                 </div>
                 <div id="daily-itinerary-list">
@@ -1257,6 +1257,36 @@
             "BRL", "USD", "EUR", "JPY", "GBP", "AUD", 
             "CAD", "CHF", "CNY", "CC/IOF"
         ];
+
+        // --- INÍCIO DO CÓDIGO PARA CONTROLE DE HISTÓRICO ---
+
+// 1. Define o estado inicial da página ao carregar
+// Usamos replaceState para não criar uma entrada duplicada no histórico.
+history.replaceState({ view: 'trips' }, 'Todas as Viagens', '#');
+
+// 2. Cria uma função central para trocar de tela
+function navigateTo(view, tripId = null) {
+    if (view === 'details') {
+        // Mostra a tela de detalhes
+        showTripDetails(tripId); 
+    } else {
+        // Mostra a lista de viagens
+        showTripsView(); 
+    }
+}
+
+// 3. Adiciona o "ouvinte" para o botão voltar/avançar do navegador
+window.addEventListener('popstate', (event) => {
+    if (event.state) {
+        // Se houver um estado salvo, navega para a tela correspondente
+        navigateTo(event.state.view, event.state.tripId);
+    } else {
+        // Caso não haja estado (raro), volta para a tela principal
+        navigateTo('trips');
+    }
+});
+
+// --- FIM DO CÓDIGO PARA CONTROLE DE HISTÓRICO ---
 
         window.toggleSettlementPaid = async (checkbox, from, to, currency) => {
             const trip = tripsData.find(t => t.id === currentTripId);
@@ -2675,6 +2705,8 @@ let dividerHtml = '';
         };
         
         window.showTripsView = () => {
+            history.pushState({ view: 'trips' }, 'Todas as Viagens', '#');
+
             document.getElementById('trips-view').classList.remove('hidden');
             document.getElementById('details-view').classList.add('hidden');
             document.getElementById('back-to-trips-btn').classList.add('hidden'); 
@@ -2682,6 +2714,8 @@ let dividerHtml = '';
         }
 
         window.showTripDetails = (tripId) => {
+            history.pushState({ view: 'details', tripId: tripId }, 'Detalhes da Viagem', '#trip=' + tripId);
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
             document.getElementById('documents-panel').classList.add('collapsed');
@@ -3253,16 +3287,22 @@ window.scrollToSectionAndClose = (targetId, modalId) => {
         function initializeActivitySorting() {
             sortableInstances.forEach(instance => instance.destroy());
             sortableInstances = [];
-            const activityLists = document.querySelectorAll('.activity-list');
-            
-            activityLists.forEach(list => {
-                const instance = new Sortable(list, {
-                    group: 'shared-activities', animation: 150, handle: '.activity-drag-handle',
-                    draggable: '.activity-item[data-iseditable="true"]',
-                    onEnd: (evt) => updateActivityOrderAndDate(),
+
+            // NOVO: Adiciona um delay mínimo para o navegador processar as mudanças de CSS
+            setTimeout(() => {
+                const activityLists = document.querySelectorAll('.activity-list');
+                
+                activityLists.forEach(list => {
+                    const instance = new Sortable(list, {
+                        group: 'shared-activities',
+                        animation: 150,
+                        handle: '.activity-drag-handle',
+                        draggable: '.activity-item[data-iseditable="true"]',
+                        onEnd: (evt) => updateActivityOrderAndDate(),
+                    });
+                    sortableInstances.push(instance);
                 });
-                sortableInstances.push(instance);
-            });
+            }, 50); // Um delay de 50 milissegundos é suficiente e imperceptível
         }
 
         async function remapAndSaveDays(tripId, daysArray) {
@@ -3339,7 +3379,6 @@ window.scrollToSectionAndClose = (targetId, modalId) => {
         }
         
         window.switchReorganizationType = (type) => {
-            if (reorganizationMode === type) return;
             reorganizationMode = type;
             const list = document.getElementById('daily-itinerary-list');
             const daysBtn = document.getElementById('reorg-mode-days-btn');
@@ -3369,22 +3408,30 @@ window.scrollToSectionAndClose = (targetId, modalId) => {
             const list = document.getElementById('daily-itinerary-list');
             const startBtn = document.getElementById('reorg-start-btn');
             const actionsContainer = document.getElementById('reorg-actions-container');
-            const scrollTopBtn = document.getElementById('scroll-to-top-btn'); 
-            
+            // AQUI ESTÁ A CORREÇÃO: O ID do botão foi corrigido.
+            const scrollTopBtn = document.getElementById('back-to-top-btn');
+
             isReorganizing = !list.classList.contains('is-reorganizing');
             list.classList.toggle('is-reorganizing', isReorganizing);
 
             if (isReorganizing) {
+                // Prepara a interface para o modo de reordenação
                 const trip = tripsData.find(t => t.id === currentTripId);
-                initialTripState = { 
-                    activities: trip.activities ? JSON.parse(JSON.stringify(trip.activities)) : {}, 
-                    endDate: trip.endDate 
+                initialTripState = {
+                    activities: trip.activities ? JSON.parse(JSON.stringify(trip.activities)) : {},
+                    endDate: trip.endDate
                 };
                 startBtn.style.display = 'none';
                 actionsContainer.style.display = 'flex';
-                scrollTopBtn.style.display = 'none';
-                switchReorganizationType('days');
-            } else {
+                // Adicionada uma verificação para segurança
+                if (scrollTopBtn) {
+                    scrollTopBtn.style.display = 'none';
+                }
+
+                // A sua ideia em ação: Simula um clique direto no botão "Ativid."
+                document.getElementById('reorg-mode-activities-btn').click();
+
+            } else { // Lógica para sair do modo de reordenação
                 if (isCancelling && initialTripState) {
                     const updates = {
                         [`/${currentTripId}/activities`]: initialTripState.activities,
@@ -3395,8 +3442,13 @@ window.scrollToSectionAndClose = (targetId, modalId) => {
                 initialTripState = null;
                 startBtn.style.display = 'block';
                 actionsContainer.style.display = 'none';
-                scrollTopBtn.style.display = 'block'; 
-                
+                // Adicionada uma verificação para segurança
+                if (scrollTopBtn) {
+                    // A linha abaixo causava o erro se a tela não estivesse rolada,
+                    // mas a correção principal é o ID correto do botão.
+                    // O comportamento de mostrar/esconder o botão já é controlado pelo scroll.
+                }
+
                 list.classList.remove('mode-days', 'mode-activities');
                 if (sortableInstance) sortableInstance.destroy();
                 sortableInstances.forEach(i => i.destroy());
