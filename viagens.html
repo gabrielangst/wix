@@ -3444,9 +3444,7 @@ window.scrollToSectionAndClose = (targetId, modalId) => {
                 actionsContainer.style.display = 'none';
                 // Adicionada uma verificação para segurança
                 if (scrollTopBtn) {
-                    // A linha abaixo causava o erro se a tela não estivesse rolada,
-                    // mas a correção principal é o ID correto do botão.
-                    // O comportamento de mostrar/esconder o botão já é controlado pelo scroll.
+                    scrollTopBtn.style.display = '';
                 }
 
                 list.classList.remove('mode-days', 'mode-activities');
