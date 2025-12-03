@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteio de Amigo Oculto</title>
+    
+    <!-- Carregando React, ReactDOM e Babel para funcionar direto no navegador -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS para o visual -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // Ícones em SVG para não depender de bibliotecas externas
+        const Check = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"/></svg>
+        );
+        const Gift = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+        );
+        const AlertCircle = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        );
+        const X = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        );
+        const User = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        );
+
+        const App = () => {
+            // Configuração atualizada com Camyla pendente
+            const initialParticipants = [
+                { name: 'Camyla', status: 'pending', target: 'JOÃO' },
+                { name: 'Érica', status: 'confirmed', target: null },
+                { name: 'Fábia', status: 'pending', target: 'LEANDRO' },
+                { name: 'Gabriel', status: 'pending', target: 'LUCAS' },
+                { name: 'Isabela', status: 'confirmed', target: null },
+                { name: 'João', status: 'confirmed', target: null },
+                { name: 'Júlia', status: 'confirmed', target: null },
+                { name: 'Kamila', status: 'confirmed', target: null },
+                { name: 'Leandro', status: 'pending', target: 'FÁBIA' },
+                { name: 'Lucas', status: 'confirmed', target: null },
+            ];
+
+            const [participants, setParticipants] = React.useState(initialParticipants);
+            const [modalState, setModalState] = React.useState({ 
+                isOpen: false, 
+                type: null, 
+                participant: null 
+            });
+
+            // Carrega dados salvos ou usa o inicial
+            React.useEffect(() => {
+                const savedData = localStorage.getItem('amigoOcultoState_v2'); // Mudei a chave para v2 para limpar dados antigos do teste anterior
+                if (savedData) {
+                    setParticipants(JSON.parse(savedData));
+                }
+            }, []);
+
+            const updateParticipantStatus = (name) => {
+                const updatedList = participants.map(p => 
+                    p.name === name ? { ...p, status: 'confirmed' } : p
+                );
+                setParticipants(updatedList);
+                localStorage.setItem('amigoOcultoState_v2', JSON.stringify(updatedList));
+            };
+
+            const handleNameClick = (participant) => {
+                if (participant.status === 'confirmed') {
+                    setModalState({
+                        isOpen: true,
+                        type: 'alreadyRevealed',
+                        participant: participant
+                    });
+                } else {
+                    setModalState({
+                        isOpen: true,
+                        type: 'confirm',
+                        participant: participant
+                    });
+                }
+            };
+
+            const confirmReveal = () => {
+                setModalState(prev => ({
+                    ...prev,
+                    type: 'result'
+                }));
+            };
+
+            const closeAndLock = () => {
+                if (modalState.type === 'result' && modalState.participant) {
+                    updateParticipantStatus(modalState.participant.name);
+                }
+                setModalState({ isOpen: false, type: null, participant: null });
+            };
+
+            const renderModalContent = () => {
+                const { type, participant } = modalState;
+                if (!participant) return null;
+
+                if (type === 'alreadyRevealed') {
+                    return (
+                        <div className="text-center">
+                            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                                <Check className="h-8 w-8 text-green-600" />
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">Ops!</h3>
+                            <p className="text-gray-500 mb-6">
+                                Você já revelou seu amigo oculto. Não é possível revelar novamente.
+                            </p>
+                            <button onClick={closeAndLock} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-600 text-base font-medium text-white hover:bg-gray-700 focus:outline-none sm:text-sm">
+                                Entendido
+                            </button>
+                        </div>
+                    );
+                }
+
+                if (type === 'confirm') {
+                    return (
+                        <div className="text-center">
+                            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4">
+                                <AlertCircle className="h-8 w-8 text-yellow-600" />
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">Atenção, {participant.name}!</h3>
+                            <p className="text-gray-500 mb-6">
+                                Você só pode revelar seu amigo oculto uma única vez. Tem certeza que deseja ver agora?
+                            </p>
+                            <div className="flex gap-3">
+                                <button onClick={closeAndLock} className="flex-1 inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm">
+                                    Cancelar
+                                </button>
+                                <button onClick={confirmReveal} className="flex-1 inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:text-sm">
+                                    Continuar
+                                </button>
+                            </div>
+                        </div>
+                    );
+                }
+
+                if (type === 'result') {
+                    return (
+                        <div className="text-center">
+                            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4 animate-bounce">
+                                <Gift className="h-8 w-8 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">Olá, {participant.name}!</h3>
+                            <p className="text-sm text-gray-500 mb-2">Seu amigo oculto é:</p>
+                            <div className="bg-red-50 p-4 rounded-lg border-2 border-dashed border-red-200 mb-6">
+                                <span className="text-2xl font-bold text-red-800 tracking-wider">
+                                    {participant.target}
+                                </span>
+                            </div>
+                            <p className="text-xs text-gray-400 mb-6 italic">
+                                Ao fechar, este resultado não poderá ser visto novamente.
+                            </p>
+                            <button onClick={closeAndLock} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:text-sm">
+                                Fechar e Confirmar Leitura
+                            </button>
+                        </div>
+                    );
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans">
+                    <div className="max-w-md w-full bg-white rounded-xl shadow-xl overflow-hidden border-t-4 border-red-600">
+                        <div className="bg-red-700 p-6 text-center relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                                <div className="absolute top-2 left-4 text-white text-xl">❄</div>
+                                <div className="absolute top-8 right-8 text-white text-2xl">❄</div>
+                                <div className="absolute bottom-4 left-10 text-white text-lg">❄</div>
+                            </div>
+                            <h1 className="text-2xl font-bold text-white mb-1">Amigo Oculto</h1>
+                            <p className="text-red-100 text-sm">Edição Especial de Natal</p>
+                        </div>
+
+                        <div className="p-6">
+                            <p className="text-gray-600 text-sm mb-4 text-center">
+                                Clique no seu nome para revelar seu amigo oculto.
+                            </p>
+                            <div className="space-y-3">
+                                {participants.map((person) => (
+                                    <button
+                                        key={person.name}
+                                        onClick={() => handleNameClick(person)}
+                                        className={`w-full flex items-center justify-between p-4 rounded-lg border transition-all duration-200 ${
+                                            person.status === 'confirmed'
+                                                ? 'bg-green-50 border-green-200 hover:bg-green-100'
+                                                : 'bg-white border-gray-200 hover:border-red-300 hover:shadow-md'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2 rounded-full ${person.status === 'confirmed' ? 'bg-green-200' : 'bg-red-100'}`}>
+                                                <User className={`w-5 h-5 ${person.status === 'confirmed' ? 'text-green-700' : 'text-red-700'}`} />
+                                            </div>
+                                            <span className={`font-medium ${person.status === 'confirmed' ? 'text-gray-500' : 'text-gray-800'}`}>
+                                                {person.name}
+                                            </span>
+                                        </div>
+                                        
+                                        {person.status === 'confirmed' ? (
+                                            <div className="flex items-center gap-2 text-green-600">
+                                                <span className="text-xs font-semibold uppercase hidden sm:block">Confirmado</span>
+                                                <Check className="w-5 h-5" />
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2 text-red-500 animate-pulse">
+                                                <span className="text-xs font-semibold uppercase hidden sm:block">Revelar</span>
+                                                <Gift className="w-5 h-5" />
+                                            </div>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="bg-gray-50 p-4 text-center text-xs text-gray-400">
+                            Feliz Natal e boas festas! 🎄
+                        </div>
+                    </div>
+
+                    {modalState.isOpen && (
+                        <div className="fixed inset-0 z-50 overflow-y-auto">
+                            <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                <div className="fixed inset-0 transition-opacity" aria-hidden="true" onClick={modalState.type !== 'result' ? closeAndLock : undefined}>
+                                    <div className="absolute inset-0 bg-gray-900 opacity-75"></div>
+                                </div>
+                                <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6">
+                                    <div className="absolute top-0 right-0 pt-4 pr-4">
+                                        {modalState.type !== 'result' && (
+                                            <button onClick={closeAndLock} className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none">
+                                                <X className="h-6 w-6" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    {renderModalContent()}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
