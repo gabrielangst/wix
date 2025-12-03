@@ -18,7 +18,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // Ícones em SVG para não depender de bibliotecas externas
+        // Ícones em SVG
         const Check = ({ className }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"/></svg>
         );
@@ -36,16 +36,16 @@
         );
 
         const App = () => {
-            // Configuração atualizada com Camyla pendente
+            // Configuração atualizada com as novas regras
             const initialParticipants = [
                 { name: 'Camyla', status: 'pending', target: 'JOÃO' },
-                { name: 'Érica', status: 'confirmed', target: null },
+                { name: 'Érica', status: 'pending', target: 'CAMYLA' },
                 { name: 'Fábia', status: 'pending', target: 'LEANDRO' },
-                { name: 'Gabriel', status: 'pending', target: 'LUCAS' },
+                { name: 'Gabriel', status: 'confirmed', target: 'LUCAS' }, // Gabriel já revelou
                 { name: 'Isabela', status: 'confirmed', target: null },
                 { name: 'João', status: 'confirmed', target: null },
-                { name: 'Júlia', status: 'confirmed', target: null },
-                { name: 'Kamila', status: 'confirmed', target: null },
+                { name: 'Júlia', status: 'pending', target: 'ISABELA' },
+                { name: 'Kamila', status: 'pending', target: 'GABRIEL' },
                 { name: 'Leandro', status: 'pending', target: 'FÁBIA' },
                 { name: 'Lucas', status: 'confirmed', target: null },
             ];
@@ -57,9 +57,9 @@
                 participant: null 
             });
 
-            // Carrega dados salvos ou usa o inicial
+            // Carrega dados salvos ou usa o inicial. Mudei para v3 para resetar o estado antigo.
             React.useEffect(() => {
-                const savedData = localStorage.getItem('amigoOcultoState_v2'); // Mudei a chave para v2 para limpar dados antigos do teste anterior
+                const savedData = localStorage.getItem('amigoOcultoState_v3');
                 if (savedData) {
                     setParticipants(JSON.parse(savedData));
                 }
@@ -70,7 +70,7 @@
                     p.name === name ? { ...p, status: 'confirmed' } : p
                 );
                 setParticipants(updatedList);
-                localStorage.setItem('amigoOcultoState_v2', JSON.stringify(updatedList));
+                localStorage.setItem('amigoOcultoState_v3', JSON.stringify(updatedList));
             };
 
             const handleNameClick = (participant) => {
