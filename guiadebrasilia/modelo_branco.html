@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda Cultural - Brasília</title>
+    <style>
+        html { scroll-behavior: smooth; }
+        
+        /* --- ESTILOS GERAIS --- */
+        :root {
+            --bsb-sky: #00AEEF;
+            --bsb-concrete: #f0f0f0;
+            --bsb-text: #333333;
+            --bsb-green: #4CAF50;
+            --bsb-sunset: #FF9800;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--bsb-text);
+            background-color: #fff;
+            line-height: 1.6;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; padding: 0; }
+
+        /* --- CABEÇALHO --- */
+        header {
+            background-color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--bsb-sky);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo img { width: 180px; height: auto; display: block; }
+        #google_translate_element { margin-left: 0 !important; }
+
+        /* --- HERO --- */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px 5%;
+            background: linear-gradient(to bottom, #f9f9f9, #fff);
+            border-bottom: 1px solid #eee;
+        }
+
+        h1 { font-size: 3rem; margin-bottom: 10px; line-height: 1.2; color: var(--bsb-sky); }
+        .subtitle { font-size: 1.2rem; color: #666; margin-bottom: 0; }
+
+        .container { padding: 40px 5%; max-width: 1000px; margin: 0 auto; }
+        
+        /* --- LISTA DE EVENTOS (DESIGN DE CARD) --- */
+        .event-card {
+            display: flex;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .event-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--bsb-sky);
+        }
+
+        /* Coluna da Data */
+        .event-date {
+            background-color: var(--bsb-concrete);
+            min-width: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .date-day { font-size: 2rem; font-weight: bold; color: var(--bsb-sky); line-height: 1; }
+        .date-month { font-size: 1rem; text-transform: uppercase; color: #666; font-weight: bold; }
+        .date-year { font-size: 0.8rem; color: #999; }
+
+        /* Coluna do Conteúdo */
+        .event-info { padding: 20px; flex: 1; }
+        .event-info h3 { margin: 0 0 10px 0; color: #333; font-size: 1.4rem; }
+        .event-details { color: #666; font-size: 0.95rem; margin-bottom: 15px; }
+        .event-tag { 
+            display: inline-block; 
+            background: #eee; 
+            padding: 4px 10px; 
+            border-radius: 4px; 
+            font-size: 0.8rem; 
+            color: #555;
+            margin-right: 10px;
+        }
+
+        /* --- ARQUIVO / HISTÓRICO (ACCORDION SIMPLIFICADO) --- */
+        .archive-section { margin-top: 60px; border-top: 2px solid #eee; padding-top: 40px; }
+        .section-title { font-size: 1.8rem; margin-bottom: 30px; color: #333; }
+
+        details { margin-bottom: 15px; border-radius: 8px; border: 1px solid #eee; overflow: hidden; background: white; }
+        
+        summary {
+            padding: 15px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            background-color: #f9f9f9;
+            list-style: none; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        summary:hover { background-color: #f0f0f0; }
+        summary::after { content: '+'; font-size: 1.5rem; color: var(--bsb-sky); font-weight: bold; }
+        details[open] summary::after { content: '-'; }
+
+        .accordion-content { padding: 0 20px 20px 20px; border-top: 1px solid #eee; }
+        
+        /* Lista simples para eventos passados */
+        .past-event-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px dotted #ccc;
+            font-size: 1rem;
+            color: #555;
+        }
+        .past-event-item:last-child { border-bottom: none; }
+        
+        /* Data do evento passado */
+        .past-date { 
+            font-weight: bold; 
+            margin-right: 20px; 
+            color: #999; 
+            min-width: 80px; /* Alinha os textos se as datas tiverem tamanhos diferentes */
+        }
+
+        /* --- FOOTER --- */
+        footer { background-color: #333; color: #ccc; text-align: center; padding: 40px 20px; font-size: 0.9rem; }
+        .lang-container { display: flex; align-items: center; }
+        .flag-icon { width: 25px; height: auto; margin-right: 8px; border: 1px solid #ccc; border-radius: 2px; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo"> <a href="index.html"><img src="logo_index.png" alt="Guia de Brasília"></a></div>
+        <nav class="lang-container">
+            <img src="https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg" alt="Change Language" class="flag-icon">
+            <div id="google_translate_element"></div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-text">
+            <h1>TÍTULO</h1>
+            <p class="subtitle">Subtítulo</p>            
+        </div>
+    </section>
+
+    <div class="container">        
+
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Brasília - Guia de Viagem Brasília. Todos os direitos reservados.</p>
+        <p>Entrar em contato</p>
+    </footer>
+
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+          new google.translate.TranslateElement({
+            pageLanguage: 'pt', 
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            includedLanguages: 'en,es,fr,de,it,zh-CN,ja,ru,ar,hi'
+          }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</body>
+</html>

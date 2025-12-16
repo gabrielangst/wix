@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parquinhos Infantis - Brasília</title>
+    <style>
+        html { scroll-behavior: smooth; }
+        
+        /* --- ESTILOS GERAIS --- */
+        :root {
+            --bsb-sky: #00AEEF;
+            --bsb-concrete: #f0f0f0;
+            --bsb-text: #333333;
+            --bsb-green: #4CAF50;
+            --bsb-sunset: #FF9800;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--bsb-text);
+            background-color: #f9f9f9;
+            line-height: 1.6;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; padding: 0; }
+
+        /* --- CABEÇALHO --- */
+        header {
+            background-color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--bsb-sky);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo img { width: 180px; height: auto; display: block; }
+        #google_translate_element { margin-left: 0 !important; }
+
+        /* --- HERO --- */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px 5%;
+            background: white;
+            border-bottom: 1px solid #eee;
+        }
+
+        h1 { font-size: 3rem; margin-bottom: 10px; line-height: 1.2; color: var(--bsb-green); }
+        .subtitle { font-size: 1.2rem; color: #666; margin-bottom: 0; }
+
+        .container { padding: 40px 5%; max-width: 1000px; margin: 0 auto; }
+
+        /* --- ESTILO DAS SEÇÕES --- */
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-top: 50px;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .category-icon { font-size: 2rem; margin-right: 15px; }
+        .category-title { font-size: 1.8rem; color: #333; margin: 0; }
+
+        /* --- CARD HORIZONTAL PADRONIZADO --- */
+        .playground-card {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #eee;
+            /* Garante que o card tenha uma altura mínima igual pra todos no PC */
+            min-height: 200px; 
+        }
+
+        .playground-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Área da Foto (Tamanho Fixo) */
+        .pg-image-container {
+            width: 260px; /* Largura fixa */
+            /* Se quiser altura fixa exata, descomente a linha abaixo. 
+               Se deixar sem, ela estica para acompanhar o texto se ele for longo. */
+            /* height: 200px; */ 
+            flex-shrink: 0;
+            position: relative;
+            background-color: #ddd; /* Cor de fundo enquanto carrega */
+        }
+
+        .pg-img {
+            width: 100%;
+            height: 100%; /* Ocupa todo o container */
+            object-fit: cover; /* A MÁGICA: Corta a foto para preencher sem distorcer */
+            display: block;
+            position: absolute; /* Garante preenchimento total */
+            top: 0; left: 0;
+        }
+
+        /* Área do Texto */
+        .pg-content {
+            padding: 25px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Centraliza o texto verticalmente */
+        }
+
+        .pg-title {
+            margin: 0 0 10px 0;
+            font-size: 1.4rem;
+            color: var(--bsb-text);
+        }
+
+        .pg-location {
+            color: #666;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .pin-icon { margin-right: 5px; color: var(--bsb-sky); }
+
+        .btn-map {
+            display: inline-block;
+            background-color: transparent;
+            color: var(--bsb-sky);
+            border: 1px solid var(--bsb-sky);
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: fit-content;
+            transition: 0.3s;
+        }
+
+        .btn-map:hover { background-color: var(--bsb-sky); color: white; }
+
+        /* --- RESPONSIVIDADE (Celular) --- */
+        @media (max-width: 700px) {
+            .playground-card {
+                flex-direction: column; /* Um embaixo do outro */
+                min-height: auto; /* Remove altura mínima no celular */
+            }
+            .pg-image-container {
+                width: 100%; /* Largura total */
+                height: 200px; /* Altura fixa no celular */
+                position: relative;
+            }
+            .pg-img {
+                position: relative; /* Volta ao normal no celular */
+                height: 200px;
+            }
+            .pg-content {
+                padding: 20px;
+            }
+        }
+
+        /* --- FOOTER --- */
+        footer { background-color: #333; color: #ccc; text-align: center; padding: 40px 20px; font-size: 0.9rem; margin-top: 60px;}
+        .lang-container { display: flex; align-items: center; }
+        .flag-icon { width: 25px; height: auto; margin-right: 8px; border: 1px solid #ccc; border-radius: 2px; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo"> <a href="index.html"><img src="logo_index.png" alt="Guia de Brasília"></a></div>
+        <nav class="lang-container">
+            <img src="https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg" alt="Change Language" class="flag-icon">
+            <div id="google_translate_element"></div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-text">
+            <h1>Parquinhos Infantis</h1>
+            <p class="subtitle">Selecionamos abaixo alguns dos parquinhos que mais gostamos na cidade. A visita a eles vale a pena para famílias com crianças pequenas. Há parquinhos públicos e parquinhos dentro de restaurantes e cafés.</p>            
+        </div>
+    </section>
+
+    <div class="container">
+
+        <div class="category-header" style="border-color: #8D6E63;">
+            <span class="category-icon">☕</span>
+            <h2 class="category-title" style="color: #8D6E63;">Parquinhos em Cafés</h2>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://i0.wp.com/pezinhoforadecasa.com/wp-content/uploads/2022/03/Design-sem-nome-4-1.png?resize=300%2C300&ssl=1" alt="Constantina" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Constantina</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Asa Sul</div>
+                <a href="https://maps.app.goo.gl/m29Kzi8PmXKSD7qy9" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://cafeangelita.com.br/includes/imgs/home/sliderAmbiente/Cafe_Angelita_06.jpg" alt="Angelita" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Angelita</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Asa Sul</div>
+                <a href="https://maps.app.goo.gl/PxNL1G9WvfrLn5449" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://d2kihw5e8drjh5.cloudfront.net/eyJidWNrZXQiOiJ1dGEtaW1hZ2VzIiwia2V5IjoicGxhY2VfaW1nLzE4OHQ0U2dSUXgtR1c2ZHZVRU5zZnciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjY0MCwiaGVpZ2h0Ijo2NDAsImZpdCI6Imluc2lkZSJ9LCJyb3RhdGUiOm51bGwsInRvRm9ybWF0IjogIndlYnAifX0=" alt="Dolce Mamma" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Cantina Dolce Mamma</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Hípica Hall</div>
+                <a href="https://maps.app.goo.gl/xKbyrRph95q5hQpu8" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://ondefica.dicasdacapital.com.br/wp-content/uploads/classified-listing/2025/02/cafeeumchero_1738164222003.jpg" alt="Café e um Chêro" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Café e um Chêro</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Pontão do Lago Sul</div>
+                <a href="https://maps.app.goo.gl/BJvsTtVdaQWfL5qw6" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://media-cdn.tripadvisor.com/media/photo-m/1280/13/82/ba/a3/labecca-cafe-bistro.jpg" alt="La Becca" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">La Becca</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Asa Sul</div>
+                <a href="https://maps.app.goo.gl/QcQeeuktmLrhSHvG6" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+
+        <div class="category-header" style="border-color: #FF9800;">
+            <span class="category-icon">🍽️</span>
+            <h2 class="category-title" style="color: #FF9800;">Em Restaurantes</h2>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://lackman.com.br/wp-content/uploads/2024/05/Bosque3.jpg" alt="Bosque Park" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Bosque Park</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Asa Norte</div>
+                <a href="https://maps.app.goo.gl/TCWVEowWU9ETucT37" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://media-cdn.tripadvisor.com/media/photo-s/07/1f/59/05/vista-do-interior-da.jpg" alt="Pizza" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Forneria de Capri</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Asa Sul</div>
+                <a href="https://maps.app.goo.gl/io8wM98Z8hXHMyys9" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://i0.wp.com/pezinhoforadecasa.com/wp-content/uploads/2021/05/Design-sem-nome14.png?resize=300%2C300&ssl=1" alt="Don Durica" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Don Durica Beira Lago</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Setor de Clubes e Asa Sul (115)</div>
+                <a href="https://maps.app.goo.gl/4eYvm45uwfbwBP9j6" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+        
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://d2kihw5e8drjh5.cloudfront.net/eyJidWNrZXQiOiJ1dGEtaW1hZ2VzIiwia2V5IjoicGxhY2VfaW1nL3NrOG0zRmxoUlJpcDRFNWhoeHhyQlEiLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjY0MCwiaGVpZ2h0Ijo2NDAsImZpdCI6Imluc2lkZSJ9LCJyb3RhdGUiOm51bGwsInRvRm9ybWF0IjogIndlYnAifX0=" alt="Mandaka" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Mandaka Guará</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Guará</div>
+                <a href="https://maps.app.goo.gl/8UYFhrnhGwiYacuPA" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://roteirobaby.com.br/wp-content/uploads/2022/09/WhatsApp-Image-2022-09-14-at-11.13.24.jpeg" alt="Juca" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Boteco do Juca</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Asa Sul</div>
+                <a href="https://maps.app.goo.gl/Dd7qmDBEARLrLjeC7" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+       
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://vastorestaurante.com/wp-content/uploads/2021/10/seq-2-1.jpg" alt="Vasto" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Vasto Asa Sul</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Asa Sul</div>
+                <a href="https://maps.app.goo.gl/hVXWpAD2Dd5u6jAF9" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://i0.wp.com/pezinhoforadecasa.com/wp-content/uploads/2022/02/Design-sem-nome-2-2.png?resize=300%2C300&ssl=1" alt="Espaço das Arvores" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Espaço das Árvores</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Lago Norte</div>
+                <a href="https://maps.app.goo.gl/XZC7jUMpt3UgvU2y9" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+
+        <div class="category-header" style="border-color: #4CAF50;">
+            <span class="category-icon">🌳</span>
+            <h2 class="category-title" style="color: #4CAF50;">Parquinhos Públicos</h2>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://assets.multiplan.com.br/Multiplan/filer_public/f4/6c/f46cf77f-7efd-4042-8976-ff85fd21b12e/sp_8773.jpg?ims=800x" alt="Shopping" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Park Shopping</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Guará (Próximo ao Coco Bambu)</div>
+                <a href="https://maps.app.goo.gl/xUJ3gBJ2JVQH25948" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://www.pontao.com.br/arquivos/ferias-pontao-do-lago-sul-661819.jpg" alt="Pontão" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Pontão do Lago Sul</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Lago Sul</div>
+                <a href="https://maps.app.goo.gl/CsjSta6fNNZ98x4x8" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+        
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://www.agenciabrasilia.df.gov.br/documents/20117/14841275/WhatsApp-Image-2024-10-11-at-14.27.04.jpeg/2ced742e-7d02-df60-4a5c-5c9778d7af21?version=1.0&t=1744592426521&download=true" alt="Foguetinho" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Parque Ana Lídia</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Parque da Cidade (Sudoeste)</div>
+                <a href="https://maps.app.goo.gl/RRXVHGaPGA4uCMmv8" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://ohhappyway.com/wp-content/uploads/2022/02/parque-parquinho-aeroporto-brasilia-2.jpg" alt="Aeroporto" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Aeroporto JK</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Praça Pick-up (Área externa)</div>
+                <a href="https://maps.app.goo.gl/oxZjPztdQk3iU51LA" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://i0.wp.com/pezinhoforadecasa.com/wp-content/uploads/2021/05/Design-sem-nome1-10.png?fit=300%2C300&ssl=1" alt="Ezechias" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Parque Ezechias Heringer</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Guará</div>
+                <a href="https://maps.app.goo.gl/gxkm4ErYeo8oDgou6" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+        
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://pezinhoforadecasa.com/wp-content/uploads/2021/05/Design-sem-nome-4-1.png" alt="Parquinho Quadra" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Parquinho da 312 Sul</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> SQS 312 - Asa Sul</div>
+                <a href="https://maps.app.goo.gl/4kZfiCC9bVhsQbJH8" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Brasília - Guia de Viagem Brasília. Todos os direitos reservados.</p>
+        <p>Entrar em contato</p>
+    </footer>
+
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+          new google.translate.TranslateElement({
+            pageLanguage: 'pt', 
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            includedLanguages: 'en,es,fr,de,it,zh-CN,ja,ru,ar,hi'
+          }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</body>
+</html>

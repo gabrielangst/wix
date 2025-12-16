@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Música ao Vivo - Brasília</title>
+    <style>
+        html { scroll-behavior: smooth; }
+        
+        /* --- ESTILOS GERAIS --- */
+        :root {
+            --bsb-sky: #00AEEF;
+            --bsb-concrete: #f0f0f0;
+            --bsb-text: #333333;
+            --bsb-green: #4CAF50;
+            --bsb-sunset: #FF9800;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--bsb-text);
+            background-color: #f9f9f9;
+            line-height: 1.6;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; padding: 0; }
+
+        /* --- CABEÇALHO --- */
+        header {
+            background-color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--bsb-sky);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo img { width: 180px; height: auto; display: block; }
+        #google_translate_element { margin-left: 0 !important; }
+
+        /* --- HERO --- */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px 5%;
+            background: white;
+            border-bottom: 1px solid #eee;
+        }
+
+        h1 { font-size: 3rem; margin-bottom: 10px; line-height: 1.2; color: var(--bsb-green); }
+        .subtitle { font-size: 1.2rem; color: #666; margin-bottom: 0; }
+
+        .container { padding: 40px 5%; max-width: 1000px; margin: 0 auto; }
+
+        /* --- ESTILO DAS SEÇÕES --- */
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-top: 50px;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .category-icon { font-size: 2rem; margin-right: 15px; }
+        .category-title { font-size: 1.8rem; color: #333; margin: 0; }
+
+        /* --- CARD HORIZONTAL PADRONIZADO --- */
+        .playground-card {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #eee;
+            /* Garante que o card tenha uma altura mínima igual pra todos no PC */
+            min-height: 200px; 
+        }
+
+        .playground-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Área da Foto (Tamanho Fixo) */
+        .pg-image-container {
+            width: 260px; /* Largura fixa */
+            /* Se quiser altura fixa exata, descomente a linha abaixo. 
+               Se deixar sem, ela estica para acompanhar o texto se ele for longo. */
+            /* height: 200px; */ 
+            flex-shrink: 0;
+            position: relative;
+            background-color: #ddd; /* Cor de fundo enquanto carrega */
+        }
+
+        .pg-img {
+            width: 100%;
+            height: 100%; /* Ocupa todo o container */
+            object-fit: cover; /* A MÁGICA: Corta a foto para preencher sem distorcer */
+            display: block;
+            position: absolute; /* Garante preenchimento total */
+            top: 0; left: 0;
+        }
+
+        /* Área do Texto */
+        .pg-content {
+            padding: 25px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Centraliza o texto verticalmente */
+        }
+
+        .pg-title {
+            margin: 0 0 10px 0;
+            font-size: 1.4rem;
+            color: var(--bsb-text);
+        }
+
+        .pg-location {
+            color: #666;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .pin-icon { margin-right: 5px; color: var(--bsb-sky); }
+
+        .btn-map {
+            display: inline-block;
+            background-color: transparent;
+            color: var(--bsb-sky);
+            border: 1px solid var(--bsb-sky);
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: fit-content;
+            transition: 0.3s;
+        }
+
+        .btn-map:hover { background-color: var(--bsb-sky); color: white; }
+
+        /* --- RESPONSIVIDADE (Celular) --- */
+        @media (max-width: 700px) {
+            .playground-card {
+                flex-direction: column; /* Um embaixo do outro */
+                min-height: auto; /* Remove altura mínima no celular */
+            }
+            .pg-image-container {
+                width: 100%; /* Largura total */
+                height: 200px; /* Altura fixa no celular */
+                position: relative;
+            }
+            .pg-img {
+                position: relative; /* Volta ao normal no celular */
+                height: 200px;
+            }
+            .pg-content {
+                padding: 20px;
+            }
+        }
+
+        /* --- FOOTER --- */
+        footer { background-color: #333; color: #ccc; text-align: center; padding: 40px 20px; font-size: 0.9rem; margin-top: 60px;}
+        .lang-container { display: flex; align-items: center; }
+        .flag-icon { width: 25px; height: auto; margin-right: 8px; border: 1px solid #ccc; border-radius: 2px; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo"> <a href="index.html"><img src="logo_index.png" alt="Guia de Brasília"></a></div>
+        <nav class="lang-container">
+            <img src="https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg" alt="Change Language" class="flag-icon">
+            <div id="google_translate_element"></div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-text">
+            <h1>Música ao Vivo</h1>
+            <p class="subtitle">Selecionamos abaixo bandas, músicos e locais que contam com música ao vivo na cidade</p>            
+        </div>
+    </section>
+
+    <div class="container">
+
+        <div class="category-header" style="border-color: #8D6E63;">
+            <span class="category-icon">☕</span>
+            <h2 class="category-title" style="color: #8D6E63;">Locais com música</h2>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://www.therooftopguide.com/rooftop-bars-in-brasilia/Bilder/sante-lago-600-3.jpg" alt="Constantina" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Santé Lago</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Setor de Clubes</div>
+                <a href="https://maps.app.goo.gl/J2yTMtTXRPoYY3n2A" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/77/23/39/esperamos-voces-aqui.jpg?w=900&h=500&s=1" alt="Angelita" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Izzy Wine Garden Pontão</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Setor de Clubes</div>
+                <a href="https://maps.app.goo.gl/MYNQzkgZrmQ2ksLC6" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://www.ticianawerner.com.br/img/gallery/foto_1.jpg" alt="Dolce Mamma" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Ticiana Werner</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Asa Sul</div>
+                <a href="https://maps.app.goo.gl/zP3FCxaY8RChARC47"  target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://media-cdn.tripadvisor.com/media/photo-s/1a/8d/e8/aa/galpao-17-galera-reunida.jpg" alt="Café e um Chêro" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Galpão 17</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Guará</div>
+                <a href="https://maps.app.goo.gl/sEpLWxCx5Mi8tFWU8" target="_blank"  class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://vastorestaurante.com/wp-content/uploads/2021/10/seq-6-1.jpg" alt="La Becca" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Vasto Restaurante</h3>
+                <div class="pg-location"><span class="pin-icon">📍</span> Asa Sul</div>
+                <a href="https://maps.app.goo.gl/36q9s21969ezLf256" target="_blank" class="btn-map">Como chegar</a>
+            </div>
+        </div>
+
+
+        <div class="category-header" style="border-color: #FF9800;">
+            <span class="category-icon">🍽️</span>
+            <h2 class="category-title" style="color: #FF9800;">Bandas e Músicos</h2>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://t4.ftcdn.net/jpg/06/62/35/99/360_F_662359955_AszwheA7gnW1A3MAFOBmtTQoeNx9OrFy.jpg" alt="Bosque Park" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Mareante Trio</h3>
+                <div class="pg-location"><span class="pin-icon">🔗</span> Instagram</div>
+                <a href="#" class="btn-map">Link</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://t4.ftcdn.net/jpg/06/62/35/99/360_F_662359955_AszwheA7gnW1A3MAFOBmtTQoeNx9OrFy.jpg" alt="Pizza" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Marcel Carvalho Jazz Trio</h3>
+                <div class="pg-location"><span class="pin-icon">🔗</span> Instagram</div>
+                <a href="#" class="btn-map">Link</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://t4.ftcdn.net/jpg/06/62/35/99/360_F_662359955_AszwheA7gnW1A3MAFOBmtTQoeNx9OrFy.jpg" alt="Don Durica" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Taliz</h3>
+                <div class="pg-location"><span class="pin-icon">🔗</span> Instagram</div>
+                <a href="#" class="btn-map">Link</a>
+            </div>
+        </div>
+        
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://t4.ftcdn.net/jpg/06/62/35/99/360_F_662359955_AszwheA7gnW1A3MAFOBmtTQoeNx9OrFy.jpg" alt="Mandaka" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">⭐ Sunflower Jams</h3>
+                <div class="pg-location"><span class="pin-icon">🔗</span> Instagram</div>
+                <a href="#" class="btn-map">Link</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://t4.ftcdn.net/jpg/06/62/35/99/360_F_662359955_AszwheA7gnW1A3MAFOBmtTQoeNx9OrFy.jpg" alt="Juca" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Vitrola61</h3>
+                <div class="pg-location"><span class="pin-icon">🔗</span> Instagram</div>
+                <a href="#" class="btn-map">Link</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://t4.ftcdn.net/jpg/06/62/35/99/360_F_662359955_AszwheA7gnW1A3MAFOBmtTQoeNx9OrFy.jpg" alt="Dona Lenha" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Projeto Supernova</h3>
+                <div class="pg-location"><span class="pin-icon">🔗</span> Instagram</div>
+                <a href="#" class="btn-map">Link</a>
+            </div>
+        </div>
+        
+         <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://t4.ftcdn.net/jpg/06/62/35/99/360_F_662359955_AszwheA7gnW1A3MAFOBmtTQoeNx9OrFy.jpg" alt="Vasto" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Bell Lins</h3>
+                <div class="pg-location"><span class="pin-icon">🔗</span> Instagram</div>
+                <a href="#" class="btn-map">Link</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://t4.ftcdn.net/jpg/06/62/35/99/360_F_662359955_AszwheA7gnW1A3MAFOBmtTQoeNx9OrFy.jpg" alt="Espaço das Arvores" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Elton Marques</h3>
+                <div class="pg-location"><span class="pin-icon">🔗</span> Instagram</div>
+                <a href="#" class="btn-map">Link</a>
+            </div>
+        </div>
+   
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://t4.ftcdn.net/jpg/06/62/35/99/360_F_662359955_AszwheA7gnW1A3MAFOBmtTQoeNx9OrFy.jpg" alt="Shopping" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Rock Beats</h3>
+                <div class="pg-location"><span class="pin-icon">🔗</span> Instagram</div>
+                <a href="#" class="btn-map">Link</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://t4.ftcdn.net/jpg/06/62/35/99/360_F_662359955_AszwheA7gnW1A3MAFOBmtTQoeNx9OrFy.jpg" alt="Pontão" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">O Bando</h3>
+                <div class="pg-location"><span class="pin-icon">🔗</span> Instagram</div>
+                <a href="#" class="btn-map">Link</a>
+            </div>
+        </div>
+        
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://t4.ftcdn.net/jpg/06/62/35/99/360_F_662359955_AszwheA7gnW1A3MAFOBmtTQoeNx9OrFy.jpg" alt="Foguetinho" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Mika</h3>
+                <div class="pg-location"><span class="pin-icon">🔗</span> Instagram</div>
+                <a href="#" class="btn-map">Link</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://t4.ftcdn.net/jpg/06/62/35/99/360_F_662359955_AszwheA7gnW1A3MAFOBmtTQoeNx9OrFy.jpg" alt="Aeroporto" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Debora Sasb</h3>
+                <div class="pg-location"><span class="pin-icon">🔗</span> Instagram</div>
+                <a href="#" class="btn-map">Link</a>
+            </div>
+        </div>
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://t4.ftcdn.net/jpg/06/62/35/99/360_F_662359955_AszwheA7gnW1A3MAFOBmtTQoeNx9OrFy.jpg" alt="Ezechias" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Monster Jam</h3>
+                <div class="pg-location"><span class="pin-icon">🔗</span> Instagram</div>
+                <a href="#" class="btn-map">Link</a>
+            </div>
+        </div>      
+
+
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Brasília - Guia de Viagem Brasília. Todos os direitos reservados.</p>
+        <p>Entrar em contato</p>
+    </footer>
+
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+          new google.translate.TranslateElement({
+            pageLanguage: 'pt', 
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            includedLanguages: 'en,es,fr,de,it,zh-CN,ja,ru,ar,hi'
+          }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</body>
+</html>

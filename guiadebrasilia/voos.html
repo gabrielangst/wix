@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voos Internacionais - Brasília (BSB)</title>
+    <style>
+        html { scroll-behavior: smooth; }
+        
+        /* --- ESTILOS GERAIS --- */
+        :root {
+            --bsb-sky: #00AEEF;
+            --bsb-concrete: #f0f0f0;
+            --bsb-text: #333333;
+            --bsb-green: #4CAF50;
+            --bsb-sunset: #FF9800;
+            --bsb-purple: #9C27B0;
+            --bsb-red: #E91E63;
+            --bsb-blue: #2196F3;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--bsb-text);
+            background-color: #f9f9f9;
+            line-height: 1.4; /* Reduzi um pouco o espaçamento das linhas */
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; padding: 0; }
+
+        /* --- CABEÇALHO --- */
+        header {
+            background-color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--bsb-sky);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo img { width: 180px; height: auto; display: block; }
+        #google_translate_element { margin-left: 0 !important; }
+
+        /* --- HERO --- */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px 5%;
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        h1 { font-size: 3rem; margin-bottom: 10px; line-height: 1.2; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); }
+        .subtitle { font-size: 1.3rem; margin-bottom: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.6); }
+
+        .container { padding: 40px 5%; max-width: 1000px; margin: 0 auto; }
+
+        /* --- SEPARADORES DE REGIÃO --- */
+        .region-header {
+            display: flex;
+            align-items: center;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .region-icon { font-size: 1.8rem; margin-right: 15px; }
+        .region-title { font-size: 1.6rem; color: #333; margin: 0; }
+
+        /* --- CARD DE VOO COMPACTO --- */
+        .flight-card {
+            display: flex;
+            background: white;
+            border-radius: 8px; /* Cantos um pouco menos arredondados para ficar mais "sério" */
+            overflow: hidden;
+            margin-bottom: 15px; /* Menos espaço entre os cards */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #eee;
+            
+            /* AQUI MUDOU: Altura bem menor */
+            min-height: 110px; 
+            align-items: center; /* Centraliza tudo verticalmente */
+        }
+
+        .flight-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Imagem Menor */
+        .flight-img-container {
+            width: 160px; /* Mais estreita */
+            height: 100%; /* Ocupa a altura total do card */
+            min-height: 110px; /* Garante altura mínima */
+            flex-shrink: 0;
+            position: relative;
+            background-color: #ddd;
+        }
+
+        .flight-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            position: absolute;
+            top: 0; left: 0;
+        }
+
+        /* Conteúdo Compacto */
+        .flight-content {
+            padding: 15px 20px;
+            flex: 1;
+            display: flex;
+            justify-content: space-between; /* Espalha: Info na esq, Botão na dir */
+            align-items: center;
+            flex-wrap: wrap; /* Permite quebrar linha no celular */
+            gap: 15px;
+        }
+
+        .flight-info-left {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        /* Número do Voo (Índice) */
+        .flight-number {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #e0e0e0;
+            margin-right: 20px;
+            line-height: 1;
+            min-width: 40px;
+        }
+
+        .dest-data { display: flex; flex-direction: column; }
+
+        .dest-name { margin: 0; font-size: 1.3rem; color: var(--bsb-text); line-height: 1.1; font-weight: bold; }
+        .dest-country { font-size: 0.8rem; color: #888; text-transform: uppercase; margin-bottom: 3px; }
+
+        /* Tags Ajustadas */
+        .flight-details {
+            display: flex;
+            gap: 8px;
+            margin-top: 5px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 2px 8px; /* Tags menores */
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .tag-airline { background-color: #E3F2FD; color: #1565C0; border: 1px solid #BBDEFB; }
+        .tag-freq { background-color: #FFF3E0; color: #E65100; border: 1px solid #FFE0B2; }
+
+        /* Botão Compacto */
+        .btn-flight {
+            background-color: transparent;
+            color: var(--bsb-sky);
+            border: 1px solid var(--bsb-sky);
+            padding: 6px 15px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+            white-space: nowrap; /* Não quebra o texto do botão */
+        }
+
+        .btn-flight:hover { background-color: var(--bsb-sky); color: white; }
+
+        /* --- RESPONSIVIDADE --- */
+        @media (max-width: 700px) {
+            .flight-card { flex-direction: column; min-height: auto; align-items: stretch; }
+            .flight-img-container { width: 100%; height: 140px; }
+            .flight-content { flex-direction: column; align-items: flex-start; }
+            .btn-flight { width: 100%; text-align: center; margin-top: 10px; }
+            .flight-number { display: none; /* Esconde o número no celular para economizar espaço */ }
+        }
+
+        /* --- FOOTER --- */
+        footer { background-color: #333; color: #ccc; text-align: center; padding: 40px 20px; font-size: 0.9rem; margin-top: 60px;}
+        .lang-container { display: flex; align-items: center; }
+        .flag-icon { width: 25px; height: auto; margin-right: 8px; border: 1px solid #ccc; border-radius: 2px; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo"> <a href="index.html"><img src="logo_index.png" alt="Guia de Brasília"></a></div>
+        <nav class="lang-container">
+            <img src="https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg" alt="Change Language" class="flag-icon">
+            <div id="google_translate_element"></div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-text">
+            <h1>Voos Internacionais</h1>
+            <p class="subtitle">Conectando Brasília direto ao mundo.</p>            
+        </div>
+    </section>
+
+    <div class="container">
+
+        <div class="region-header" style="border-color: var(--bsb-blue);">
+            <span class="region-icon">🌎</span>
+            <h2 class="region-title" style="color: var(--bsb-blue);">América do Norte & Central</h2>
+        </div>
+
+        <div class="flight-card">
+            <div class="flight-img-container">
+                <img src="https://images.unsplash.com/photo-1535498730771-e735b998cd64?auto=format&fit=crop&w=300&q=80" alt="Miami" class="flight-img">
+            </div>
+            <div class="flight-content">
+                <div class="flight-info-left">
+                    <span class="flight-number">01</span>
+                    <div class="dest-data">
+                        <span class="dest-country">Estados Unidos</span>
+                        <h3 class="dest-name">Miami (MIA)</h3>
+                        <div class="flight-details">
+                            <span class="tag tag-airline">GOL</span>
+                            <span class="tag tag-freq">Diário</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="https://www.google.com/travel/flights?q=Flights+to+MIA+from+BSB" target="_blank" class="btn-flight">Ver Preços</a>
+            </div>
+        </div>
+
+        <div class="flight-card">
+            <div class="flight-img-container">
+                <img src="https://images.unsplash.com/photo-1597466599360-3b9775841aec?auto=format&fit=crop&w=300&q=80" alt="Orlando" class="flight-img">
+            </div>
+            <div class="flight-content">
+                <div class="flight-info-left">
+                    <span class="flight-number">02</span>
+                    <div class="dest-data">
+                        <span class="dest-country">Estados Unidos</span>
+                        <h3 class="dest-name">Orlando (MCO)</h3>
+                        <div class="flight-details">
+                            <span class="tag tag-airline">GOL</span>
+                            <span class="tag tag-freq">Diário</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="https://www.google.com/travel/flights?q=Flights+to+MCO+from+BSB" target="_blank" class="btn-flight">Ver Preços</a>
+            </div>
+        </div>
+
+        <div class="flight-card">
+            <div class="flight-img-container">
+                <img src="https://images.trvl-media.com/place/179995/a32e040e-98f8-4322-aa10-770d06e97a6f.jpg?impolicy=fcrop&w=450&h=280&q=medium" alt="Cancún" class="flight-img">
+            </div>
+            <div class="flight-content">
+                <div class="flight-info-left">
+                    <span class="flight-number">03</span>
+                    <div class="dest-data">
+                        <span class="dest-country">México</span>
+                        <h3 class="dest-name">Cancún (CUN)</h3>
+                        <div class="flight-details">
+                            <span class="tag tag-airline">GOL</span>
+                            <span class="tag tag-freq">2x Semana</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="https://www.google.com/travel/flights?q=Flights+to+CUN+from+BSB" target="_blank" class="btn-flight">Ver Preços</a>
+            </div>
+        </div>
+
+        <div class="flight-card">
+            <div class="flight-img-container">
+                <img src="https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=300&q=80" alt="Panamá" class="flight-img">
+            </div>
+            <div class="flight-content">
+                <div class="flight-info-left">
+                    <span class="flight-number">04</span>
+                    <div class="dest-data">
+                        <span class="dest-country">Panamá</span>
+                        <h3 class="dest-name">C. Panamá (PTY)</h3>
+                        <div class="flight-details">
+                            <span class="tag tag-airline">Copa Airlines</span>
+                            <span class="tag tag-freq">Diário</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="https://www.google.com/travel/flights?q=Flights+to+PTY+from+BSB" target="_blank" class="btn-flight">Ver Preços</a>
+            </div>
+        </div>
+
+
+        <div class="region-header" style="border-color: var(--bsb-red);">
+            <span class="region-icon">💃</span>
+            <h2 class="region-title" style="color: var(--bsb-red);">América do Sul</h2>
+        </div>
+
+        <div class="flight-card">
+            <div class="flight-img-container">
+                <img src="https://images.unsplash.com/photo-1589909202802-8f4aadce1849?auto=format&fit=crop&w=300&q=80" alt="Buenos Aires" class="flight-img">
+            </div>
+            <div class="flight-content">
+                <div class="flight-info-left">
+                    <span class="flight-number">05</span>
+                    <div class="dest-data">
+                        <span class="dest-country">Argentina</span>
+                        <h3 class="dest-name">Buenos Aires</h3>
+                        <div class="flight-details">
+                            <span class="tag tag-airline">GOL</span>
+                            <span class="tag tag-freq">6x Semana</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="https://www.google.com/travel/flights?q=Flights+to+BUE+from+BSB" target="_blank" class="btn-flight">Ver Preços</a>
+            </div>
+        </div>
+
+        <div class="flight-card">
+            <div class="flight-img-container">
+                <img src="https://destinosnotaveis.com.br/wp-content/uploads/2017/10/santiago-chile-5.jpg" alt="Santiago" class="flight-img">
+            </div>
+            <div class="flight-content">
+                <div class="flight-info-left">
+                    <span class="flight-number">06</span>
+                    <div class="dest-data">
+                        <span class="dest-country">Chile</span>
+                        <h3 class="dest-name">Santiago (SCL)</h3>
+                        <div class="flight-details">
+                            <span class="tag tag-airline">Latam</span>
+                            <span class="tag tag-freq">3x Semana</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="https://www.google.com/travel/flights?q=Flights+to+SCL+from+BSB" target="_blank" class="btn-flight">Ver Preços</a>
+            </div>
+        </div>
+
+        <div class="flight-card">
+            <div class="flight-img-container">
+                <img src="https://images.unsplash.com/photo-1531968455001-5c5272a41129?auto=format&fit=crop&w=300&q=80" alt="Lima" class="flight-img">
+            </div>
+            <div class="flight-content">
+                <div class="flight-info-left">
+                    <span class="flight-number">07</span>
+                    <div class="dest-data">
+                        <span class="dest-country">Peru</span>
+                        <h3 class="dest-name">Lima (LIM)</h3>
+                        <div class="flight-details">
+                            <span class="tag tag-airline">Latam</span>
+                            <span class="tag tag-freq">Diário</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="https://www.google.com/travel/flights?q=Flights+to+LIM+from+BSB" target="_blank" class="btn-flight">Ver Preços</a>
+            </div>
+        </div>
+
+        <div class="flight-card">
+            <div class="flight-img-container">
+                <img src="https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=300&q=80" alt="Bogotá" class="flight-img">
+            </div>
+            <div class="flight-content">
+                <div class="flight-info-left">
+                    <span class="flight-number">08</span>
+                    <div class="dest-data">
+                        <span class="dest-country">Colômbia</span>
+                        <h3 class="dest-name">Bogotá (BOG)</h3>
+                        <div class="flight-details">
+                            <span class="tag tag-airline">GOL</span>
+                            <span class="tag tag-freq">3x Semana</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="https://www.google.com/travel/flights?q=Flights+to+BOG+from+BSB" target="_blank" class="btn-flight">Ver Preços</a>
+            </div>
+        </div>
+
+
+        <div class="region-header" style="border-color: var(--bsb-purple);">
+            <span class="region-icon">🇪🇺</span>
+            <h2 class="region-title" style="color: var(--bsb-purple);">Europa</h2>
+        </div>
+
+        <div class="flight-card">
+            <div class="flight-img-container">
+                <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/29/14/db/71/caption.jpg?w=1200&h=-1&s=1" alt="Lisboa" class="flight-img">
+            </div>
+            <div class="flight-content">
+                <div class="flight-info-left">
+                    <span class="flight-number">09</span>
+                    <div class="dest-data">
+                        <span class="dest-country">Portugal</span>
+                        <h3 class="dest-name">Lisboa (LIS)</h3>
+                        <div class="flight-details">
+                            <span class="tag tag-airline">TAP</span>
+                            <span class="tag tag-freq">Diário</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="https://www.google.com/travel/flights?q=Flights+to+LIS+from+BSB" target="_blank" class="btn-flight">Ver Preços</a>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>© 2026 Brasília - Guia de Viagem Brasília. Todos os direitos reservados.</p>
+        <p>Entrar em contato</p>
+    </footer>
+
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+          new google.translate.TranslateElement({
+            pageLanguage: 'pt', 
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            includedLanguages: 'en,es,fr,de,it,zh-CN,ja,ru,ar,hi'
+          }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</body>
+</html>
