@@ -294,24 +294,24 @@
 
     <div class="controls">
         <div class="control-group">
-            <label for="gameSelect">Jogo</label>
+            <label for="gameSelect">Pesquisar por Jogo</label>
             <select id="gameSelect" onchange="filterData()">
                 <option value="all">Todos os Jogos</option>
             </select>
         </div>
 
         <div class="control-group">
-            <label for="typeSelect">Destaque</label>
+            <label for="typeSelect">Pesquisar por Destaque</label>
             <select id="typeSelect" onchange="filterData()">
                 <option value="all">Ver Tudo</option>
                 <option value="star">⭐ Apenas Favoritas</option>
-                <option value="candy">🍭 Apenas Especiais</option>
+                <option value="candy">🍭 Apenas Infantis</option>
                 <option value="none">Sem destaque</option>
             </select>
         </div>
 
         <div class="control-group full-width">
-            <label for="searchInput">Pesquisa</label>
+            <label for="searchInput">Pesquisa por Texto</label>
             <input type="text" id="searchInput" placeholder="Nome da música ou artista..." onkeyup="filterData()">
         </div>
     </div>
