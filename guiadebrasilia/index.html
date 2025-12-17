@@ -279,45 +279,45 @@
             aspect-ratio: 16 / 9; /* Mantém o formato retangular do YouTube moderno */
         }
 
-        /* --- CUSTOMIZAÇÃO GOOGLE TRANSLATE --- */
-        /* 1. Remove a moldura cinza padrão e o fundo */
-        .goog-te-gadget-simple {
+        /* --- GOOGLE TRANSLATE: SOLUÇÃO DEFINITIVA --- */
+
+        /* 1. Oculta todo o conteúdo original dentro do widget */
+        #google_translate_element .goog-te-gadget-simple {
             background-color: transparent !important;
             border: none !important;
             padding: 0 !important;
-            font-size: 14px !important; /* Ajuste o tamanho da fonte aqui */
-            display: inline-block;
+            font-size: 0 !important; /* Mata qualquer texto solto */
+            display: inline-flex !important;
+            align-items: center;
             cursor: pointer;
         }
 
-        /* 2. Oculta o ícone colorido do Google (o "G") para economizar espaço */
+        /* 2. Força o desaparecimento dos textos internos e ícones */
+        #google_translate_element .goog-te-gadget-simple > span,
+        #google_translate_element .goog-te-menu-value,
+        #google_translate_element .goog-te-menu-value span {
+            display: none !important; /* Remove tudo do fluxo da página */
+        }
+
+        /* 3. Oculta o ícone "G" do Google se ele ainda estiver lá */
         .goog-te-gadget-icon {
             display: none !important;
         }
 
-        /* 3. Oculta o texto original "Selecione o idioma" */
-        .goog-te-menu-value span:first-child {
-            display: none;
+        /* 4. Cria uma NOVA setinha usando CSS puro */
+        #google_translate_element .goog-te-gadget-simple::after {
+            content: '▼';         /* Caractere da seta */
+            font-size: 10px !important;
+            color: var(--bsb-text) !important; /* Cor cinza escura */
+            margin-left: 2px;
+            display: block !important;
+            opacity: 0.7;
         }
 
-        /* 4. Insere o novo texto "Idioma" antes da setinha */
-        .goog-te-menu-value::before {
-            content: "Idioma";  /* O texto que você quer */
-            color: var(--bsb-text); /* Usa a cor do seu texto padrão */
-            font-family: inherit;
-            vertical-align: middle;
-            margin-right: 4px;
-        }
-
-        /* 5. Ajustes finos na setinha e separadores para ficar limpo */
-        .goog-te-menu-value span:nth-child(3) {
-            border: none !important; /* Remove a barra vertical separadora */
-        }
-
-        /* Opcional: Efeito hover para indicar que é clicável */
-        .goog-te-gadget-simple:hover .goog-te-menu-value::before {
-            color: var(--bsb-sky);
-            text-decoration: underline;
+        /* Efeito hover na nova setinha */
+        #google_translate_element .goog-te-gadget-simple:hover::after {
+            color: var(--bsb-sky) !important;
+            opacity: 1;
         }
 
     </style>
