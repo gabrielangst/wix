@@ -320,6 +320,39 @@
             opacity: 1;
         }
 
+        /* --- BOTÃO DISCRETO (TOPO) --- */
+        .top-action-bar {
+            text-align: center;
+            padding: 10px 0;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #eee;
+        }
+
+        .btn-scroll-down {
+            font-size: 0.9rem;            
+            color: #666;
+            text-decoration: none;
+            border: 1px solid #ccc;
+            padding: 5px 15px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background-color: #ebf8ff;
+        }
+
+        .btn-scroll-down:hover {
+            background-color: var(--bsb-sky);
+            color: white;
+            border-color: var(--bsb-sky);
+        }
+
+        /* Ajuste para a seção de notícias ficar bonita fora do grid */
+        .news-container {
+            padding: 40px 5% 0 5%; /* Padding ajustado */
+        }
+
     </style>
 </head>
 <body>
@@ -332,29 +365,53 @@
         </nav>
     </header>
 
-    <section class="hero">
-        <div class="hero-text">
-            <h1>Guia de Brasília<br> Travel Guide</h1>
-            <p class="subtitle">O guia definitivo da arquitetura ao céu do planalto. Disponível em versão física e digital.</p>
-            
-            <a href="https://clubedeautores.com.br/livro/brasilia-guia-de-viagem" target="_blank" class="btn btn-primary">Livro Físico</a>
-            <a href="livros_pdf/Brasilia_Guia_de_Viagem.pdf" target="_blank" class="btn btn-outline">PDF Download</a>
-           <br>
-            <a href="https://clubedeautores.com.br/livro/brasilia-travel-guide" target="_blank" class="btn btn-primary">English Book</a>
-            <a href="livros_pdf/Brasilia_Travel_Guide.pdf" target="_blank" class="btn btn-outline">English e-Book</a>
-        </div>
-        <div class="hero-img">
-            <img src="Capa_Livro.jpg" alt="Capa do Guia de Brasília" class="book-cover">
-        </div>
-    </section>
+    <div class="top-action-bar">
+        <a href="#livro-guia" class="btn-scroll-down">
+          📙⬇️ Download do Guia de Brasília
+        </a>
+    </div>
 
-    <div class="container">
-        <h2 class="section-title">Explore a Cidade</h2>        
+    <div class="news-container">
+        <div class="card" style="background: white; border: 1px solid #eee;">
+            <div style="padding: 25px;">
+                <h3 style="color: var(--bsb-sky); margin-top: 0; font-size: 1.8rem;">📰 Novidades em Brasília</h3>             
+                
+                <ul class="news-list">
+                    <li>
+                        <img src="https://cdn.jornaldebrasilia.com.br/wp-content/uploads/2025/12/08152829/8.12.-Nosso-Natal.-Foto-Divulgacao-Secec-DF2-620x620.jpg" alt="Natal" class="news-thumb">
+                        <div class="news-content">
+                            <a href="https://www.agenciabrasilia.df.gov.br/w/nosso-natal-2025-tem-abertura-nesta-segunda-8-as-19h-na-esplanada-dos-ministerios" target="_blank">Início da programação de Natal em Brasília</a>
+                            <span>08/dezembro/2025</span>
+                        </div>
+                    </li>
+                    <li>
+                        <img src="https://distritodoesporte.com/wp-content/uploads/WhatsApp-Image-2024-10-01-at-18.41.53.jpeg" alt="Brasília Basquete" class="news-thumb">
+                        <div class="news-content">
+                            <a href="https://www.metropoles.com/esportes/brasilia-basquete-apresenta-equipe-em-busca-do-tetra-do-nbb" target="_blank">Brasília Basquete estreia no NBB em poucos dias</a>
+                            <span>23/setembro/2025</span>
+                        </div>
+                    </li>
+                    <li>
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRiKwRlNmV7vqcEO0CFPnyujNXn9h8KTev6MQ&s" alt="Roma" class="news-thumb">
+                        <div class="news-content">
+                            <a href="https://passageirodeprimeira.com/brasilia-pode-ganhar-voo-direto-para-roma-a-partir-de-2026/" target="_blank">Brasília deve ganhar voo direto para Roma em 2026</a>
+                            <span>04/setembro/2025</span>
+                        </div>
+                    </li>
+                     <li>
+                        <img src="https://www.agenciabrasilia.df.gov.br/documents/d/guest/onibus_setur-jpeg" alt="Natal" class="news-thumb">
+                        <div class="news-content">
+                            <a href="https://www.agenciabrasilia.df.gov.br/2025/04/17/city-tour-civico-resgata-a-beleza-a-historia-e-a-essencia-de-brasilia/" target="_blank">Começa a funcionar o City Tour de Brasília</a>
+                            <span>25/abril/2025</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" style="padding-top: 40px;"> <h2 class="section-title">Explore a Cidade</h2>        
         <div class="grid">                     
-           <!-- <a href="#noticias" class="card card-tile" style="background-image: url('https://static.todamateria.com.br/upload/jo/rn/jornais-cke.jpg');">
-                <span>📰 Novidades</span>
-            </a>-->
-            
             <a href="audioguias/index.html" class="card card-tile" style="background-image: url('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80');">
                 <span>🎧 Audioguias</span>
             </a>
@@ -378,88 +435,24 @@
             <a href="#promo-gastronomia" class="card card-tile" style="background-image: url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80');">
                 <span>🍽️ Gastronomia</span>
             </a>
-
-            <div class="card featured" id="noticias">
-                <h3>📰 Novidades em Brasília</h3>             
-                
-                <ul class="news-list">
-                    
-                    <li>
-                    <!-- Imagem --><img src="https://cdn.jornaldebrasilia.com.br/wp-content/uploads/2025/12/08152829/8.12.-Nosso-Natal.-Foto-Divulgacao-Secec-DF2-620x620.jpg" alt="Natal" class="news-thumb">
-                        <div class="news-content">
-                    <!-- Link da Notícia --><a href="https://www.agenciabrasilia.df.gov.br/w/nosso-natal-2025-tem-abertura-nesta-segunda-8-as-19h-na-esplanada-dos-ministerios" target="_blank">
-                    <!-- Título --> Início da programação de Natal em Brasília</a>
-                    <!-- Data --> <span>08/dezembro/2025</span>
-                        </div>
-                    </li>
-
-                    <li>
-                        <img src="https://distritodoesporte.com/wp-content/uploads/WhatsApp-Image-2024-10-01-at-18.41.53.jpeg" alt="Brasília Basquete" class="news-thumb">
-                        <div class="news-content">
-                            <a href="https://www.metropoles.com/esportes/brasilia-basquete-apresenta-equipe-em-busca-do-tetra-do-nbb" target="_blank">Brasília Basquete estreia no NBB em poucos dias</a>
-                            <span>23/setembro/2025</span>
-                        </div>
-                    </li>
-
-                    <li>
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRiKwRlNmV7vqcEO0CFPnyujNXn9h8KTev6MQ&s" alt="Roma" class="news-thumb">
-                        <div class="news-content">
-                            <a href="https://passageirodeprimeira.com/brasilia-pode-ganhar-voo-direto-para-roma-a-partir-de-2026/" target="_blank">Brasília deve ganhar voo direto para Roma em 2026</a>
-                            <span>04/setembro/2025</span>
-                        </div>
-                    </li>
-
-                    <li>
-                    <!-- Imagem --><img src="https://www.agenciabrasilia.df.gov.br/documents/d/guest/onibus_setur-jpeg" alt="Natal" class="news-thumb">
-                        <div class="news-content">
-                    <!-- Link da Notícia --><a href="https://www.agenciabrasilia.df.gov.br/2025/04/17/city-tour-civico-resgata-a-beleza-a-historia-e-a-essencia-de-brasilia/" target="_blank">
-                    <!-- Título --> Começa a funcionar o City Tour de Brasília</a>
-                    <!-- Data --> <span>25/abril/2025</span>
-                        </div>
-                    </li>
-
-                    <li>
-                    <!-- Imagem -->
-                     <img src="https://dicasdacapital.com.br/wp-content/uploads/2025/06/Revitalizacao-do-Teatro-Nacional-Claudio-Santoro-80-concluida.jpg" alt="Natal" class="news-thumb">
-                        <div class="news-content">
-                    <!-- Link da Notícia -->
-                     <a href="https://www.cnnbrasil.com.br/entretenimento/apos-10-anos-teatro-nacional-de-brasilia-reabre-com-show-para-operarios-veja-fotos/" target="_blank">
-                    <!-- Título --> Teatro Nacional reabre após 10 anos</a>
-                    <!-- Data --> <span>21/dezembro/2024</span>
-                        </div>
-                    </li>
-
-                    <li>
-                    <!-- Imagem -->
-                     <img src="https://s2-ge.glbimg.com/qrkOYxBfH9wNIxdRABo_QKuQkG0=/0x0:3500x2335/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_bc8228b6673f488aa253bbcb03c80ec5/internal_photos/bs/2024/H/h/jAJDYiRwmTp1zrOZrfCw/000-34rn6jz.jpg" alt="Natal" class="news-thumb">
-                        <div class="news-content">
-                    <!-- Link da Notícia -->
-                     <a href="https://ge.globo.com/futebol/copa-do-mundo-feminina/noticia/2024/05/17/brasil-sera-sede-da-copa-do-mundo-feminina-de-2027.ghtml" target="_blank">
-                    <!-- Título --> Com jogos em Brasília, o Brasil sediará a Copa do Mundo Feminina de Futebol em 2027</a>
-                    <!-- Data --> <span>24/junho/2024</span>
-                        </div>
-                    </li>
-
-                    <li>
-                    <!-- Imagem -->
-                     <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/12/45/6f/fachada-com-jardim.jpg?w=1200&h=-1&s=1" alt="Natal" class="news-thumb">
-                        <div class="news-content">
-                    <!-- Link da Notícia -->
-                     <a href="https://noticias.uol.com.br/ultimas-noticias/agencia-estado/2024/01/14/palacio-do-planalto-e-reaberto-para-visitacao-apos-tres-anos.htm" target="_blank">
-                    <!-- Título --> Visitas ao Palácio do Planalto retornaram. O agendamento deve ser feito pelo site</a>
-                    <!-- Data --> <span>14/janeiro/2024</span>
-                        </div>
-                    </li>
-
-                    <!-- Botão "Carregar mais notícias" -->
-                    <!-- <li style="border:none; padding-top:10px; justify-content: center;">
-                        <a href="#" class="btn btn-primary" style="width: 100%;">Ver todas as notícias</a>
-                    </li> -->
-                </ul>
             </div>
-
-        </div>
     </div>
+
+    <section class="hero" id="livro-guia" style="border-top: 1px solid #eee;">
+        <div class="hero-text">
+            <h1>Guia de Brasília<br> Travel Guide</h1>
+            <p class="subtitle">O guia definitivo da arquitetura ao céu do planalto. Disponível em versão física e digital.</p>
+            
+            <a href="https://clubedeautores.com.br/livro/brasilia-guia-de-viagem" target="_blank" class="btn btn-primary">Livro Físico</a>
+            <a href="livros_pdf/Brasilia_Guia_de_Viagem.pdf" target="_blank" class="btn btn-outline">PDF Download</a>
+           <br>
+            <a href="https://clubedeautores.com.br/livro/brasilia-travel-guide" target="_blank" class="btn btn-primary">English Book</a>
+            <a href="livros_pdf/Brasilia_Travel_Guide.pdf" target="_blank" class="btn btn-outline">English e-Book</a>
+        </div>
+        <div class="hero-img">
+            <img src="Capa_Livro.jpg" alt="Capa do Guia de Brasília" class="book-cover">
+        </div>
+    </section>
 
     <div class="video-wrapper">
         <iframe width="560" height="315" src="https://www.youtube.com/embed/IZLf0AnWzOg?si=vT9V8bpkhzUb4i3Z" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -489,4 +482,3 @@
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 </body>
-</html>
