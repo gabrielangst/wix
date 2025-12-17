@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Catálogo Just Dance</title>
+    <style>
+        :root {
+            --primary-color: #6200ea;
+            --secondary-color: #00d2ff;
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+            --card-bg: #fff;
+            --star-bg: #fffde7;
+            --candy-bg: #fff0f5;
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+            padding-bottom: 50px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-top: 10px;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+
+        /* --- Controles --- */
+        .controls {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .control-group.full-width {
+            flex-basis: 100%;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.85em;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background-color: #fff;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='gray' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(98, 0, 234, 0.1);
+        }
+
+        #countDisplay {
+            text-align: right;
+            margin-bottom: 10px;
+            color: #777;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        /* --- Tabela --- */
+        .results-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: transparent;
+        }
+
+        .results-table thead {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .results-table th {
+            padding: 15px;
+            text-align: left;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .results-table th:first-child { border-top-left-radius: var(--border-radius); }
+        .results-table th:last-child { border-top-right-radius: var(--border-radius); }
+
+        .results-table tbody tr {
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            transition: transform 0.2s;
+        }
+
+        .results-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        /* Cores de Destaque */
+        tr.highlight-star { background-color: var(--star-bg) !important; }
+        tr.highlight-star td:first-child { border-left: 4px solid #ffd700; }
+
+        tr.highlight-candy { background-color: var(--candy-bg) !important; }
+        tr.highlight-candy td:first-child { border-left: 4px solid #ff69b4; }
+
+        .game-tag {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #eee;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* Colunas Específicas */
+        .icon-col { font-size: 1.2em; text-align: center; width: 40px; }
+        .num-col { text-align: center; width: 40px; color: #888; font-weight: bold; }
+
+        /* --- MOBILE --- */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .controls { padding: 15px; gap: 10px; top: 0; }
+            h1 { font-size: 1.5rem; margin-bottom: 15px; }
+
+            .results-table thead { display: none; }
+            .results-table, .results-table tbody, .results-table tr, .results-table td {
+                display: block; width: 100%;
+            }
+
+            .results-table tr {
+                margin-bottom: 15px;
+                border-radius: var(--border-radius);
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                border: 1px solid #eee;
+                position: relative; /* Necessário para posicionar o número */
+            }
+
+            .results-table td {
+                padding: 8px 15px;
+                text-align: right;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid #f9f9f9;
+            }
+
+            .results-table td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                color: #888;
+                font-size: 0.8em;
+                text-transform: uppercase;
+                margin-right: 10px;
+            }
+
+            .results-table td.icon-col {
+                text-align: left;
+                background-color: rgba(0,0,0,0.02);
+                padding: 5px 15px;
+                justify-content: flex-start;
+            }
+
+            /* Estilo especial para o número no mobile */
+            .results-table td.num-col {
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                width: auto;
+                border: none;
+                font-size: 0.8em;
+                color: #ccc;
+                padding: 0;
+            }
+            .results-table td.num-col::before { content: "#"; margin-right: 2px; }
+
+            .results-table td[data-label="Música"] {
+                font-size: 1.1em;
+                color: var(--primary-color);
+                padding-top: 15px;
+            }
+            .control-group { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>💃 Catálogo Just Dance 🕺</h1>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="gameSelect">Jogo</label>
+            <select id="gameSelect" onchange="filterData()">
+                <option value="all">Todos os Jogos</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="typeSelect">Destaque</label>
+            <select id="typeSelect" onchange="filterData()">
+                <option value="all">Ver Tudo</option>
+                <option value="star">⭐ Apenas Favoritas</option>
+                <option value="candy">🍭 Apenas Especiais</option>
+                <option value="none">Sem destaque</option>
+            </select>
+        </div>
+
+        <div class="control-group full-width">
+            <label for="searchInput">Pesquisa</label>
+            <input type="text" id="searchInput" placeholder="Nome da música ou artista..." onkeyup="filterData()">
+        </div>
+    </div>
+
+    <div id="countDisplay">Carregando...</div>
+
+    <table class="results-table">
+        <thead>
+            <tr>
+                <th class="icon-col">★</th>
+                <th class="num-col">#</th>
+                <th>Música</th>
+                <th>Artista</th>
+                <th>Jogo</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    const rawData = `
+	Just Dance 3	California Gurls	Katy Perry featuring Snoop Dogg
+⭐	Just Dance 3	Take On Me	a-ha
+	Just Dance 3	Pump It	The Black Eyed Peas
+🍭	Just Dance 3	Lollipop	MIKA
+	Just Dance 3	Promiscuous	Nelly Furtado featuring Timbaland
+	Just Dance 3	Baby One More Time*	Britney Spears
+⭐	Just Dance 3	Price Tag	Jessie J featuring B.o.B.
+	Just Dance 3	I Don’t Feel Like Dancin’	Scissor Sisters
+	Just Dance 3	Marcia Baila (PAL)	Les Rita Mitsouko
+	Just Dance 3	Barbra Streisand	Duck Sauce
+	Just Dance 3	Venus	Bananarama
+	Just Dance 3	No Limit	2 Unlimited
+⭐	Just Dance 3	Dynamite	Taio Cruz
+	Just Dance 3	Teenage Dream (BBE)	Katy Perry
+	Just Dance 3	Only Girl (In The World) (TZ)	Rihanna
+	Just Dance 3	Forget You	CeeLo Green
+	Just Dance 3	Jump (For My Love)	Girls Aloud
+	Just Dance 3	Gonna Make You Sweat (Everybody Dance Now)*	C+C Music Factory feat. Freedom Williams
+	Just Dance 3	What You Waiting For?	Gwen Stefani
+	Just Dance 3	Crazy Little Thing Called Love	Queen
+	Just Dance 3	Think*	Aretha Franklin
+	Just Dance 3	Boogie Wonderland*	Earth, Wind & Fire feat. The Emotions
+	Just Dance 3	Hey Boy Hey Girl	The Chemical Brothers
+	Just Dance 3	E.T. (BBE)	Katy Perry
+	Just Dance 3	Boom	MC Magico and Alex Wilson
+	Just Dance 3	Da Funk	Daft Punk
+	Just Dance 3	I Feel Love	Donna Summer
+	Just Dance 3	Dance All Nite	Anja
+	Just Dance 3	Spectronizer	Sentai Express
+	Just Dance 3	Party Rock Anthem	LMFAO featuring Lauren Bennett and GoonRock
+	Just Dance 3	Are You Gonna Go My Way	Lenny Kravitz
+	Just Dance 3	Land Of 1000 Dances	Wilson Pickett
+	Just Dance 3	She’s Got Me Dancing	Tommy Sparks
+	Just Dance 3	Jamaican Dance (X360)	Konshens
+	Just Dance 3	Let's Go To The Mall	Cobie Smulders
+	Just Dance 3	Night Boat To Cairo	Madness
+	Just Dance 3	I'm So Excited	The Pointer Sisters
+	Just Dance 3	Video Killed the Radio Star	The Buggles
+	Just Dance 3	Kurio ko uddah le jana	Lata Mangeshkar and S. P. Balasubrahmanyam (Bollywood Rainbow)
+	Just Dance 3	Giddy on Up (Giddy on Out)	Laura Bell Bundy
+	Just Dance 3	I Was Made For Lovin' You	Kiss
+	Just Dance 3	Tightrope (Solo Version)	Janelle Monae
+⭐	Just Dance 3	Airplanes (TZ)	B.o.B. ft. Hayley Williams of Paramore
+	Just Dance 3	Beautiful Liar*	Beyoncé and Shakira
+	Just Dance 3	Apache (Jump On It)	The Sugarhill Gang
+	Just Dance 3	Pata Pata*	Miriam Makeba
+	Just Dance 3	Satellite (PAL)	Lena Meyer-Landrut
+	Just Dance 3	Somethin’ Stupid	Robbie Williams and Nicole Kidman
+	Just Dance 3	This is Halloween	Danny Elfman
+	Just Dance 3	Jambo Mambo (PS3)	Ole Orquesta
+	Just Dance 3	Baby Don’t Stop Now (PS3)	Anja
+	Just Dance 3	Twist and Shake It (PS3)	Ben Wheeler and Tara Chinn
+	Just Dance 3	Soul Searchin’ (PS3)	Groove Century
+	Just Dance 2016	All About That Bass	Meghan Trainor
+	Just Dance 2016	No Control	One Direction
+	Just Dance 2016	I Gotta Feeling	The Black Eyed Peas
+	Just Dance 2016	Fancy	Iggy Azalea ft. Charli XCX
+	Just Dance 2016	These Boots Are Made For Walking*	Nancy Sinatra
+	Just Dance 2016	Animals	Martin Garrix
+	Just Dance 2016	Uptown Funk	Mark Ronson ft. Bruno Mars
+	Just Dance 2016	Balkan Blast Remix	Angry Birds
+	Just Dance 2016	Heartbeat Song	Kelly Clarkson
+	Just Dance 2016	Hey Mama	David Guetta ft. Nicki Minaj, Bebe Rexha & Afrojack
+	Just Dance 2016	Ievan Polkka	Hatsune Miku
+	Just Dance 2016	The Choice Is Yours	Darius Dante Van Dijk
+	Just Dance 2016	Fun	Pitbull ft. Chris Brown
+	Just Dance 2016	William Tell Overture	Rossini
+⭐	Just Dance 2016	Lights	Ellie Goulding
+	Just Dance 2016	Chiwawa	Wanko Ni Mero Mero
+	Just Dance 2016	You Never Can Tell*	Chuck Berry
+	Just Dance 2016	Born This Way	Lady Gaga
+	Just Dance 2016	Kaboom Pow	Nikki Yanofsky
+	Just Dance 2016	When The Rain Begins To Fall*	Jermaine Jackson and Pia Zadora
+	Just Dance 2016	Same Old Love	Selena Gomez
+⭐	Just Dance 2016	Cool For The Summer	Demi Lovato
+	Just Dance 2016	Want To Want Me	Jason Derulo
+🍭	Just Dance 2016	Under the Sea*	Samuel E. Wright
+	Just Dance 2016	This Is How We Do	Katy Perry
+⭐	Just Dance 2016	Hit The Road Jack*	Ray Charles
+	Just Dance 2016	Junto a Ti	Martina Stoessel & Lodovica Comello (Disney’s "Violetta")
+⭐	Just Dance 2016	Blame	Calvin Harris ft. John Newman
+	Just Dance 2016	Irish Meadow Dance	O'Callaghan’s Orchestra
+	Just Dance 2016	Rabiosa	Shakira ft. El Cata
+	Just Dance 2016	Circus	Britney Spears
+	Just Dance 2016	You’re The One That I Want*	John Travolta & Olivia Newton-John
+	Just Dance 2016	Hangover (BaBaBa)	Buraka Som Sistema
+	Just Dance 2016	I’m An Albatraoz	AronChupa
+	Just Dance 2016	Kool Kontact	Glorious Black Belts
+	Just Dance 2016	Teacher	Nick Jonas
+	Just Dance 2016	Stuck On A Feeling	Prince Royce
+	Just Dance 2016	Boys (Summertime Love)*	Sabrina Salerno (The Lemon Cubes)
+	Just Dance 2016	Drop the Mambo	Diva Carmina
+	Just Dance 2016	Gibberish	MAX
+	Just Dance 2016	Copacabana*	Barry Manilow (Frankie Bostello)
+	Just Dance 2016	Let’s Groove*	Earth, Wind & Fire (Equinox Stars)
+	Just Dance 2016	Stadium Flow	Imposs
+	Just Dance 2016	Smile (Улыбайся) (RU)	IOWA
+	Just Dance 2014	Kiss You	One Direction
+	Just Dance 2014	Just Dance	Lady Gaga Ft. Colby O’ Donis
+	Just Dance 2014	Careless Whisper	George Michael
+	Just Dance 2014	C’mon	Ke$ha
+	Just Dance 2014	She Wolf (Falling to Pieces)	David Guetta Ft. Sia
+⭐	Just Dance 2014	Flashdance... What A Feeling*	Irene Cara
+	Just Dance 2014	Prince Ali*	Robin Williams
+⭐	Just Dance 2014	Get Lucky	Daft Punk Ft. Pharrell Williams
+	Just Dance 2014	Wild	Jessie J ft. Big Sean
+	Just Dance 2014	Gentleman	PSY
+	Just Dance 2014	Blurred Lines	Robin Thicke ft. Pharrell Williams
+🍭	Just Dance 2014	Ghostbusters	Ray Parker Jr.
+⭐	Just Dance 2014	I Will Survive	Gloria Gaynor
+	Just Dance 2014	#thatPOWER	will.i.am Ft. Justin Bieber
+	Just Dance 2014	Limbo	Daddy Yankee
+	Just Dance 2014	The Way	Ariana Grande Ft. Mac Miller
+	Just Dance 2014	Pound The Alarm	Nicki Minaj
+	Just Dance 2014	Love Boat*	Jack Jones
+⭐	Just Dance 2014	Troublemaker	Olly Murs Ft. Flo Rida
+	Just Dance 2014	Applause	Lady Gaga
+	Just Dance 2014	Blame It on the Boogie*	Mick Jackson
+	Just Dance 2014	Feel So Right	Imposs ft. Konshens
+🍭	Just Dance 2014	In the Summertime	Mungo Jerry
+	Just Dance 2014	Fine China	Chris Brown
+	Just Dance 2014	Just A Gigolo	Louis Prima
+	Just Dance 2014	Where Have You Been	Rihanna
+	Just Dance 2014	María	Ricky Martin
+	Just Dance 2014	Gimme! Gimme! Gimme! (A Man After Midnight)	ABBA
+	Just Dance 2014	Moskau*	Dschinghis Khan
+	Just Dance 2014	Feel This Moment	Pitbull Ft. Christina Aguilera
+	Just Dance 2014	Follow the Leader	Wisin & Yandel Ft. Jennifer Lopez
+⭐	Just Dance 2014	Y.M.C.A.	Village People
+	Just Dance 2014	Turn Up the Love	Far East Movement Ft. Cover Drive
+	Just Dance 2014	Could You Be Loved	Bob Marley
+	Just Dance 2014	Starships	Nicki Minaj
+	Just Dance 2014	99 Luftballons*	NENA (Rutschen Planeten)
+	Just Dance 2014	Candy	Robbie Williams
+⭐	Just Dance 2014	I Kissed a Girl	Katy Perry
+	Just Dance 2014	Isidora	Bog Bog Orkestar
+	Just Dance 2014	Rich Girl	Gwen Stefani Ft. Eve
+	Just Dance 2014	It’s You	Duck Sauce
+	Just Dance 2014	Aquarius/Let the Sunshine In*	The 5th Dimension
+	Just Dance 2014	Miss Understood	Sammie
+	Just Dance 2014	Nitro Bot	Sentai Express
+	Just Dance 2014	The Other Side (N)	Jason Derulo
+	Just Dance 2014	Dançando (N)	Ivete Sangalo
+	Just Dance 2014	Danse (Pop Version) (P)	Tal
+	Just Dance 2014	Alfonso Signorini (Eroe Nazionale) (P)	Fedez
+⭐	Just Dance 2014	Safe And Sound (C)	Capital Cities
+	Just Dance 2014	Waking Up in Vegas (C)	Katy Perry
+	Just Dance 2015	Problem	Ariana Grande ft. Iggy Azalea & Big Sean
+	Just Dance 2015	Happy	Pharrell Williams
+	Just Dance 2015	The Fox (What Does The Fox Say?)	Ylvis
+	Just Dance 2015	Love Me Again	John Newman
+	Just Dance 2015	Dark Horse	Katy Perry
+	Just Dance 2015	Love Is All*	Roger Glover & the Butterfly Ball
+⭐	Just Dance 2015	Me And My Broken Heart	Rixton
+	Just Dance 2015	I Love It	Icona Pop ft. Charli XCX
+	Just Dance 2015	Tetris*	Hirokazu Tanaka
+	Just Dance 2015	Walk This Way	Run DMC & Aerosmith
+🍭	Just Dance 2015	Let It Go*	Idina Menzel
+	Just Dance 2015	Built For This	Becky G
+⭐	Just Dance 2015	Bailando	Enrique Iglesias ft. Descemer Bueno and Gente de Zona
+	Just Dance 2015	Summer	Calvin Harris
+	Just Dance 2015	Don’t Worry Be Happy*	Bobby McFerrin
+⭐	Just Dance 2015	Macarena*	Los Del Rio
+	Just Dance 2015	Black Widow	Iggy Azalea ft. Rita Ora
+⭐	Just Dance 2015	Ain’t No Mountain High Enough	Marvin Gaye & Tammi Terrell
+	Just Dance 2015	Get Low	Dillon Francis ft. DJ Snake
+	Just Dance 2015	Bang Bang	Jessie J ft. Ariana Grande & Nicki Minaj
+	Just Dance 2015	Fatima	Sylvain Lux & llan Abou
+	Just Dance 2015	Holding Out for a Hero	Bonnie Tyler
+	Just Dance 2015	Birthday	Katy Perry
+	Just Dance 2015	Only You (And You Alone)*	The Platters
+	Just Dance 2015	Diamonds	Rihanna
+	Just Dance 2015	She Looks So Perfect	5 Seconds Of Summer
+	Just Dance 2015	XMas Tree	Bollywood Santa
+	Just Dance 2015	Best Song Ever	One Direction
+	Just Dance 2015	Bad Romance	Lady Gaga
+	Just Dance 2015	Never Can Say Goodbye	Gloria Gaynor
+	Just Dance 2015	You Spin Me Round (Like a Record)	Dead or Alive
+	Just Dance 2015	4x4	Miley Cyrus
+	Just Dance 2015	Epic Sirtaki	The Bouzouki’s
+	Just Dance 2015	It’s My Birthday	will.i.am ft. Cody Wise
+⭐	Just Dance 2015	Burn	Ellie Goulding
+	Just Dance 2015	Mahna Mahna*	Piero Umiliani
+	Just Dance 2015	Speedy Gonzalez*	David Dante
+⭐	Just Dance 2015	Maps	Maroon 5
+	Just Dance 2015	You’re On My Mind	Imposs ft. J. Perry
+	Just Dance 2015	Addicted To You	Avicii
+	Just Dance 2015	Till I Find You	Austin Mahone
+	Just Dance 2015	Papaoutai	Stromae
+	Just Dance 2015	Movement is Happiness (Find Your Thing)	Avishay Goren & Yossi Cohen
+	Just Dance 2015	Nitro Bot	Sentai Express
+    `;
+
+    let songs = [];
+
+    function parseData() {
+        const lines = rawData.trim().split('\n');
+        
+        songs = lines.map(line => {
+            const parts = line.split('\t');
+            
+            // Lógica de correção para linhas sem marcador explícito
+            let marker, game, title, artist;
+
+            // Se tiver apenas 3 partes, assume que a primeira coluna (marcador) está faltando
+            if (parts.length === 3) {
+                marker = "";
+                game = parts[0].trim();
+                title = parts[1].trim();
+                artist = parts[2].trim();
+            } else {
+                // Caso padrão: 4 colunas (Marcador | Jogo | Música | Artista)
+                marker = parts[0].trim();
+                game = parts[1] ? parts[1].trim() : "";
+                title = parts[2] ? parts[2].trim() : "";
+                artist = parts[3] ? parts[3].trim() : "";
+            }
+
+            return { marker, game, title, artist };
+        }).filter(item => item.title !== "");
+
+        populateGameDropdown();
+        filterData();
+    }
+
+    function populateGameDropdown() {
+        const games = [...new Set(songs.map(s => s.game))].sort();
+        const select = document.getElementById('gameSelect');
+        
+        games.forEach(game => {
+            if(game) {
+                const option = document.createElement('option');
+                option.value = game;
+                option.innerText = game;
+                select.appendChild(option);
+            }
+        });
+    }
+
+    function filterData() {
+        const gameFilter = document.getElementById('gameSelect').value;
+        const typeFilter = document.getElementById('typeSelect').value;
+        const textFilter = document.getElementById('searchInput').value.toLowerCase();
+        
+        const filteredSongs = songs.filter(song => {
+            const matchesGame = (gameFilter === 'all') || (song.game === gameFilter);
+            const matchesText = song.title.toLowerCase().includes(textFilter) || 
+                                song.artist.toLowerCase().includes(textFilter);
+            
+            let matchesType = true;
+            if (typeFilter === 'star') matchesType = song.marker.includes('⭐');
+            else if (typeFilter === 'candy') matchesType = song.marker.includes('🍭');
+            else if (typeFilter === 'none') matchesType = song.marker === '';
+
+            return matchesGame && matchesText && matchesType;
+        });
+
+        renderTable(filteredSongs);
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('tableBody');
+        const countDisplay = document.getElementById('countDisplay');
+        tbody.innerHTML = '';
+
+        countDisplay.innerText = `${data.length} músicas encontradas`;
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px; color: #888;">Nenhuma música encontrada com esses filtros.</td></tr>';
+            return;
+        }
+
+        data.forEach((song, index) => {
+            const tr = document.createElement('tr');
+            
+            if (song.marker.includes('⭐')) tr.classList.add('highlight-star');
+            else if (song.marker.includes('🍭')) tr.classList.add('highlight-candy');
+
+            // Adicionado coluna de numeração (index + 1)
+            tr.innerHTML = `
+                <td class="icon-col" data-label="Status">${song.marker}</td>
+                <td class="num-col" data-label="Nº">${index + 1}</td>
+                <td data-label="Música"><strong>${song.title}</strong></td>
+                <td data-label="Artista">${song.artist}</td>
+                <td data-label="Jogo"><span class="game-tag">${song.game}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    window.onload = parseData;
+
+</script>
+
+</body>
+</html>
