@@ -158,19 +158,21 @@
             color: #555;
         }
 
-        /* Colunas Específicas */
         .icon-col { font-size: 1.2em; text-align: center; width: 40px; }
         .num-col { text-align: center; width: 40px; color: #888; font-weight: bold; }
 
-        /* --- MOBILE --- */
+        /* --- MOBILE (Correções Específicas) --- */
         @media (max-width: 600px) {
             body { padding: 10px; }
             .controls { padding: 15px; gap: 10px; top: 0; }
             h1 { font-size: 1.5rem; margin-bottom: 15px; }
 
             .results-table thead { display: none; }
+            
             .results-table, .results-table tbody, .results-table tr, .results-table td {
-                display: block; width: 100%;
+                display: block; 
+                width: 100%;
+                box-sizing: border-box; /* Garante que padding não estoure a largura */
             }
 
             .results-table tr {
@@ -179,52 +181,55 @@
                 overflow: hidden;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.08);
                 border: 1px solid #eee;
-                position: relative; /* Necessário para posicionar o número */
+                position: relative;
             }
 
+            /* --- MUDANÇA PRINCIPAL AQUI --- */
             .results-table td {
                 padding: 8px 15px;
-                text-align: right;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
+                text-align: left; /* Alinha tudo à esquerda */
                 border-bottom: 1px solid #f9f9f9;
             }
 
+            /* Rótulo (Ex: Artista) agora fica EM CIMA do texto, pequeno */
             .results-table td::before {
                 content: attr(data-label);
+                display: block; /* Força quebra de linha */
                 font-weight: bold;
-                color: #888;
-                font-size: 0.8em;
+                color: #999;
+                font-size: 0.7em;
                 text-transform: uppercase;
-                margin-right: 10px;
+                margin-bottom: 2px;
             }
 
+            /* Ajustes nos campos */
             .results-table td.icon-col {
-                text-align: left;
                 background-color: rgba(0,0,0,0.02);
                 padding: 5px 15px;
-                justify-content: flex-start;
             }
+            .results-table td.icon-col::before { content: "Status"; }
 
-            /* Estilo especial para o número no mobile */
+            /* Número posicionado no topo direito */
             .results-table td.num-col {
                 position: absolute;
-                top: 5px;
-                right: 5px;
+                top: 8px;
+                right: 10px;
                 width: auto;
                 border: none;
-                font-size: 0.8em;
-                color: #ccc;
+                font-size: 0.9em;
+                color: #bbb;
                 padding: 0;
+                text-align: right;
             }
-            .results-table td.num-col::before { content: "#"; margin-right: 2px; }
+            .results-table td.num-col::before { content: "#"; margin-right: 1px; display: inline; }
 
+            /* Destaque maior para o nome da música */
             .results-table td[data-label="Música"] {
-                font-size: 1.1em;
+                font-size: 1.15em;
                 color: var(--primary-color);
-                padding-top: 15px;
+                padding-top: 12px;
             }
+
             .control-group { min-width: 100%; }
         }
     </style>
@@ -478,17 +483,14 @@
         songs = lines.map(line => {
             const parts = line.split('\t');
             
-            // Lógica de correção para linhas sem marcador explícito
             let marker, game, title, artist;
 
-            // Se tiver apenas 3 partes, assume que a primeira coluna (marcador) está faltando
             if (parts.length === 3) {
                 marker = "";
                 game = parts[0].trim();
                 title = parts[1].trim();
                 artist = parts[2].trim();
             } else {
-                // Caso padrão: 4 colunas (Marcador | Jogo | Música | Artista)
                 marker = parts[0].trim();
                 game = parts[1] ? parts[1].trim() : "";
                 title = parts[2] ? parts[2].trim() : "";
@@ -555,7 +557,6 @@
             if (song.marker.includes('⭐')) tr.classList.add('highlight-star');
             else if (song.marker.includes('🍭')) tr.classList.add('highlight-candy');
 
-            // Adicionado coluna de numeração (index + 1)
             tr.innerHTML = `
                 <td class="icon-col" data-label="Status">${song.marker}</td>
                 <td class="num-col" data-label="Nº">${index + 1}</td>
