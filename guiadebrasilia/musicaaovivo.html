@@ -177,6 +177,47 @@
         .lang-container { display: flex; align-items: center; }
         .flag-icon { width: 25px; height: auto; margin-right: 8px; border: 1px solid #ccc; border-radius: 2px; }
 
+        /* --- GOOGLE TRANSLATE: SOLUÇÃO DEFINITIVA --- */
+
+        /* 1. Oculta todo o conteúdo original dentro do widget */
+        #google_translate_element .goog-te-gadget-simple {
+            background-color: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            font-size: 0 !important; /* Mata qualquer texto solto */
+            display: inline-flex !important;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* 2. Força o desaparecimento dos textos internos e ícones */
+        #google_translate_element .goog-te-gadget-simple > span,
+        #google_translate_element .goog-te-menu-value,
+        #google_translate_element .goog-te-menu-value span {
+            display: none !important; /* Remove tudo do fluxo da página */
+        }
+
+        /* 3. Oculta o ícone "G" do Google se ele ainda estiver lá */
+        .goog-te-gadget-icon {
+            display: none !important;
+        }
+
+        /* 4. Cria uma NOVA setinha usando CSS puro */
+        #google_translate_element .goog-te-gadget-simple::after {
+            content: '▼';         /* Caractere da seta */
+            font-size: 10px !important;
+            color: var(--bsb-text) !important; /* Cor cinza escura */
+            margin-left: 2px;
+            display: block !important;
+            opacity: 0.7;
+        }
+
+        /* Efeito hover na nova setinha */
+        #google_translate_element .goog-te-gadget-simple:hover::after {
+            color: var(--bsb-sky) !important;
+            opacity: 1;
+        }
+
     </style>
 </head>
 <body>
