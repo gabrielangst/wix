@@ -353,6 +353,23 @@
             padding: 40px 5% 0 5%; /* Padding ajustado */
         }
 
+        /* --- SEPARADOR DE ANO --- */
+        .news-list li.year-separator {
+            justify-content: center; /* Centraliza o texto */
+            background-color: #f2f2f2; /* Fundo cinza claro */
+            color: #888; /* Texto cinza escuro */
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 8px 0;
+            margin: 15px 0 5px 0; /* Espaçamento antes e depois */
+            border-radius: 20px; /* Borda arredondada */
+            border-bottom: none; /* Remove a linha padrão */
+            pointer-events: none; /* Impede que pareça um botão clicável */
+            box-shadow: none;
+        }
+
     </style>
 </head>
 <body>
@@ -377,6 +394,14 @@
                 <h3 style="color: var(--bsb-sky); margin-top: 0; font-size: 1.8rem;">📰 Novidades</h3>             
                 
                 <ul class="news-list">
+                    <li>
+                        <img src="https://www.metropoles.com/wp-content/uploads/wp-content/uploads/2025/10/22202007/estadio-mane-garrincha-4.jpg" alt="Natal" class="news-thumb">
+                        <div class="news-content">
+                            <a href="https://www.metropoles.com/colunas/grande-angular/metropoles-traz-a-brasilia-supercopa-entre-flamengo-e-corinthians" target="_blank">Final da Supercopa será em Brasília, em 1/2/2026</a>
+                            <span>02/Janeiro/2026</span>
+                        </div>
+                    </li>
+<li class="year-separator">2026</li>
                     <li>
                         <img src="https://cdn.jornaldebrasilia.com.br/wp-content/uploads/2025/12/08152829/8.12.-Nosso-Natal.-Foto-Divulgacao-Secec-DF2-620x620.jpg" alt="Natal" class="news-thumb">
                         <div class="news-content">
@@ -482,4 +507,5 @@
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 </body>
+
 
