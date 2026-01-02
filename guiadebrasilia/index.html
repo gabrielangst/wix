@@ -353,21 +353,23 @@
             padding: 40px 5% 0 5%; /* Padding ajustado */
         }
 
-        /* --- SEPARADOR DE ANO --- */
+        /* --- SEPARADOR DE ANO (Alinhado à esquerda) --- */
         .news-list li.year-separator {
-            justify-content: center; /* Centraliza o texto */
-            background-color: #f2f2f2; /* Fundo cinza claro */
-            color: #888; /* Texto cinza escuro */
+            text-align: left;       /* Garante alinhamento à esquerda */
+            padding-left: 10px;     /* O afastamento de 10px que você pediu */
+            
+            background-color: #f2f2f2;
+            color: #666;            /* Um cinza levemente mais escuro para leitura */
             font-weight: bold;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 8px 0;
-            margin: 15px 0 5px 0; /* Espaçamento antes e depois */
-            border-radius: 20px; /* Borda arredondada */
-            border-bottom: none; /* Remove a linha padrão */
-            pointer-events: none; /* Impede que pareça um botão clicável */
-            box-shadow: none;
+            font-size: 0.95rem;     /* Um pouco maior para destaque */
+            
+            padding-top: 8px;       /* Espaço acima do texto */
+            padding-bottom: 8px;    /* Espaço abaixo do texto */
+            margin: 15px 0 5px 0;   /* Espaço externo para separar das notícias */
+            
+            border-radius: 5px;     /* Bordas levemente arredondadas */
+            pointer-events: none;   /* Não clicável */
+            display: block;         /* Garante que o fundo ocupe a largura toda */
         }
 
     </style>
@@ -507,5 +509,6 @@
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 </body>
+
 
 
