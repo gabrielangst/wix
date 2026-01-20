@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boardgames</title>
+    <style>
+        html { scroll-behavior: smooth; }
+        
+        /* --- ESTILOS GERAIS --- */
+        :root {
+            --bsb-sky: #00AEEF;
+            --bsb-concrete: #f0f0f0;
+            --bsb-text: #333333;
+            --bsb-green: #4CAF50;
+            --bsb-sunset: #FF9800;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--bsb-text);
+            background-color: #f9f9f9;
+            line-height: 1.6;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; padding: 0; }
+
+        /* --- CABEÇALHO --- */
+        header {
+            background-color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--bsb-sky);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo img { width: 180px; height: auto; display: block; }
+        #google_translate_element { margin-left: 0 !important; }
+
+        /* --- HERO --- */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px 5%;
+            background: white;
+            border-bottom: 1px solid #eee;
+        }
+
+        h1 { font-size: 3rem; margin-bottom: 10px; line-height: 1.2; color: var(--bsb-green); }
+        .subtitle { font-size: 1.2rem; color: #666; margin-bottom: 0; }
+
+        .container { 
+            padding: 40px 5%; 
+            max-width: 1000px; 
+            margin: 0 auto;
+            
+            /* ADICIONE ISTO PARA FICAR LADO A LADO */
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Divide em 2 colunas iguais */
+            gap: 20px; /* Espaço entre os cards */
+        }
+
+        /* --- ESTILO DAS SEÇÕES --- */
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-top: 50px;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .category-icon { font-size: 2rem; margin-right: 15px; }
+        .category-title { font-size: 1.8rem; color: #333; margin: 0; }
+
+        /* --- CARD HORIZONTAL PADRONIZADO --- */
+        .playground-card {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            /* Remova a margin-bottom, o 'gap' do container cuidará disso */
+            margin-bottom: 0; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #eee;
+            
+            /* REDUZA A ALTURA MÍNIMA (Era 200px) */
+            min-height: 120px; 
+        }
+
+        .playground-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Área da Foto */
+        .pg-image-container {
+            /* REDUZA A LARGURA DA FOTO (Era 260px) */
+            width: 140px; 
+            flex-shrink: 0;
+            position: relative;
+            background-color: #ddd;
+        }
+
+        .pg-img {
+            width: 100%;
+            height: 100%; /* Ocupa todo o container */
+            object-fit: cover; /* A MÁGICA: Corta a foto para preencher sem distorcer */
+            display: block;
+            position: absolute; /* Garante preenchimento total */
+            top: 0; left: 0;
+        }
+
+        /* Área do Texto */
+        .pg-content {
+            padding: 25px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Centraliza o texto verticalmente */
+        }
+
+        .pg-title {
+            margin: 0 0 10px 0;
+            font-size: 1.4rem;
+            color: var(--bsb-text);
+        }
+
+        .pg-location {
+            color: #666;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .pin-icon { margin-right: 5px; color: var(--bsb-sky); }
+
+        .btn-map {
+            display: inline-block;
+            background-color: transparent;
+            color: var(--bsb-sky);
+            border: 1px solid var(--bsb-sky);
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: fit-content;
+            transition: 0.3s;
+        }
+
+        .btn-map:hover { background-color: var(--bsb-sky); color: white; }
+
+        /* --- RESPONSIVIDADE (Celular) --- */
+        @media (max-width: 700px) {
+            /* Volta para 1 coluna no celular */
+            .container {
+                grid-template-columns: 1fr; 
+            }
+
+            .playground-card {
+                flex-direction: column; 
+                min-height: auto; 
+            }
+            
+            .pg-image-container {
+                width: 100%; 
+                height: 180px; /* Altura da foto no celular */
+            }
+            
+            .pg-content {
+                padding: 20px;
+            }
+        }
+
+        /* --- FOOTER --- */
+        footer { background-color: #333; color: #ccc; text-align: center; padding: 40px 20px; font-size: 0.9rem; margin-top: 60px;}
+        .lang-container { display: flex; align-items: center; }
+        .flag-icon { width: 25px; height: auto; margin-right: 8px; border: 1px solid #ccc; border-radius: 2px; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo"> <a href="index.html"><img src="logo_index.png" alt="Guia de Brasília"></a></div>
+        <nav class="lang-container">
+            <img src="https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg" alt="Change Language" class="flag-icon">
+            <div id="google_translate_element"></div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-text">
+            <h1>Boardgames</h1>             
+        </div>
+    </section>
+
+    <div class="container">        
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://storage.googleapis.com/ludopedia-posts/51f44_esfrso.jpg" alt="Constantina" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Lista de jogos por número de jogadores</h3>
+                <a href="https://gabrielangst.github.io/wix/boardlist.html" target="_blank" class="btn-map">Acessar</a>
+            </div>
+        </div>  
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://static.ndmais.com.br/2022/08/2-7.jpg" alt="Constantina" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Salém 1692: 01 Amanhecer</h3>
+                <audio src="boardgames/01 Amanhecer.mp3" controls></audio>
+            </div>
+        </div> 
+
+        <div class="playground-card">
+            <div class="pg-image-container">
+                <img src="https://static.vecteezy.com/ti/fotos-gratis/t2/17173799-por-do-sol-brilhante-rosa-e-telhados-de-casas-na-cidade-noite-do-sol-na-cidade-foto.JPG" alt="Constantina" class="pg-img">
+            </div>
+            <div class="pg-content">
+                <h3 class="pg-title">Salém 1692: 02 Anoitecer</h3>
+                <audio src="boardgames/02 Anoitecer.mp3" controls></audio>
+            </div>
+        </div> 
+
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Brasília - Guia de Viagem Brasília. Todos os direitos reservados.</p>
+        <p>Entrar em contato</p>
+    </footer>
+
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+          new google.translate.TranslateElement({
+            pageLanguage: 'pt', 
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            includedLanguages: 'en,es,fr,de,it,zh-CN,ja,ru,ar,hi'
+          }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</body>
+</html>
