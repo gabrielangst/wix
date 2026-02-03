@@ -8,6 +8,35 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        .notes-section .card-header {
+            color: #555;
+            background-color: #f8f9fa; /* Cinza bem clarinho */
+        }
+
+        .notes-box {
+            padding: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            color: var(--text-primary);
+            background-color: #fafafa;
+            resize: vertical; /* Permite puxar para aumentar o tamanho */
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: var(--blue-primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
         :root {
             --bg-color: #f0f2f5;
             --card-bg: #ffffff;
@@ -214,6 +243,16 @@
                     <span class="item-desc">Ref.: extração dos sisos</span>
                 </li>
             </ul>
+        </div>
+
+        <div class="card notes-section">
+            <div class="card-header">
+                <i class="fas fa-pen-to-square"></i>
+                <h2>Anotações</h2>
+            </div>
+            <div class="notes-box">
+                <textarea placeholder="Digite aqui observações, horários ou novos medicamentos..."></textarea>
+            </div>
         </div>
 
     </div>
