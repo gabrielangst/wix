@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Saúde e Médicos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --red-primary: #d32f2f;
+            --red-light: #ffebee;
+            --blue-primary: #1976d2;
+            --blue-light: #e3f2fd;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Estilização dos Cartões */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-left: 12px;
+        }
+
+        .card-header i {
+            font-size: 1.5rem;
+        }
+
+        /* Cores Específicas por Seção */
+        .health-section .card-header {
+            color: var(--red-primary);
+            background-color: var(--red-light);
+        }
+
+        .doctors-section .card-header {
+            color: var(--blue-primary);
+            background-color: var(--blue-light);
+        }
+
+        /* Estilização das Listas */
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        .item-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: flex-start;
+        }
+
+        /* Pequeno ícone de check/plus antes de cada item */
+        .item-title::before {
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            margin-right: 10px;
+            font-size: 0.8em;
+            margin-top: 4px;
+        }
+
+        .health-section .item-title::before {
+            content: "\f067"; /* Plus icon */
+            color: var(--red-primary);
+        }
+
+        .doctors-section .item-title::before {
+            content: "\f0f0"; /* Doctor/Stethoscope icon */
+            color: var(--blue-primary);
+        }
+
+        .item-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            padding-left: 20px; /* Alinhar com o texto acima */
+        }
+
+        /* Negrito específico para categorias de médicos */
+        .category {
+            font-weight: 700;
+            color: #444;
+        }
+
+        /* Responsividade extra */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .card-header h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="card health-section">
+            <div class="card-header">
+                <i class="fas fa-kit-medical"></i>
+                <h2>Saúde</h2>
+            </div>
+            <ul>
+                <li>
+                    <span class="item-title">DORFLEX</span>
+                </li>
+                <li>
+                    <span class="item-title">CORISTINA D</span>
+                </li>
+                <li>
+                    <span class="item-title">DIPIRONA</span>
+                    <span class="item-desc">Para febre e dor no corpo.</span>
+                </li>
+                <li>
+                    <span class="item-title">VONAU FLASH | CLORIDRATO DE ONDANSETRONA</span>
+                    <span class="item-desc">Para enjoo, náusea, vontade de vomitar</span>
+                </li>
+                <li>
+                    <span class="item-title">TARFIC</span>
+                </li>
+                <li>
+                    <span class="item-title">FLORATIL</span>
+                </li>
+                <li>
+                    <span class="item-title">BISMU JET</span>
+                </li>
+                <li>
+                    <span class="item-title">AVAMYS</span>
+                </li>
+                <li>
+                    <span class="item-title">NEOSORO</span>
+                </li>
+                <li>
+                    <span class="item-title">HIPOGLOS</span>
+                    <span class="item-desc">Para leves queimaduras, assaduras ou vermelhidão da pele</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card doctors-section">
+            <div class="card-header">
+                <i class="fas fa-user-doctor"></i>
+                <h2>Médicos Bons</h2>
+            </div>
+            <ul>
+                <li>
+                    <span class="item-title">
+                        <div><span class="category">Ortopedia:</span> Carlos Ferri COTE Guará</div>
+                    </span>
+                    <span class="item-desc">Ref.: canelite, cisto sinovial no pulso</span>
+                </li>
+                <li>
+                    <span class="item-title">
+                        <div><span class="category">Odonto-cirurgiã:</span> Danielle Salles Allere Asa Sul</div>
+                    </span>
+                    <span class="item-desc">Ref.: extração dos sisos</span>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+</body>
+</html>
