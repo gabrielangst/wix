@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Visitas - Imóveis</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #27ae60;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* Grid Responsivo */
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.15);
+        }
+
+        .condominio {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .valor {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            text-align: center;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #34495e;
+        }
+
+        /* Pequeno detalhe para mobile */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Imóveis Selecionados</h1>
+        <p>Lista de casas para visita</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="card">
+            <div>
+                <div class="condominio">Jardins do Lago Q9</div>
+                <div class="valor">R$ 1.990.000,00</div>
+            </div>
+            <a href="https://www.wimoveis.com.br/propriedades/jardins-do-lago-q9-700m-4qtos-2stes-dce-2-vagas-3018948861.html?n_src=Listado&n_pills=Ar+condicionado&n_pg=1&n_pos=13" target="_blank" class="btn">Ver Anúncio</a>
+        </div>
+
+        <div class="card">
+            <div>
+                <div class="condominio">Jardins do Lago Q9</div>
+                <div class="valor">R$ 2.490.000,00</div>
+            </div>
+            <a href="https://www.wimoveis.com.br/propriedades/condominio-residencial-jardins-do-lago-quadra-9-3012574812.html?n_src=Listado&n_pills=Churrasqueira&n_pg=1&n_pos=21" target="_blank" class="btn">Ver Anúncio</a>
+        </div>
+
+        <div class="card">
+            <div>
+                <div class="condominio">Ville de Montagne</div>
+                <div class="valor">R$ 2.399.000,00</div>
+            </div>
+            <a href="https://www.wimoveis.com.br/propriedades/casa-top-terrea-completa-de-4-quartos-com-habite-se-2962136686.html" target="_blank" class="btn">Ver Anúncio</a>
+        </div>
+
+        <div class="card">
+            <div>
+                <div class="condominio">Santa Bárbara</div>
+                <div class="valor">R$ 2.050.000,00</div>
+            </div>
+            <a href="https://www.dfimoveis.com.br/imovel/casa-condominio-4-quartos-venda-jardim-botanico-brasilia-df-travessa-ipe-roxo-1263746" target="_blank" class="btn">Ver Anúncio</a>
+        </div>
+
+    </div>
+
+</body>
+</html>
