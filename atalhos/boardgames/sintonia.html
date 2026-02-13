@@ -90,35 +90,24 @@
             position: absolute; bottom: 0; left: 50%; width: 600px; height: 300px; transform-origin: bottom center; opacity: 0; pointer-events: none; z-index: 3; margin-left: 0;
         }
         
-        /* Cálculo Visual Exato:
-           Raio (Altura) ~ 320px.
-           100 pontos = 180 graus.
-        */
-
-        /* Zona Externa (+2 pontos): +/- 10 unidades (Total 20) -> 36 graus
-           Largura do cone no topo = 2 * 320 * tan(18deg) ~= 208px 
-        */
         .wedge-outer {
             position: absolute; 
             bottom: 0; 
             left: 50%; 
-            width: 208px; /* Ajustado para +/- 10 */
+            width: 208px; 
             height: 320px; 
             background-color: var(--secondary-zone); 
             transform: translateX(-50%); 
-            clip-path: polygon(0 0, 100% 0, 50% 100%); /* Triângulo completo */
+            clip-path: polygon(0 0, 100% 0, 50% 100%); 
             opacity: 0.8; 
             z-index: 3;
         }
 
-        /* Zona Interna (+4 pontos): +/- 5 unidades (Total 10) -> 18 graus
-           Largura do cone no topo = 2 * 320 * tan(9deg) ~= 101px
-        */
         .wedge-inner {
             position: absolute; 
             bottom: 0; 
             left: 50%; 
-            width: 101px; /* Ajustado para +/- 5 */
+            width: 101px; 
             height: 320px; 
             background-color: #fff; 
             transform: translateX(-50%); 
@@ -165,9 +154,7 @@
             border-radius: 10px;
             display: inline-block;
             min-height: 120px;
-            
-            /* ADICIONE ESTA LINHA ABAIXO: */
-            pointer-events: none; /* O mouse ignora o elemento, impedindo o tooltip */
+            pointer-events: none; 
         }
         #theme-display { background: rgba(255,255,255,0.05); padding: 15px 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 300px; max-width: 450px; position: relative; }
         .theme-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 8px; margin-bottom: 10px; }
@@ -176,14 +163,32 @@
 
         /* --- PLACAR --- */
         .scoreboard { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; width: 100%; }
-        .team-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; min-width: 140px; text-align: center; border: 1px solid rgba(255,255,255,0.1); position: relative; animation: fadeIn 0.3s ease; }
+        
+        .team-card { 
+            background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; min-width: 140px; 
+            text-align: center; border: 1px solid rgba(255,255,255,0.1); position: relative; 
+            animation: fadeIn 0.3s ease; transition: all 0.3s ease; cursor: pointer;
+        }
+
+        .team-card.active-turn {
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 15px rgba(233, 69, 96, 0.4);
+            background: rgba(233, 69, 96, 0.1);
+            transform: scale(1.05);
+        }
+
+        .turn-indicator {
+            font-size: 0.7rem; font-weight: bold; color: var(--accent-color);
+            margin-bottom: 5px; display: block; height: 12px;
+        }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .team-name { font-size: 1rem; color: #ccc; margin-bottom: 5px; border-bottom: 1px dashed rgba(255,255,255,0.3); cursor: text; }
         .team-score { font-size: 2rem; font-weight: bold; color: var(--accent-color); margin: 5px 0; cursor: text; min-height: 40px; }
         .score-controls { display: flex; justify-content: center; margin-top: 5px; gap: 2px;}
         .btn-add-team { background: transparent; border: 2px dashed #444; color: #666; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; cursor: pointer; transition: all 0.2s; padding: 0; box-shadow: none; }
         .btn-add-team:hover { border-color: var(--accent-color); color: var(--accent-color); transform: scale(1.1); }
-        .btn-remove-team { position: absolute; top: -5px; right: -5px; background: #e94560; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.2s; }
+        .btn-remove-team { position: absolute; top: -5px; right: -5px; background: #e94560; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.2s; z-index: 5; }
         .team-card:hover .btn-remove-team { opacity: 1; }
     </style>
 </head>
@@ -238,12 +243,14 @@
 
     <br>
 
-    <div class="version" id="version">V 1.0 | 13/02/2026</div>
-    <div class="version" id="version">Versão de Gabriel Angst</div>
+    <div class="version">V 1.1 | 13/02/2026</div>
+    <div class="version">Versão de Gabriel Angst</div>
 
     <script>
         let currentTarget = 0;
         let teamCount = 0;
+        let currentTurnIndex = 0;
+        let isFirstRound = true; // Variável para controlar o carregamento inicial
 
         const themes = [
             { min: "Cidade ruim", max: "Cidade incrível" },
@@ -287,7 +294,7 @@
             { min: "Jogo fácil", max: "Jogo difícil" },
             { min: "Lugar sujo", max: "Lugar limpo" },
             { min: "Trabalho braçal", max: "Trabalho intelectual" },
-            { min: "Música para chorar", max: "Música para dançar" },
+            { min: "Música para chorar", max: "Música para dance" },
             { min: "Animal de estimação exótico", max: "Animal de estimação comum" },
             { min: "Cidade com clima quente", max: "Cidade com clima frio" },
             { min: "Sabor amargo", max: "Sabor doce" },
@@ -303,7 +310,7 @@
             { min: "Inútil em um apocalipse zumbi", max: "Essencial em um apocalipse zumbi" },
             { min: "Inútil em uma ilha deserta", max: "Essencial em uma ilha deserta" },
             { min: "Cheira mal", max: "Cheira bem" },
-            { min: "Acontece uma vez na vid", max: "Acontece todo dia" },
+            { min: "Acontece uma vez na vida", max: "Acontece todo dia" },
             { min: "Dá sono", max: "Dá adrenalina" },
             { min: "Nome de cachorro", max: "Nome de gente" },
             { min: "Coisas de criança", max: "Coisas de adulto" }
@@ -312,19 +319,18 @@
         window.onload = function() {
             initScoreboard();
             drawScale(); 
-            setTimeout(startNewRound, 100);
+            // Inicia o jogo sem pular o primeiro turno
+            startNewRound();
         };
 
         function drawScale() {
             const container = document.getElementById('ticks-container');
             container.innerHTML = ""; 
-            
             for (let i = 0; i <= 100; i += 10) {
                 const deg = (i / 100 * 180) - 90;
                 const tick = document.createElement('div');
                 tick.className = 'tick-mark';
                 tick.style.transform = `translateX(-50%) rotate(${deg}deg)`;
-                
                 const num = document.createElement('div');
                 num.className = 'tick-number';
                 num.innerText = i;
@@ -348,8 +354,6 @@
             if (degrees > 180) degrees = 180;
             let value = 100 - (degrees / 180 * 100);
             value = Math.round(value / 5) * 5;
-            if (value > 100) value = 100;
-            if (value < 0) value = 0;
             updateNeedle(value);
             document.getElementById('dial-slider').value = value;
         }
@@ -365,10 +369,8 @@
             overlay.style.opacity = '0';
             overlay.style.pointerEvents = 'none';
 
-            // Limpa feedback de pontuação
             document.getElementById('feedback-score').classList.remove('anim-pop');
             document.getElementById('feedback-score').style.opacity = '0';
-
             document.getElementById('gauge-main').classList.remove('spotlight-active');
             document.getElementById('btn-new').classList.remove('spotlight-active');
             document.getElementById('btn-new').style.display = 'none';
@@ -378,6 +380,16 @@
             document.getElementById('btn-reveal').disabled = false;
             document.getElementById('dial-slider').disabled = false;
             document.getElementById('qr-container').style.opacity = "1";
+
+            // Lógica de turno corrigida
+            const teams = document.querySelectorAll('.team-card');
+            if(teams.length > 0) {
+                if (!isFirstRound) {
+                    currentTurnIndex = (currentTurnIndex + 1) % teams.length;
+                }
+                isFirstRound = false; // Após a primeira chamada, as próximas mudam o turno
+                updateTurnUI();
+            }
 
             const step = Math.floor(Math.random() * 21);
             currentTarget = step * 5;
@@ -405,7 +417,6 @@
             const finalDeg = (currentTarget / 100 * 180) - 90;
 
             targetEl.style.opacity = '1';
-            
             targetEl.style.transition = "transform 0.6s ease-in-out";
             targetEl.style.transform = "translateX(-50%) rotate(-70deg)";
 
@@ -428,11 +439,9 @@
                 btnNew.classList.add('spotlight-active');
                 
                 checkScore(currentTarget);
-                
             }, 2500);
         }
 
-        // --- SISTEMA DE PONTUAÇÃO AJUSTADO ---
         function checkScore(target) {
             const userVal = parseInt(document.getElementById('dial-slider').value);
             const diff = Math.abs(target - userVal);
@@ -441,17 +450,24 @@
             feedback.classList.remove('anim-pop');
             void feedback.offsetWidth; 
 
-            // +/- 5 unidades: +4 pontos
+            let pointsEarned = 0;
             if (diff <= 5) {
+                pointsEarned = 4;
                 feedback.innerText = "+4";
                 feedback.style.color = "#ffd700";
-                feedback.classList.add('anim-pop');
-            } 
-            // +/- 10 unidades: +2 pontos
-            else if (diff <= 10) {
+            } else if (diff <= 10) {
+                pointsEarned = 2;
                 feedback.innerText = "+2";
                 feedback.style.color = "#ff9f1c";
+            }
+
+            if(pointsEarned > 0) {
                 feedback.classList.add('anim-pop');
+                const teams = document.querySelectorAll('.team-card');
+                if(teams[currentTurnIndex]) {
+                    const realId = teams[currentTurnIndex].id.split('-').pop();
+                    changeScore(realId, pointsEarned);
+                }
             }
         }
 
@@ -464,40 +480,29 @@
         function generateQRCode(text) {
             const container = document.getElementById('qr-container');
             container.innerHTML = "";
-            
             if (typeof QRCode !== 'undefined') {
                 new QRCode(container, {
-                    text: text,
-                    width: 120,
-                    height: 120,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff",
+                    text: text, width: 120, height: 120,
+                    colorDark : "#000000", colorLight : "#ffffff",
                     correctLevel : QRCode.CorrectLevel.L
                 });
-
-                // --- CORREÇÃO: REMOVE A DICA (TOOLTIP) ---
-                // Espera um pouquinho para garantir que a imagem foi criada e remove o título
                 setTimeout(() => {
                     const qrImage = container.querySelector("img");
-                    if (qrImage) {
-                        qrImage.removeAttribute("title");
-                        qrImage.removeAttribute("alt"); // Remove texto alternativo também por segurança
-                    }
+                    if (qrImage) { qrImage.removeAttribute("title"); qrImage.removeAttribute("alt"); }
                 }, 10);
-                // -----------------------------------------
-
             } else {
-                // Se a biblioteca ainda não carregou, tenta de novo em meio segundo
                 setTimeout(() => generateQRCode(text), 500);
             }
         }
 
-        // --- PLACAR ---
+        // --- PLACAR E TURNOS ---
         function initScoreboard() {
             const board = document.getElementById('scoreboard');
             board.innerHTML = "";
             addTeam();
             addTeam();
+            currentTurnIndex = 0; // Garante que começa no primeiro
+            updateTurnUI();
             renderAddButton();
         }
 
@@ -507,8 +512,16 @@
             const teamDiv = document.createElement('div');
             teamDiv.className = 'team-card';
             teamDiv.id = `team-card-${teamCount}`;
+            
+            teamDiv.onclick = function(e) {
+                if(e.target.tagName !== 'BUTTON' && e.target.contentEditable !== "true") {
+                    setManualTurn(this.id);
+                }
+            };
+
             teamDiv.innerHTML = `
                 <button class="btn-remove-team" onclick="removeTeam(${teamCount})" title="Remover Equipe">✕</button>
+                <span class="turn-indicator"></span>
                 <div class="team-name" contenteditable="true" spellcheck="false">Time ${teamCount}</div>
                 <div class="team-score" id="score-val-${teamCount}" contenteditable="true">0</div>
                 <div class="score-controls">
@@ -520,30 +533,55 @@
             const btn = document.getElementById('btn-add-team');
             if(btn) board.insertBefore(teamDiv, btn);
             else board.appendChild(teamDiv);
+            updateTurnUI();
+        }
+
+        function updateTurnUI() {
+            const cards = document.querySelectorAll('.team-card');
+            cards.forEach((card, idx) => {
+                const indicator = card.querySelector('.turn-indicator');
+                if(idx === currentTurnIndex) {
+                    card.classList.add('active-turn');
+                    indicator.innerText = "● SUA VEZ";
+                } else {
+                    card.classList.remove('active-turn');
+                    indicator.innerText = "";
+                }
+            });
+        }
+
+        function setManualTurn(cardId) {
+            const cards = Array.from(document.querySelectorAll('.team-card'));
+            const clickedIdx = cards.findIndex(c => c.id === cardId);
+            if(clickedIdx !== -1) {
+                currentTurnIndex = clickedIdx;
+                updateTurnUI();
+            }
         }
 
         function removeTeam(id) {
             const card = document.getElementById(`team-card-${id}`);
-            if(card) card.remove();
+            if(card) {
+                card.remove();
+                currentTurnIndex = 0;
+                updateTurnUI();
+            }
         }
 
         function renderAddButton() {
             const board = document.getElementById('scoreboard');
-            const existingBtn = document.getElementById('btn-add-team');
-            if(existingBtn) existingBtn.remove();
             const btn = document.createElement('button');
             btn.id = 'btn-add-team';
             btn.className = 'btn-add-team';
             btn.innerHTML = '+';
-            btn.title = "Adicionar Equipe";
             btn.onclick = function() { addTeam(); };
             board.appendChild(btn);
         }
 
         function changeScore(teamId, points) {
             const el = document.getElementById(`score-val-${teamId}`);
-            let current = parseInt(el.innerText);
-            if (isNaN(current)) current = 0;
+            if(!el) return;
+            let current = parseInt(el.innerText) || 0;
             if(current + points >= 0) el.innerText = current + points;
         }
     </script>
