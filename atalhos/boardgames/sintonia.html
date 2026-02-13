@@ -455,6 +455,7 @@
         function generateQRCode(text) {
             const container = document.getElementById('qr-container');
             container.innerHTML = "";
+            
             if (typeof QRCode !== 'undefined') {
                 new QRCode(container, {
                     text: text,
@@ -464,7 +465,20 @@
                     colorLight : "#ffffff",
                     correctLevel : QRCode.CorrectLevel.L
                 });
+
+                // --- CORREÇÃO: REMOVE A DICA (TOOLTIP) ---
+                // Espera um pouquinho para garantir que a imagem foi criada e remove o título
+                setTimeout(() => {
+                    const qrImage = container.querySelector("img");
+                    if (qrImage) {
+                        qrImage.removeAttribute("title");
+                        qrImage.removeAttribute("alt"); // Remove texto alternativo também por segurança
+                    }
+                }, 10);
+                // -----------------------------------------
+
             } else {
+                // Se a biblioteca ainda não carregou, tenta de novo em meio segundo
                 setTimeout(() => generateQRCode(text), 500);
             }
         }
