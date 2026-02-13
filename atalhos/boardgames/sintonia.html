@@ -159,7 +159,16 @@
         /* --- INFO --- */
         #info-section { display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 20px; text-align: left; }
         #qr-wrapper { text-align: center; min-width: 140px; }
-        #qr-container { background: white; padding: 10px; border-radius: 10px; display: inline-block; min-height: 120px; }
+        #qr-container {
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
+            min-height: 120px;
+            
+            /* ADICIONE ESTA LINHA ABAIXO: */
+            pointer-events: none; /* O mouse ignora o elemento, impedindo o tooltip */
+        }
         #theme-display { background: rgba(255,255,255,0.05); padding: 15px 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 300px; max-width: 450px; position: relative; }
         .theme-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 8px; margin-bottom: 10px; }
         .theme-extreme { font-size: 1.1rem; color: #ddd; margin: 8px 0; display: flex; align-items: flex-start; }
