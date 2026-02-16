@@ -16,7 +16,12 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
+            /* Camada escura com 85% de opacidade sobre a imagem de jogos de tabuleiro */
+            background: linear-gradient(rgba(10, 10, 20, 0.95), rgba(10, 10, 20, 0.95)), 
+                        url('https://static.vecteezy.com/system/resources/previews/003/581/209/non_2x/hand-drawn-banner-template-of-board-game-vector.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: var(--text-color);
             display: flex;
             flex-direction: column;
@@ -144,9 +149,17 @@
         .scoreboard { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; width: 100%; }
         
         .team-card { 
-            background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; min-width: 140px; 
-            text-align: center; border: 1px solid rgba(255,255,255,0.1); position: relative; 
-            animation: fadeIn 0.3s ease; transition: all 0.3s ease; cursor: pointer;
+            background: rgba(255, 255, 255, 0.08); 
+            padding: 10px; 
+            border-radius: 8px; 
+            min-width: 140px; 
+            text-align: center; 
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            position: relative; 
+            animation: fadeIn 0.3s ease; 
+            transition: all 0.3s ease; 
+            cursor: pointer;
+            backdrop-filter: blur(2px);
         }
 
         .team-card.active-turn {
