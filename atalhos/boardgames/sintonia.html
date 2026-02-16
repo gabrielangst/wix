@@ -161,7 +161,7 @@
             peer.on('open', (id) => {
                 currentUrl = window.location.href.split('?')[0] + '?sala=' + id;
                 document.getElementById('qr-container').innerHTML = '';
-                new QRCode(document.getElementById("qr-container"), { text: currentUrl, width: 100, height: 100 });
+                new QRCode(document.getElementById("qr-container"), { text: currentUrl, width: 150, height: 150 });
                 drawScale(); initScoreboard(); startNewRound();
             });
             peer.on('connection', (c) => {
