@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sintonia - Controle Remoto Oficial</title>
+    <title>Sintonia - Edição Suspense</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -31,11 +31,8 @@
 
         /* TABULEIRO TV */
         h1 { margin: 20px 0 10px; font-size: 2rem; text-transform: uppercase; color: var(--accent-color); text-shadow: 0 0 15px rgba(233, 69, 96, 0.3); }
-        
-        /* Removido o overlay escuro e adicionado apenas um efeito de foco */
         .spotlight-active { filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.15)); z-index: 100; }
-        
-        #feedback-score { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 8rem; font-weight: 900; z-index: 200; opacity: 0; text-shadow: 0 0 20px #000; color: #f1c40f; }
+        #feedback-score { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 8rem; font-weight: 900; z-index: 200; opacity: 0; text-shadow: 0 0 20px #000; color: #f1c40f; pointer-events: none; }
         .anim-pop { animation: popIn 1.5s forwards; }
         @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -60%) scale(1); opacity: 0; } }
         
@@ -105,8 +102,8 @@
             </div>
             <div id="msg-bloqueio" class="hidden">
                 <div class="remote-card">
-                    <p style="color:#4ecca3; font-weight:bold; font-size:1.2rem;">Sucesso!</p>
-                    <p style="color:#888; font-style:italic;">O alvo foi revelado na TV. <br> Agora aguarde o próximo jogador.</p>
+                    <p style="color:#4ecca3; font-weight:bold; font-size:1.2rem;">Ação Enviada!</p>
+                    <p style="color:#888; font-style:italic;">O alvo está sendo revelado na TV.</p>
                 </div>
             </div>
         </div>
@@ -115,13 +112,44 @@
     <script>
         let peer, conn, currentTarget = 0, currentUrl = "", autoTimer = null;
         let currentTurnIndex = 0;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
         const themes = [
             { min: "Cidade ruim", max: "Cidade incrível" }, { min: "Comida ruim", max: "Comida gostosa" },
             { min: "Superpoder inútil", max: "Superpoder incrível" }, { min: "Animal inofensivo", max: "Animal letal" },
-            { min: "Música triste", max: "Música feliz" }, { min: "Cheiro ruim", max: "Cheiro maravilhoso" },
-            { min: "Coisa de rico", max: "Coisa de pobre" }, { min: "Chato", max: "Divertido" },
-            { min: "Fraco", max: "Poderoso" }, { min: "Curto", max: "Longo" }
+            { min: "Música triste", max: "Música feliz" }, { min: "Cheiro ruim", max: "Cheiro maravilhoso" }
         ];
+
+        // Lógica de Áudio
+        function playSfx(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            
+            if (type === 'tick') {
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            } else if (type === 'suspense') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 1.2);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 1.2);
+            } else if (type === 'win') {
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                setTimeout(() => {
+                    const osc2 = audioCtx.createOscillator();
+                    osc2.connect(gain);
+                    osc2.frequency.setValueAtTime(659.25, audioCtx.currentTime);
+                    osc2.start(); osc2.stop(audioCtx.currentTime + 0.3);
+                }, 100);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            }
+        }
 
         window.onload = () => {
             const salaId = new URLSearchParams(window.location.search).get('sala');
@@ -168,6 +196,7 @@
             document.getElementById('btn-reveal').style.display = 'inline-block';
             document.getElementById('gauge-main').classList.remove('spotlight-active');
             document.getElementById('target-zone').style.opacity = '0';
+            document.getElementById('target-zone').style.transition = "none";
             document.getElementById('target-zone').style.transform = "translateX(-50%) rotate(-90deg)";
             
             currentTarget = Math.floor(Math.random() * 21) * 5;
@@ -183,13 +212,16 @@
         }
 
         function revealAnimation() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             document.getElementById('btn-reveal').style.display = 'none';
             document.getElementById('gauge-main').classList.add('spotlight-active');
+            
+            playSfx('suspense'); // Áudio de suspense
             
             const targetEl = document.getElementById('target-zone');
             const deg = (currentTarget / 100 * 180) - 90;
             targetEl.style.opacity = '1';
-            targetEl.style.transition = "transform 1.2s cubic-bezier(0.22, 1, 0.36, 1)";
+            targetEl.style.transition = "transform 1.8s cubic-bezier(0.4, 0, 0.2, 1)"; // Animação mais lenta
             targetEl.style.transform = `translateX(-50%) rotate(${deg}deg)`;
 
             setTimeout(() => {
@@ -202,13 +234,14 @@
                     document.getElementById('btn-new').innerText = `🎲 Nova Rodada (${time}s)`;
                     if(time <= 0) startNewRound();
                 }, 1000);
-            }, 1500);
+            }, 2000);
         }
 
         function updateNeedle(val) {
             document.getElementById('needle').style.transform = `translateX(-50%) rotate(${(val/100*180)-90}deg)`;
             document.getElementById('display-val').innerText = val;
             document.getElementById('dial-slider').value = val;
+            playSfx('tick'); // Som ao mover
         }
 
         function moveByClick(e) {
@@ -222,6 +255,7 @@
         function checkScore() {
             const diff = Math.abs(currentTarget - document.getElementById('dial-slider').value);
             if(diff <= 10) {
+                playSfx('win'); // Som de vitória
                 const f = document.getElementById('feedback-score');
                 f.innerText = diff <= 5 ? "+4" : "+2";
                 f.classList.add('anim-pop');
