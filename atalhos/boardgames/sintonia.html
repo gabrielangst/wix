@@ -112,6 +112,7 @@
     <script>
         let peer, conn, currentTarget = 0, currentUrl = "", autoTimer = null;
         let currentTurnIndex = 0;
+        let scores = [0, 0]; // [Time 1, Time 2]
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         const themes = [
@@ -120,7 +121,6 @@
             { min: "Música triste", max: "Música feliz" }, { min: "Cheiro ruim", max: "Cheiro maravilhoso" }
         ];
 
-        // Lógica de Áudio
         function playSfx(type) {
             if (!audioCtx) return;
             const osc = audioCtx.createOscillator();
@@ -203,10 +203,13 @@
             updateNeedle(0);
             shuffleTheme();
             
+            // Gerencia troca de turnos e destaque visual
             const cards = document.querySelectorAll('.team-card');
             if(cards.length > 0) {
                 cards.forEach(c => c.classList.remove('active-turn'));
                 cards[currentTurnIndex].classList.add('active-turn');
+                // Salva quem é o time ativo antes de girar o índice para o próximo
+                window.activeTeamThisRound = currentTurnIndex; 
                 currentTurnIndex = (currentTurnIndex + 1) % cards.length;
             }
         }
@@ -216,16 +219,16 @@
             document.getElementById('btn-reveal').style.display = 'none';
             document.getElementById('gauge-main').classList.add('spotlight-active');
             
-            playSfx('suspense'); // Áudio de suspense
+            playSfx('suspense');
             
             const targetEl = document.getElementById('target-zone');
             const deg = (currentTarget / 100 * 180) - 90;
             targetEl.style.opacity = '1';
-            targetEl.style.transition = "transform 1.8s cubic-bezier(0.4, 0, 0.2, 1)"; // Animação mais lenta
+            targetEl.style.transition = "transform 1.8s cubic-bezier(0.4, 0, 0.2, 1)";
             targetEl.style.transform = `translateX(-50%) rotate(${deg}deg)`;
 
             setTimeout(() => {
-                checkScore();
+                checkScore(); // Chama a função que agora realmente soma os pontos
                 document.getElementById('btn-new').style.display = 'inline-block';
                 let time = 5;
                 document.getElementById('btn-new').innerText = `🎲 Nova Rodada (${time}s)`;
@@ -241,7 +244,7 @@
             document.getElementById('needle').style.transform = `translateX(-50%) rotate(${(val/100*180)-90}deg)`;
             document.getElementById('display-val').innerText = val;
             document.getElementById('dial-slider').value = val;
-            playSfx('tick'); // Som ao mover
+            playSfx('tick');
         }
 
         function moveByClick(e) {
@@ -254,10 +257,25 @@
 
         function checkScore() {
             const diff = Math.abs(currentTarget - document.getElementById('dial-slider').value);
-            if(diff <= 10) {
-                playSfx('win'); // Som de vitória
+            let points = 0;
+
+            // Lógica de pontuação
+            if (diff === 0) points = 4;
+            else if (diff <= 5) points = 3;
+            else if (diff <= 10) points = 2;
+
+            if (points > 0) {
+                playSfx('win');
+                
+                // Soma os pontos ao time que jogou esta rodada
+                const teamIdx = window.activeTeamThisRound;
+                scores[teamIdx] += points;
+                
+                // Atualiza o placar na tela
+                document.getElementById(`score-${teamIdx}`).innerText = scores[teamIdx];
+
                 const f = document.getElementById('feedback-score');
-                f.innerText = diff <= 5 ? "+4" : "+2";
+                f.innerText = `+${points}`;
                 f.classList.add('anim-pop');
                 setTimeout(() => f.classList.remove('anim-pop'), 1500);
             }
@@ -283,9 +301,10 @@
 
         function initScoreboard() {
             const sb = document.getElementById('scoreboard');
+            // IDs adicionados para permitir atualização via JS
             sb.innerHTML = `
-                <div class="team-card">Time 1<div style="font-size:2rem; color:var(--accent-color); font-weight:bold;">0</div></div>
-                <div class="team-card">Time 2<div style="font-size:2rem; color:var(--accent-color); font-weight:bold;">0</div></div>
+                <div class="team-card" id="card-team-0">Time 1<div id="score-0" style="font-size:2rem; color:var(--accent-color); font-weight:bold;">0</div></div>
+                <div class="team-card" id="card-team-1">Time 2<div id="score-1" style="font-size:2rem; color:var(--accent-color); font-weight:bold;">0</div></div>
             `;
         }
     </script>
