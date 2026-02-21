@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sintonia - Edição Suspense</title>
+    <title>Sintonia - Championship Edition</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -16,56 +16,68 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(rgba(10, 10, 20, 0.8), rgba(10, 10, 20, 0.8)), 
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(rgba(10, 10, 20, 0.9), rgba(10, 10, 20, 0.9)), 
                         url('https://static.vecteezy.com/system/resources/previews/003/581/209/non_2x/hand-drawn-banner-template-of-board-game-vector.jpg');
             background-size: cover; background-position: center; background-attachment: fixed;
-            color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; user-select: none; overflow-x: hidden; padding-bottom: 50px;
+            color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; overflow-x: hidden; padding-bottom: 50px;
         }
 
-        /* TELA CELULAR */
-        .remote-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100%; background: #1a1a2e; text-align: center; }
-        .remote-card { background: #16213e; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 85%; max-width: 400px; }
-        #secret-val { font-size: 7rem; font-weight: 900; color: var(--accent-color); margin: 20px 0; }
-        .btn-send-tv { background: #4ecca3; color: #1a1a2e; border: none; padding: 20px; border-radius: 15px; font-size: 1.2rem; font-weight: bold; cursor: pointer; width: 100%; }
+        /* Gestão de Equipes (Topo) */
+        #campeonato { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; background: rgba(0,0,0,0.8); padding: 10px; width: 100%; border-bottom: 2px solid #333; }
+        .equipe-config { display: flex; align-items: center; gap: 5px; background: #222; padding: 5px 10px; border-radius: 8px; border: 1px solid #444; }
+        .edit-nome { background: transparent; border: none; color: #f1c40f; font-weight: bold; width: 90px; text-align: center; }
+        .vit-num { font-size: 1.2rem; font-weight: bold; color: #fff; background: #333; border: none; width: 40px; text-align: center; border-radius: 4px; }
 
-        /* TABULEIRO TV */
-        h1 { margin: 20px 0 10px; font-size: 2rem; text-transform: uppercase; color: var(--accent-color); text-shadow: 0 0 15px rgba(233, 69, 96, 0.3); }
-        .spotlight-active { filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.15)); z-index: 100; }
-        #feedback-score { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 8rem; font-weight: 900; z-index: 200; opacity: 0; text-shadow: 0 0 20px #000; color: #f1c40f; pointer-events: none; }
-        .anim-pop { animation: popIn 1.5s forwards; }
-        @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -60%) scale(1); opacity: 0; } }
+        /* Interface da TV */
+        h1 { margin: 15px 0; font-size: 1.8rem; color: var(--accent-color); text-transform: uppercase; letter-spacing: 2px; }
+        .gauge-wrapper { position: relative; width: 600px; height: 300px; margin: 20px auto; cursor: pointer; }
+        .gauge-bg { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; background: #333; border-radius: 300px 300px 0 0; border: 5px solid #444; box-sizing: border-box; }
         
-        .gauge-wrapper { position: relative; width: 640px; height: 320px; margin: 30px auto 0; transition: filter 0.5s ease; }
-        .gauge-bg { position: absolute; bottom: 0; left: 20px; width: 600px; height: 300px; background: linear-gradient(90deg, #ff4d4d 0%, #ffff00 50%, #4dff4d 100%); border-radius: 300px 300px 0 0; opacity: 0.2; }
-        .tick-mark { position: absolute; bottom: 0; left: 50%; width: 2px; height: 310px; transform-origin: bottom center; border-top: 10px solid rgba(255,255,255,0.4); pointer-events: none; }
-        .tick-number { position: absolute; top: -30px; left: -20px; width: 40px; text-align: center; font-size: 1rem; font-weight: bold; text-shadow: 0 2px 4px #000; }
+        .target-zone { position: absolute; bottom: 0; left: 50%; width: 600px; height: 300px; transform-origin: bottom center; opacity: 0; pointer-events: none; transform: translateX(-50%) rotate(-90deg); transition: 1.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .wedge-outer { position: absolute; bottom: 0; left: 50%; width: 120px; height: 300px; background: var(--secondary-zone); transform: translateX(-50%); clip-path: polygon(0 0, 100% 0, 50% 100%); opacity: 0.8; }
+        .wedge-inner { position: absolute; bottom: 0; left: 50%; width: 50px; height: 300px; background: #fff; transform: translateX(-50%); clip-path: polygon(0 0, 100% 0, 50% 100%); }
         
-        .target-zone { position: absolute; bottom: 0; left: 50%; width: 600px; height: 300px; transform-origin: bottom center; opacity: 0; pointer-events: none; transform: translateX(-50%) rotate(-90deg); z-index: 3; }
-        .wedge-outer { position: absolute; bottom: 0; left: 50%; width: 208px; height: 320px; background-color: var(--secondary-zone); transform: translateX(-50%); clip-path: polygon(0 0, 100% 0, 50% 100%); opacity: 0.8; }
-        .wedge-inner { position: absolute; bottom: 0; left: 50%; width: 101px; height: 320px; background-color: #fff; transform: translateX(-50%); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+        .needle { position: absolute; bottom: 0; left: 50%; width: 4px; height: 260px; background: #fff; transform-origin: bottom center; transform: translateX(-50%) rotate(-90deg); z-index: 10; border-radius: 2px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .needle-knob { position: absolute; bottom: -15px; left: 50%; width: 30px; height: 30px; background: #fff; border-radius: 50%; transform: translateX(-50%); z-index: 11; border: 4px solid var(--accent-color); }
+
+        .tick-mark { position: absolute; bottom: 0; left: 50%; width: 2px; height: 280px; transform-origin: bottom center; border-top: 15px solid rgba(255,255,255,0.2); }
+        .tick-number { position: absolute; top: -25px; left: -15px; width: 30px; text-align: center; font-size: 0.8rem; color: #888; }
+
+        /* Controles */
+        .controls { background: var(--panel-color); padding: 20px; border-radius: 20px; width: 90%; max-width: 700px; margin-top: 10px; }
+        .slider { width: 100%; cursor: pointer; accent-color: var(--accent-color); margin: 20px 0; }
         
-        .needle { position: absolute; bottom: 0; left: 50%; width: 6px; height: 280px; background: #fff; border: 2px solid #000; transform-origin: bottom center; transform: translateX(-50%) rotate(-90deg); z-index: 10; border-radius: 3px; }
-        .needle-knob { position: absolute; bottom: -25px; left: 50%; width: 50px; height: 50px; background: #fff; border: 4px solid var(--accent-color); border-radius: 50%; transform: translateX(-50%); z-index: 11; }
+        #theme-box { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid #444; }
+        .theme-side { flex: 1; text-align: center; }
+        .theme-val { font-size: 1.2rem; font-weight: bold; display: block; }
         
-        .controls-area { background: var(--panel-color); padding: 15px 30px; border-radius: 15px; width: 90%; max-width: 800px; text-align: center; margin-top: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
-        .range-slider { width: 100%; cursor: pointer; accent-color: var(--accent-color); }
-        #qr-container { background: white; padding: 10px; border-radius: 10px; display: inline-block; cursor: pointer; }
-        
-        .scoreboard { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 20px; }
-        .team-card { background: rgba(255,255,255,0.08); padding: 10px; border-radius: 8px; min-width: 140px; text-align: center; border: 1px solid rgba(255,255,255,0.15); transition: 0.3s; }
-        .active-turn { border: 2px solid var(--accent-color); background: rgba(233, 69, 96, 0.1); transform: scale(1.05); }
+        .btn { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
+        .btn-reveal { background: var(--accent-color); color: white; }
+        .btn-next { background: #4ecca3; color: #1a1a2e; }
+        .btn-sync { background: #555; color: white; font-size: 0.7rem; padding: 5px 10px; }
+
+        #qrcode { background: white; padding: 8px; border-radius: 8px; display: inline-block; margin-top: 10px; }
+
+        /* Mobile */
+        .remote-card { background: var(--panel-color); padding: 40px; border-radius: 30px; text-align: center; width: 85%; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        #secret-val { font-size: 6rem; font-weight: 900; color: var(--accent-color); margin: 20px 0; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
+    <div id="campeonato">
+        <div id="lista-equipes-config"></div>
+        <button onclick="adicionarEquipe()" style="background:#444; color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer">+</button>
+    </div>
+
     <div id="tela-tv">
-        <div id="feedback-score"></div>
-        <h1>Sintonia Online</h1>
-        <div class="gauge-wrapper" id="gauge-main" onclick="moveByClick(event)">
+        <h1>SINTONIA</h1>
+        
+        <div class="gauge-wrapper" onclick="moveByClick(event)">
             <div class="gauge-bg"></div>
-            <div id="ticks-container"></div> 
+            <div id="ticks-container"></div>
             <div id="target-zone" class="target-zone">
                 <div class="wedge-outer"></div>
                 <div class="wedge-inner"></div>
@@ -73,240 +85,200 @@
             <div id="needle" class="needle"></div>
             <div class="needle-knob"></div>
         </div>
-        <div class="controls-area">
-            <p style="font-size: 1.2rem;">Posição: <span id="display-val" style="color:var(--accent-color); font-weight:bold;">0</span></p>
-            <input type="range" id="dial-slider" class="range-slider" min="0" max="100" value="0" step="5" oninput="updateNeedle(this.value)">
-            <div style="margin: 15px 0; height: 50px;">
-                <button onclick="revealAnimation()" id="btn-reveal" style="background:var(--accent-color); color:white; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1.1rem;">👁️ Revelar</button>
-                <button onclick="startNewRound()" id="btn-new" style="background:#4ecca3; color:#1a1a2e; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1.1rem; display:none;">🎲 Nova Rodada</button>
+
+        <div class="controls">
+            <div id="theme-box">
+                <div class="theme-side"><small style="color:var(--accent-color)">0</small><span id="theme-0" class="theme-val">...</span></div>
+                <button onclick="shuffleTheme()" title="Trocar Tema" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#888;">🔄</button>
+                <div class="theme-side"><small style="color:var(--accent-color)">100</small><span id="theme-100" class="theme-val">...</span></div>
             </div>
-            <div id="info-section" style="display:flex; justify-content:center; align-items:center; gap:25px;">
-                <div id="qr-container" onclick="window.open(currentUrl, '_blank')"></div>
-                <div id="theme-display" style="text-align:left; background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border: 1px solid rgba(255,255,255,0.1); min-width: 250px;">
-                    <div style="color:#888; font-size:0.8rem; margin-bottom:5px; font-weight:bold;">TEMA DA RODADA:</div>
-                    <div style="font-size:1.1rem; margin-bottom:3px;"><span style="color:var(--accent-color); font-weight:bold;">0:</span> <span id="theme-0">...</span></div>
-                    <div style="font-size:1.1rem;"><span style="color:var(--accent-color); font-weight:bold;">100:</span> <span id="theme-100">...</span></div>
-                </div>
+
+            <input type="range" class="slider" id="dial" min="0" max="100" value="50" oninput="updateNeedle(this.value)">
+            
+            <div style="display:flex; justify-content:center; gap:15px;">
+                <button class="btn btn-reveal" id="btn-reveal" onclick="revealAlvo()">👁️ Revelar Alvo</button>
+                <button class="btn btn-next" id="btn-next" onclick="proximaRodada()" style="display:none;">🎲 Próxima Rodada</button>
+            </div>
+
+            <div style="margin-top:20px;">
+                <div id="qrcode"></div>
+                <p style="font-size:0.7rem; color:#666;">Capitão: Escaneie para ver o Alvo Secreto</p>
             </div>
         </div>
-        <div class="scoreboard" id="scoreboard"></div>
     </div>
 
     <div id="tela-celular" class="hidden">
-        <div class="remote-container">
-            <div class="remote-card" id="card-remoto">
-                <h2 style="color:var(--accent-color); margin-top:0;">SINTONIA</h2>
-                <p>O seu alvo da rodada é:</p>
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh;">
+            <div class="remote-card">
+                <p>O ALVO DA RODADA É:</p>
                 <div id="secret-val">--</div>
-                <button class="btn-send-tv" onclick="comandoRevelar()">📢 REVELAR NO TELÃO</button>
-            </div>
-            <div id="msg-bloqueio" class="hidden">
-                <div class="remote-card">
-                    <p style="color:#4ecca3; font-weight:bold; font-size:1.2rem;">Ação Enviada!</p>
-                    <p style="color:#888; font-style:italic;">O alvo está sendo revelado na TV.</p>
-                </div>
+                <button class="btn btn-reveal" style="width:100%" onclick="window.minhaConexao.send({type:'REVELAR'})">📢 MOSTRAR NA TV</button>
             </div>
         </div>
     </div>
 
-    <script>
-        let peer, conn, currentTarget = 0, currentUrl = "", autoTimer = null;
-        let currentTurnIndex = 0;
-        let scores = [0, 0]; // [Time 1, Time 2]
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+<script>
+    let peer, conn, currentTarget = 50, wakeLock = null;
+    let equipes = [
+        { nome: 'TIME A', pontos: 0, cor: '#e94560' },
+        { nome: 'TIME B', pontos: 0, cor: '#4ecca3' }
+    ];
 
-        const themes = [
-            { min: "Cidade ruim", max: "Cidade incrível" }, { min: "Comida ruim", max: "Comida gostosa" },
-            { min: "Superpoder inútil", max: "Superpoder incrível" }, { min: "Animal inofensivo", max: "Animal letal" },
-            { min: "Música triste", max: "Música feliz" }, { min: "Cheiro ruim", max: "Cheiro maravilhoso" }
-        ];
+    const themesBase = [
+        { min: "Cidade Ruim", max: "Cidade Incrível" }, { min: "Comida Ruim", max: "Comida Gostosa" },
+        { min: "Superpoder Inútil", max: "Superpoder Incrível" }, { min: "Animal Inofensivo", max: "Animal Letal" },
+        { min: "Música Triste", max: "Música Feliz" }, { min: "Fetiche Comum", max: "Fetiche Estranho" },
+        { min: "Hobby Barato", max: "Hobby Caro" }, { min: "Emoji Inútil", max: "Emoji Indispensável" },
+        { min: "Filme de Sessão da Tarde", max: "Obra-prima do Cinema" }, { min: "Trabalho Chato", max: "Trabalho dos Sonhos" },
+        { min: "Vilão que tem razão", max: "Vilão puramente mau" }, { min: "Invenção Inútil", max: "Mudou a humanidade" },
+        { min: "Desenho para Criança", max: "Desenho para Adulto" }, { min: "Ator de um papel só", max: "Camaleão do Cinema" },
+        { min: "Sabor de Pizza Polêmico", max: "Unanimidade Nacional" }, { min: "País subestimado", max: "País superestimado" },
+        { min: "Rede Social Tóxica", max: "Rede Social Saudável" }, { min: "Tendência de moda feia", max: "Moda Atemporal" },
+        { min: "Estilo Musical Irritante", max: "Música Relaxante" }, { min: "Personalidade de Reality", max: "Líder Mundial" },
+        { min: "Presente de Grego", max: "Melhor Presente do Mundo" }, { min: "Habilidade que ninguém liga", max: "Talento Único" },
+        { min: "Destino de viagem clichê", max: "Lugar Exótico" }, { min: "Marca Barata", max: "Marca de Luxo" },
+        { min: "Objeto que quebra fácil", max: "Indestrutível" }, { min: "Palavra difícil de falar", max: "Satisfatória de dizer" },
+        { min: "Lugar que cheira mal", max: "Perfume Natural" }, { min: "Acessório Brega", max: "Acessório Elegante" },
+        { min: "Famoso "esquecível"", max: "Ícone Eterno" }, { min: "Ferramenta de Cozinha Inútil", max: "Mão na Roda" },
+        { min: "Site da Web de 1990", max: "Interface Futurista" }, { min: "Meme Datado", max: "Meme Imortal" },
+        { min: "Sabor de sorvete básico", max: "Sabor Gourmet" }, { min: "Esporte tedioso", max: "Pura Adrenalina" },
+        { min: "Assunto de conversa fiada", max: "Deep Talk" }, { min: "Livro de Autoajuda", max: "Literatura Clássica" },
+        { min: "App que drena bateria", max: "App Otimizado" }, { min: "Atitude Imatura", max: "Atitude Sábia" },
+        { min: "Cantor de Chuveiro", max: "Voz Angelical" }, { min: "Sobremesa Enjoativa", max: "Equilíbrio de Sabores" },
+        { min: "Vilão de Desenho Animado", max: "Ditador Histórico" }, { min: "Tecnologia Obsoleta", max: "Ponta de Linha" },
+        { min: "Animal Fofinho", max: "Animal Bizarro" }, { min: "Clima Depressivo", max: "Dia Perfeito" },
+        { min: "Fruta Sem Graça", max: "Explosão de Sabor" }, { min: "Profissão Perigosa", max: "Trabalho Seguro" },
+        { min: "Gíria de "Tiozão"", max: "Linguagem da Gen Z" }, { min: "Bebida que desce queimando", max: "Suave como seda" },
+        { min: "Personagem de Game Fraco", max: "Boss Apelão" }, { min: "Lugar Barulhento", max: "Silêncio Absoluto" },
+        { min: "Peça de Roupa Desconfortável", max: "Segunda Pele" }, { min: "Comédia sem graça", max: "Morrer de rir" },
+        { min: "Talento Inútil em uma Ilha Deserta", max: "Habilidade de Sobrevivência" }, { min: "Pior pesadelo", max: "Sonho Lúcido" },
+        { min: "Conselho de Pai", max: "Filosofia Grega" }, { min: "Pessoa Irrelevante", max: "Protagonista da História" },
+        { min: "Dica de Saúde Duvidosa", max: "Ciência Comprovada" }, { min: "Objeto que você perde sempre", max: "Sempre à mão" },
+        { min: "Canção de Ninar", max: "Heavy Metal" }, { min: "Tiro curto (One Hit Wonder)", max: "Carreira Sólida" },
+        { min: "Cachorro de dondoca", max: "Lobo Selvagem" }, { min: "Refrigerante sem gás", max: "Champanhe Gelada" },
+        { min: "Conversa de Elevador", max: "Terapia Intensiva" }, { min: "Eletrodoméstico que faz barulho", max: "Silencioso" },
+        { min: "Pior época para viver", max: "Era de Ouro" }, { min: "Cor de Parede Depressiva", max: "Ambiente Vibrante" },
+        { min: "Presente de Amigo Oculto", max: "Herança de Família" }, { min: "Ator de Comercial", max: "Ganhador de Oscar" },
+        { min: "Lanche de Posto", max: "Banquete Real" }, { min: "Lugar que dá medo", max: "Santuário" },
+        { min: "Regra Chatas", max: "Liberdade Total" }, { min: "Som Irritante", max: "ASMR Relaxante" },
+        { min: "Habilidade de DIY (Faça você mesmo) Ruim", max: "Mestre de Obras" }, { min: "Série que "se arrasta"", max: "Ritmo Frenético" },
+        { min: "Lugar para levar a sogra", max: "Lugar para Lua de Mel" }, { min: "Personagem secundário", max: "Lenda do Jogo" },
+        { min: "Cheiro de limpeza", max: "Cheiro de Natureza" }, { min: "Jogo que estraga amizades", max: "Jogo que une a galera" },
+        { min: "Mentira Inocente", max: "Conspiração Mundial" }, { min: "Atitude Egoísta", max: "Altruísmo Puro" },
+        { min: "Carro de Colecionador", max: "Lata Velha" }, { min: "Festa de Criança", max: "Rave" },
+        { min: "Segredo bobo", max: "Confissão de Crime" }, { min: "Pessoa Normal", max: "Alienígena Disfarçado" },
+        { min: "Futebol de Várzea", max: "Final de Copa do Mundo" }, { min: "Culinária Exótica", max: "Comida de Mãe" },
+        { min: "Estrela Mirim", max: "Veterano de Guerra" }, { min: "Clichê de Terror", max: "Reviravolta Genial" },
+        { min: "Hobby que dá sono", max: "Vício" }, { min: "Marca de Grife", max: "Produto de Feira" },
+        { min: "Dica de Viagem Ruim", max: "Guia Local" }, { min: "Música de rádio", max: "Lado B Alternativo" },
+        { min: "Brinquedo de Plástico", max: "Objeto de Arte" }, { min: "Cidade do Interior", max: "Metrópole Global" },
+        { min: "Dia de Segunda-feira", max: "Sextou!" }, { min: "Sentimento Passageiro", max: "Amor Eterno" }
+    ];
 
-        function playSfx(type) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            
-            if (type === 'tick') {
-                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-            } else if (type === 'suspense') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 1.2);
-                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.2);
-                osc.start(); osc.stop(audioCtx.currentTime + 1.2);
-            } else if (type === 'win') {
-                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-                setTimeout(() => {
-                    const osc2 = audioCtx.createOscillator();
-                    osc2.connect(gain);
-                    osc2.frequency.setValueAtTime(659.25, audioCtx.currentTime);
-                    osc2.start(); osc2.stop(audioCtx.currentTime + 0.3);
-                }, 100);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-            }
+    let themesPool = [...themesBase];
+
+    async function ativarWakeLock() {
+        try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+    }
+    ativarWakeLock();
+
+    function drawScale() {
+        const cont = document.getElementById('ticks-container');
+        cont.innerHTML = '';
+        for(let i=0; i<=100; i+=10) {
+            const t = document.createElement('div');
+            t.className = 'tick-mark';
+            t.style.transform = `translateX(-50%) rotate(${(i/100*180)-90}deg)`;
+            t.innerHTML = `<div class="tick-number">${i}</div>`;
+            cont.appendChild(t);
         }
+    }
 
-        window.onload = () => {
-            const salaId = new URLSearchParams(window.location.search).get('sala');
-            if (salaId) iniciarCelular(salaId); else iniciarTV();
-        };
+    function shuffleTheme() {
+        if(themesPool.length === 0) themesPool = [...themesBase];
+        const idx = Math.floor(Math.random() * themesPool.length);
+        const t = themesPool.splice(idx, 1)[0];
+        document.getElementById('theme-0').innerText = t.min;
+        document.getElementById('theme-100').innerText = t.max;
+    }
 
-        function iniciarTV() {
-            peer = new Peer();
-            peer.on('open', (id) => {
-                currentUrl = window.location.href.split('?')[0] + '?sala=' + id;
-                document.getElementById('qr-container').innerHTML = '';
-                new QRCode(document.getElementById("qr-container"), { text: currentUrl, width: 150, height: 150 });
-                drawScale(); initScoreboard(); startNewRound();
-            });
-            peer.on('connection', (c) => {
-                conn = c;
-                conn.on('open', () => conn.send({ type: 'ALVO', valor: currentTarget }));
-                conn.on('data', (d) => { if(d.type === 'REVELAR') revealAnimation(); });
-            });
-        }
+    function proximaRodada() {
+        document.getElementById('btn-next').style.display = 'none';
+        document.getElementById('btn-reveal').style.display = 'inline-block';
+        document.getElementById('target-zone').style.opacity = '0';
+        currentTarget = (Math.floor(Math.random() * 19) + 1) * 5; // Evita 0 e 100 absolutos
+        updateNeedle(50);
+        shuffleTheme();
+        if(conn) conn.send({type: 'ALVO', valor: currentTarget});
+    }
 
-        function iniciarCelular(id) {
-            document.getElementById('tela-tv').classList.add('hidden');
-            document.getElementById('tela-celular').classList.remove('hidden');
-            peer = new Peer();
-            peer.on('open', () => {
-                const c = peer.connect(id);
-                c.on('data', (d) => { if(d.type === 'ALVO') document.getElementById('secret-val').innerText = d.valor; });
-                window.minhaConexao = c;
-            });
-        }
+    function revealAlvo() {
+        document.getElementById('btn-reveal').style.display = 'none';
+        const tz = document.getElementById('target-zone');
+        tz.style.opacity = '1';
+        tz.style.transform = `translateX(-50%) rotate(${(currentTarget/100*180)-90}deg)`;
+        setTimeout(() => { document.getElementById('btn-next').style.display = 'inline-block'; }, 1500);
+    }
 
-        function comandoRevelar() {
-            if(window.minhaConexao) {
-                window.minhaConexao.send({ type: 'REVELAR' });
-                document.getElementById('card-remoto').classList.add('hidden');
-                document.getElementById('msg-bloqueio').classList.remove('hidden');
-            }
-        }
+    function updateNeedle(v) {
+        document.getElementById('needle').style.transform = `translateX(-50%) rotate(${(v/100*180)-90}deg)`;
+        document.getElementById('dial').value = v;
+    }
 
-        function startNewRound() {
-            if(autoTimer) clearInterval(autoTimer);
-            document.getElementById('btn-new').style.display = 'none';
-            document.getElementById('btn-reveal').style.display = 'inline-block';
-            document.getElementById('gauge-main').classList.remove('spotlight-active');
-            document.getElementById('target-zone').style.opacity = '0';
-            document.getElementById('target-zone').style.transition = "none";
-            document.getElementById('target-zone').style.transform = "translateX(-50%) rotate(-90deg)";
-            
-            currentTarget = Math.floor(Math.random() * 21) * 5;
-            updateNeedle(0);
-            shuffleTheme();
-            
-            // Gerencia troca de turnos e destaque visual
-            const cards = document.querySelectorAll('.team-card');
-            if(cards.length > 0) {
-                cards.forEach(c => c.classList.remove('active-turn'));
-                cards[currentTurnIndex].classList.add('active-turn');
-                // Salva quem é o time ativo antes de girar o índice para o próximo
-                window.activeTeamThisRound = currentTurnIndex; 
-                currentTurnIndex = (currentTurnIndex + 1) % cards.length;
-            }
-        }
+    function moveByClick(e) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left - (rect.width/2);
+        const y = rect.height - (e.clientY - rect.top);
+        let angle = Math.atan2(y, x) * 180 / Math.PI;
+        let val = 100 - (angle / 180 * 100);
+        updateNeedle(Math.round(Math.max(0, Math.min(100, val))));
+    }
 
-        function revealAnimation() {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            document.getElementById('btn-reveal').style.display = 'none';
-            document.getElementById('gauge-main').classList.add('spotlight-active');
-            
-            playSfx('suspense');
-            
-            const targetEl = document.getElementById('target-zone');
-            const deg = (currentTarget / 100 * 180) - 90;
-            targetEl.style.opacity = '1';
-            targetEl.style.transition = "transform 1.8s cubic-bezier(0.4, 0, 0.2, 1)";
-            targetEl.style.transform = `translateX(-50%) rotate(${deg}deg)`;
+    function adicionarEquipe() {
+        equipes.push({ nome: 'NOVO TIME', pontos: 0, cor: '#888' });
+        renderEquipes();
+    }
 
-            setTimeout(() => {
-                checkScore(); // Chama a função que agora realmente soma os pontos
-                document.getElementById('btn-new').style.display = 'inline-block';
-                let time = 5;
-                document.getElementById('btn-new').innerText = `🎲 Nova Rodada (${time}s)`;
-                autoTimer = setInterval(() => {
-                    time--;
-                    document.getElementById('btn-new').innerText = `🎲 Nova Rodada (${time}s)`;
-                    if(time <= 0) startNewRound();
-                }, 1000);
-            }, 2000);
-        }
+    function renderEquipes() {
+        const config = document.getElementById('lista-equipes-config');
+        config.innerHTML = '';
+        equipes.forEach((eq, i) => {
+            config.innerHTML += `
+                <div class="equipe-config">
+                    <input type="text" class="edit-nome" value="${eq.nome}" onchange="equipes[${i}].nome=this.value">
+                    <input type="number" class="vit-num" value="${eq.pontos}" onchange="equipes[${i}].pontos=parseInt(this.value)">
+                </div>`;
+        });
+    }
 
-        function updateNeedle(val) {
-            document.getElementById('needle').style.transform = `translateX(-50%) rotate(${(val/100*180)-90}deg)`;
-            document.getElementById('display-val').innerText = val;
-            document.getElementById('dial-slider').value = val;
-            playSfx('tick');
-        }
+    function iniciarTV() {
+        peer = new Peer();
+        peer.on('open', id => {
+            const url = window.location.href.split('?')[0] + '?sala=' + id;
+            new QRCode(document.getElementById("qrcode"), { text: url, width: 120, height: 120 });
+            drawScale(); renderEquipes(); proximaRodada();
+        });
+        peer.on('connection', c => {
+            conn = c;
+            conn.on('data', d => { if(d.type==='REVELAR') revealAlvo(); });
+            setTimeout(() => conn.send({type: 'ALVO', valor: currentTarget}), 1000);
+        });
+    }
 
-        function moveByClick(e) {
-            const rect = document.getElementById('gauge-main').getBoundingClientRect();
-            const x = e.clientX - rect.left - (rect.width/2);
-            const y = rect.height - (e.clientY - rect.top);
-            let val = 100 - (Math.atan2(y, x) * 180 / Math.PI / 180 * 100);
-            updateNeedle(Math.round(Math.max(0, Math.min(100, val)) / 5) * 5);
-        }
+    function iniciarCelular(salaId) {
+        document.getElementById('tela-tv').classList.add('hidden');
+        document.getElementById('campeonato').classList.add('hidden');
+        document.getElementById('tela-celular').classList.remove('hidden');
+        peer = new Peer();
+        peer.on('open', () => {
+            const c = peer.connect(salaId);
+            c.on('data', d => { if(d.type==='ALVO') document.getElementById('secret-val').innerText = d.valor; });
+            window.minhaConexao = c;
+        });
+    }
 
-        function checkScore() {
-            const diff = Math.abs(currentTarget - document.getElementById('dial-slider').value);
-            let points = 0;
-
-            // Lógica de pontuação
-            if (diff === 0) points = 4;
-            else if (diff <= 5) points = 3;
-            else if (diff <= 10) points = 2;
-
-            if (points > 0) {
-                playSfx('win');
-                
-                // Soma os pontos ao time que jogou esta rodada
-                const teamIdx = window.activeTeamThisRound;
-                scores[teamIdx] += points;
-                
-                // Atualiza o placar na tela
-                document.getElementById(`score-${teamIdx}`).innerText = scores[teamIdx];
-
-                const f = document.getElementById('feedback-score');
-                f.innerText = `+${points}`;
-                f.classList.add('anim-pop');
-                setTimeout(() => f.classList.remove('anim-pop'), 1500);
-            }
-        }
-
-        function shuffleTheme() {
-            const t = themes[Math.floor(Math.random() * themes.length)];
-            document.getElementById('theme-0').innerText = t.min;
-            document.getElementById('theme-100').innerText = t.max;
-        }
-
-        function drawScale() {
-            const container = document.getElementById('ticks-container');
-            container.innerHTML = '';
-            for (let i = 0; i <= 100; i += 10) {
-                const tick = document.createElement('div');
-                tick.className = 'tick-mark';
-                tick.style.transform = `translateX(-50%) rotate(${(i/100*180)-90}deg)`;
-                tick.innerHTML = `<div class="tick-number">${i}</div>`;
-                container.appendChild(tick);
-            }
-        }
-
-        function initScoreboard() {
-            const sb = document.getElementById('scoreboard');
-            // IDs adicionados para permitir atualização via JS
-            sb.innerHTML = `
-                <div class="team-card" id="card-team-0">Time 1<div id="score-0" style="font-size:2rem; color:var(--accent-color); font-weight:bold;">0</div></div>
-                <div class="team-card" id="card-team-1">Time 2<div id="score-1" style="font-size:2rem; color:var(--accent-color); font-weight:bold;">0</div></div>
-            `;
-        }
-    </script>
+    const salaId = new URLSearchParams(window.location.search).get('sala');
+    if(salaId) iniciarCelular(salaId); else iniciarTV();
+</script>
 </body>
 </html>
