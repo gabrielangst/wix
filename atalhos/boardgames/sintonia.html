@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sintonia - Edição Suspense (Atualizado)</title>
+    <title>Sintonia - Edição Suspense Automática</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -13,6 +13,7 @@
             --accent-color: #e94560;
             --secondary-zone: #ff9f1c;
             --text-color: #fff;
+            --active-color: #4ecca3;
         }
 
         body {
@@ -24,17 +25,24 @@
         }
 
         /* Gestão de Equipes (Topo) */
-        #painel-equipes { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; background: rgba(0,0,0,0.8); padding: 10px; width: 100%; border-bottom: 2px solid var(--accent-color); margin-bottom: 10px; }
-        .equipe-config { display: flex; align-items: center; gap: 5px; background: #222; padding: 5px 10px; border-radius: 8px; border: 1px solid #444; }
-        .edit-nome { background: transparent; border: none; color: #f1c40f; font-weight: bold; width: 100px; text-align: center; font-size: 1rem; }
-        .vit-num { font-size: 1.2rem; font-weight: bold; color: #fff; background: #333; border: none; width: 45px; text-align: center; border-radius: 4px; }
-        .btn-add-team { background: #4ecca3; color: #1a1a2e; border: none; border-radius: 50%; width: 35px; height: 35px; font-weight: bold; font-size: 1.2rem; cursor: pointer; }
+        #painel-equipes { display: flex; align-items: center; justify-content: center; gap: 15px; background: rgba(0,0,0,0.8); padding: 15px; width: 100%; border-bottom: 2px solid var(--accent-color); margin-bottom: 10px; box-sizing: border-box; }
+        #lista-equipes { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center; }
+        
+        .equipe-config { display: flex; align-items: center; gap: 5px; background: #222; padding: 8px 12px; border-radius: 8px; border: 2px solid #444; transition: all 0.3s ease; }
+        .edit-nome { background: transparent; border: none; color: #f1c40f; font-weight: bold; width: 100px; text-align: center; font-size: 1rem; outline: none; }
+        .vit-num { font-size: 1.2rem; font-weight: bold; color: #fff; background: #333; border: none; width: 45px; text-align: center; border-radius: 4px; outline: none; }
+        
+        /* Destaque do Turno e Botão Remover */
+        .turno-ativo { border-color: var(--active-color) !important; box-shadow: 0 0 15px rgba(78, 204, 163, 0.5); transform: scale(1.05); }
+        .btn-add-team { background: var(--active-color); color: #1a1a2e; border: none; border-radius: 50%; width: 35px; height: 35px; font-weight: bold; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        .btn-add-team:hover { transform: scale(1.1); }
+        .btn-remove-team { background: #e94560; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-weight: bold; font-size: 0.8rem; cursor: pointer; margin-left: 5px; display: flex; align-items: center; justify-content: center; }
 
         /* TELA CELULAR */
         .remote-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100%; background: #1a1a2e; text-align: center; }
         .remote-card { background: #16213e; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 85%; max-width: 400px; }
         #secret-val { font-size: 7rem; font-weight: 900; color: var(--accent-color); margin: 20px 0; }
-        .btn-send-tv { background: #4ecca3; color: #1a1a2e; border: none; padding: 20px; border-radius: 15px; font-size: 1.2rem; font-weight: bold; cursor: pointer; width: 100%; }
+        .btn-send-tv { background: var(--active-color); color: #1a1a2e; border: none; padding: 20px; border-radius: 15px; font-size: 1.2rem; font-weight: bold; cursor: pointer; width: 100%; }
 
         /* TABULEIRO TV */
         h1 { margin: 10px 0; font-size: 2rem; text-transform: uppercase; color: var(--accent-color); text-shadow: 0 0 15px rgba(233, 69, 96, 0.3); }
@@ -70,7 +78,7 @@
 
     <div id="painel-equipes" class="hidden">
         <div id="lista-equipes"></div>
-        <button class="btn-add-team" onclick="adicionarEquipe()">+</button>
+        <button class="btn-add-team" onclick="adicionarEquipe()" title="Adicionar Equipe">+</button>
     </div>
 
     <div id="tela-tv">
@@ -93,7 +101,7 @@
             
             <div style="margin: 15px 0; height: 50px;">
                 <button onclick="revealAnimation()" id="btn-reveal" class="btn-action">👁️ Revelar</button>
-                <button onclick="startNewRound()" id="btn-new" class="btn-action" style="background:#4ecca3; color:#1a1a2e; display:none;">🎲 Nova Rodada</button>
+                <button onclick="startNewRound()" id="btn-new" class="btn-action" style="background:var(--active-color); color:#1a1a2e; display:none;">🎲 Nova Rodada</button>
             </div>
             
             <div id="info-section" style="display:flex; justify-content:center; align-items:center; gap:25px;">
@@ -120,7 +128,7 @@
             </div>
             <div id="msg-bloqueio" class="hidden">
                 <div class="remote-card">
-                    <p style="color:#4ecca3; font-weight:bold; font-size:1.2rem;">Ação Enviada!</p>
+                    <p style="color:var(--active-color); font-weight:bold; font-size:1.2rem;">Ação Enviada!</p>
                     <p style="color:#888; font-style:italic;">O alvo está sendo revelado na TV.</p>
                 </div>
             </div>
@@ -131,12 +139,12 @@
         let peer, conn, currentTarget = 0, currentUrl = "", autoTimer = null;
         let wakeLock = null;
         
+        let turnoAtual = -1;
         let equipes = [
             { id: 1, nome: "TIME A", pontos: 0 },
             { id: 2, nome: "TIME B", pontos: 0 }
         ];
 
-        // Temas Variados
         const themesBase = [
             { min: "Cidade ruim", max: "Cidade incrível" },
             { min: "Comida ruim", max: "Comida gostosa" },
@@ -198,19 +206,23 @@
             { min: "Acontece uma vez na vida", max: "Acontece todo dia" },
             { min: "Dá sono", max: "Dá adrenalina" },
             { min: "Nome de cachorro", max: "Nome de gente" },
-            { min: "Coisas de criança", max: "Coisas de adulto" }
-            { min: "Cidade ruim", max: "Cidade incrível" }, { min: "Comida ruim", max: "Comida gostosa" },
-            { min: "Superpoder inútil", max: "Superpoder incrível" }, { min: "Animal inofensivo", max: "Animal letal" },
-            { min: "Música triste", max: "Música feliz" }, { min: "Cheiro ruim", max: "Cheiro maravilhoso" },
-            { min: "Coisa de rico", max: "Coisa de pobre" }, { min: "Chato", max: "Divertido" },
-            { min: "Fraco", max: "Poderoso" }, { min: "Curto", max: "Longo" }
+            { min: "Coisas de criança", max: "Coisas de adulto" },
+            { min: "Cidade ruim", max: "Cidade incrível" }, 
+            { min: "Comida ruim", max: "Comida gostosa" },
+            { min: "Superpoder inútil", max: "Superpoder incrível" }, 
+            { min: "Animal inofensivo", max: "Animal letal" },
+            { min: "Música triste", max: "Música feliz" }, 
+            { min: "Cheiro ruim", max: "Cheiro maravilhoso" },
+            { min: "Coisa de rico", max: "Coisa de pobre" }, 
+            { min: "Chato", max: "Divertido" },
+            { min: "Fraco", max: "Poderoso" }, 
+            { min: "Curto", max: "Longo" }
         ];
         
         let themesPool = [];
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        // Wake Lock API
         async function ativarWakeLock() {
             try {
                 if ('wakeLock' in navigator) {
@@ -221,7 +233,6 @@
             }
         }
 
-        // Lógica de Áudio Original Mantida
         function playSfx(type) {
             if (!audioCtx) return;
             const osc = audioCtx.createOscillator();
@@ -266,7 +277,6 @@
                 document.getElementById('qr-container').innerHTML = '';
                 new QRCode(document.getElementById("qr-container"), { text: currentUrl, width: 140, height: 140 });
                 drawScale(); 
-                renderEquipes(); 
                 startNewRound();
             });
             peer.on('connection', (c) => {
@@ -295,28 +305,40 @@
             }
         }
 
-        // Sistema de Equipes
+        // Sistema de Equipes e Turnos
         function renderEquipes() {
             const container = document.getElementById('lista-equipes');
             container.innerHTML = '';
             equipes.forEach((eq, idx) => {
+                const isAtivo = (idx === turnoAtual) ? 'turno-ativo' : '';
                 container.innerHTML += `
-                    <div class="equipe-config">
+                    <div class="equipe-config ${isAtivo}">
                         <input type="text" class="edit-nome" value="${eq.nome}" onchange="equipes[${idx}].nome = this.value">
                         <input type="number" class="vit-num" value="${eq.pontos}" onchange="equipes[${idx}].pontos = parseInt(this.value)">
+                        ${equipes.length > 1 ? `<button class="btn-remove-team" onclick="removerEquipe(${idx})" title="Remover Time">✖</button>` : ''}
                     </div>`;
             });
         }
 
         function adicionarEquipe() {
-            equipes.push({ id: equipes.length + 1, nome: `TIME ${String.fromCharCode(65 + equipes.length)}`, pontos: 0 });
+            equipes.push({ id: Date.now(), nome: `TIME ${String.fromCharCode(65 + equipes.length)}`, pontos: 0 });
+            renderEquipes();
+        }
+
+        function removerEquipe(index) {
+            equipes.splice(index, 1);
+            if (turnoAtual >= equipes.length) turnoAtual = 0;
             renderEquipes();
         }
 
         // Lógica do Jogo
         function startNewRound() {
-            if(autoTimer) clearInterval(autoTimer);
+            if(autoTimer) {
+                clearInterval(autoTimer);
+                autoTimer = null;
+            }
             document.getElementById('btn-new').style.display = 'none';
+            document.getElementById('btn-new').innerText = `🎲 Nova Rodada`;
             document.getElementById('btn-reveal').style.display = 'inline-block';
             document.getElementById('gauge-main').classList.remove('spotlight-active');
             
@@ -325,12 +347,15 @@
             targetEl.style.transition = "none";
             targetEl.style.transform = "translateX(-50%) rotate(-90deg)";
             
-            // Sorteia alvo entre 5 e 95 (evita 0 e 100 absoluto)
+            // Avança o turno
+            turnoAtual = (turnoAtual + 1) % equipes.length;
+            renderEquipes();
+
             currentTarget = (Math.floor(Math.random() * 19) + 1) * 5; 
             updateNeedle(50);
             shuffleTheme();
             
-            // Se houver conexão com celular, envia o novo alvo
+            // Reabilita o botão remoto do celular
             if (conn && conn.open) {
                 conn.send({ type: 'ALVO', valor: currentTarget });
             }
@@ -338,9 +363,8 @@
 
         function shuffleTheme() {
             if (themesPool.length === 0) {
-                themesPool = [...themesBase]; // Recarrega a piscina de temas
+                themesPool = [...themesBase]; 
             }
-            // Pega um tema aleatório e remove da piscina para não repetir
             const idx = Math.floor(Math.random() * themesPool.length);
             const t = themesPool.splice(idx, 1)[0];
             
@@ -361,11 +385,53 @@
             targetEl.style.transition = "transform 1.8s cubic-bezier(0.4, 0, 0.2, 1)";
             targetEl.style.transform = `translateX(-50%) rotate(${deg}deg)`;
 
+            // Aguarda a animação visual antes de pontuar e iniciar o cronômetro
             setTimeout(() => {
-                checkScore();
-                document.getElementById('btn-new').style.display = 'inline-block';
-                document.getElementById('btn-new').innerText = `🎲 Nova Rodada`;
+                checkScoreAndApplyPoints();
+                
+                const btnNew = document.getElementById('btn-new');
+                btnNew.style.display = 'inline-block';
+                
+                let timeLeft = 5;
+                btnNew.innerText = `Próxima rodada em ${timeLeft}s...`;
+                
+                autoTimer = setInterval(() => {
+                    timeLeft--;
+                    if(timeLeft > 0) {
+                        btnNew.innerText = `Próxima rodada em ${timeLeft}s...`;
+                    } else {
+                        clearInterval(autoTimer);
+                        startNewRound();
+                    }
+                }, 1000);
+
             }, 2000);
+        }
+
+        function checkScoreAndApplyPoints() {
+            const diff = Math.abs(currentTarget - document.getElementById('dial-slider').value);
+            let pontosGanhos = 0;
+            
+            // Zona Branca Central (+4 pontos) ou Zona Laranja Externa (+2 pontos)
+            if(diff <= 5) {
+                pontosGanhos = 4;
+            } else if(diff <= 10) {
+                pontosGanhos = 2;
+            }
+
+            if(pontosGanhos > 0) {
+                playSfx('win');
+                const f = document.getElementById('feedback-score');
+                f.innerText = "+" + pontosGanhos;
+                f.classList.add('anim-pop');
+                setTimeout(() => f.classList.remove('anim-pop'), 1500);
+
+                // Aplica os pontos na equipe ativa
+                if(turnoAtual >= 0 && turnoAtual < equipes.length) {
+                    equipes[turnoAtual].pontos += pontosGanhos;
+                    renderEquipes();
+                }
+            }
         }
 
         function updateNeedle(val) {
@@ -377,22 +443,10 @@
 
         function moveByClick(e) {
             const rect = document.getElementById('gauge-main').getBoundingClientRect();
-            // Calcula com base no centro da base do semicírculo
             const x = e.clientX - rect.left - (rect.width / 2);
             const y = rect.height - (e.clientY - rect.top);
             let val = 100 - (Math.atan2(y, x) * 180 / Math.PI / 180 * 100);
             updateNeedle(Math.round(Math.max(0, Math.min(100, val)) / 5) * 5);
-        }
-
-        function checkScore() {
-            const diff = Math.abs(currentTarget - document.getElementById('dial-slider').value);
-            if(diff <= 10) {
-                playSfx('win');
-                const f = document.getElementById('feedback-score');
-                f.innerText = diff <= 5 ? "+4" : "+2";
-                f.classList.add('anim-pop');
-                setTimeout(() => f.classList.remove('anim-pop'), 1500);
-            }
         }
 
         function drawScale() {
@@ -409,5 +463,3 @@
     </script>
 </body>
 </html>
-
-
