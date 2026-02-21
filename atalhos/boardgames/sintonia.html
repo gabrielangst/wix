@@ -3,59 +3,393 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sintonia Pro - Corrigido</title>
+    <title>Sintonia - Edição Suspense (Atualizado)</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --bg-color: #1a1a2e; --panel-color: #16213e; --accent-color: #e94560; --text-color: #fff; }
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #1a1a2e; color: var(--text-color);
-            display: flex; flex-direction: column; align-items: center; margin: 0; min-height: 100vh;
+        :root {
+            --bg-color: #1a1a2e;
+            --panel-color: #16213e;
+            --accent-color: #e94560;
+            --secondary-zone: #ff9f1c;
+            --text-color: #fff;
         }
-        #campeonato { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; background: #000; padding: 10px; width: 100%; }
-        .equipe-config { background: #222; padding: 5px; border-radius: 5px; display: flex; gap: 5px; }
-        .edit-nome { background: transparent; border: none; color: #f1c40f; width: 80px; text-align: center; }
-        .vit-num { width: 40px; text-align: center; }
 
-        .gauge-wrapper { position: relative; width: 600px; height: 300px; margin: 40px auto; background: #222; border-radius: 300px 300px 0 0; overflow: hidden; border: 4px solid #333; cursor: crosshair; }
-        .target-zone { position: absolute; bottom: 0; left: 50%; width: 600px; height: 300px; transform-origin: bottom center; opacity: 0; transition: transform 1.5s, opacity 0.5s; z-index: 1; }
-        .wedge-outer { position: absolute; bottom: 0; left: 50%; width: 100px; height: 300px; background: #ff9f1c; transform: translateX(-50%); clip-path: polygon(0 0, 100% 0, 50% 100%); }
-        .wedge-inner { position: absolute; bottom: 0; left: 50%; width: 40px; height: 300px; background: #fff; transform: translateX(-50%); clip-path: polygon(0 0, 100% 0, 50% 100%); }
-        .needle { position: absolute; bottom: 0; left: 50%; width: 4px; height: 260px; background: #fff; transform-origin: bottom center; z-index: 10; transform: translateX(-50%) rotate(-90deg); }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(rgba(10, 10, 20, 0.85), rgba(10, 10, 20, 0.85)), 
+                        url('https://static.vecteezy.com/system/resources/previews/003/581/209/non_2x/hand-drawn-banner-template-of-board-game-vector.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; user-select: none; overflow-x: hidden; padding-bottom: 50px;
+        }
+
+        /* Gestão de Equipes (Topo) */
+        #painel-equipes { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; background: rgba(0,0,0,0.8); padding: 10px; width: 100%; border-bottom: 2px solid var(--accent-color); margin-bottom: 10px; }
+        .equipe-config { display: flex; align-items: center; gap: 5px; background: #222; padding: 5px 10px; border-radius: 8px; border: 1px solid #444; }
+        .edit-nome { background: transparent; border: none; color: #f1c40f; font-weight: bold; width: 100px; text-align: center; font-size: 1rem; }
+        .vit-num { font-size: 1.2rem; font-weight: bold; color: #fff; background: #333; border: none; width: 45px; text-align: center; border-radius: 4px; }
+        .btn-add-team { background: #4ecca3; color: #1a1a2e; border: none; border-radius: 50%; width: 35px; height: 35px; font-weight: bold; font-size: 1.2rem; cursor: pointer; }
+
+        /* TELA CELULAR */
+        .remote-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100%; background: #1a1a2e; text-align: center; }
+        .remote-card { background: #16213e; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 85%; max-width: 400px; }
+        #secret-val { font-size: 7rem; font-weight: 900; color: var(--accent-color); margin: 20px 0; }
+        .btn-send-tv { background: #4ecca3; color: #1a1a2e; border: none; padding: 20px; border-radius: 15px; font-size: 1.2rem; font-weight: bold; cursor: pointer; width: 100%; }
+
+        /* TABULEIRO TV */
+        h1 { margin: 10px 0; font-size: 2rem; text-transform: uppercase; color: var(--accent-color); text-shadow: 0 0 15px rgba(233, 69, 96, 0.3); }
+        .spotlight-active { filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.15)); z-index: 100; }
+        #feedback-score { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 8rem; font-weight: 900; z-index: 200; opacity: 0; text-shadow: 0 0 20px #000; color: #f1c40f; pointer-events: none; }
+        .anim-pop { animation: popIn 1.5s forwards; }
+        @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -60%) scale(1); opacity: 0; } }
         
-        .tick-mark { position: absolute; bottom: 0; left: 50%; width: 2px; height: 285px; transform-origin: bottom center; border-top: 10px solid #555; }
+        .gauge-wrapper { position: relative; width: 640px; height: 320px; margin: 10px auto 0; transition: filter 0.5s ease; cursor: pointer; }
+        .gauge-bg { position: absolute; bottom: 0; left: 20px; width: 600px; height: 300px; background: linear-gradient(90deg, #ff4d4d 0%, #ffff00 50%, #4dff4d 100%); border-radius: 300px 300px 0 0; opacity: 0.2; }
+        .tick-mark { position: absolute; bottom: 0; left: 50%; width: 2px; height: 310px; transform-origin: bottom center; border-top: 10px solid rgba(255,255,255,0.4); pointer-events: none; }
+        .tick-number { position: absolute; top: -30px; left: -20px; width: 40px; text-align: center; font-size: 1rem; font-weight: bold; text-shadow: 0 2px 4px #000; }
         
-        .controls { background: var(--panel-color); padding: 20px; border-radius: 15px; width: 80%; max-width: 600px; text-align: center; }
-        #theme-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.2rem; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        #qrcode { background: #fff; padding: 10px; margin-top: 15px; display: inline-block; }
+        .target-zone { position: absolute; bottom: 0; left: 50%; width: 600px; height: 300px; transform-origin: bottom center; opacity: 0; pointer-events: none; transform: translateX(-50%) rotate(-90deg); z-index: 3; }
+        .wedge-outer { position: absolute; bottom: 0; left: 50%; width: 208px; height: 320px; background-color: var(--secondary-zone); transform: translateX(-50%); clip-path: polygon(0 0, 100% 0, 50% 100%); opacity: 0.8; }
+        .wedge-inner { position: absolute; bottom: 0; left: 50%; width: 101px; height: 320px; background-color: #fff; transform: translateX(-50%); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+        
+        .needle { position: absolute; bottom: 0; left: 50%; width: 6px; height: 280px; background: #fff; border: 2px solid #000; transform-origin: bottom center; transform: translateX(-50%) rotate(-90deg); z-index: 10; border-radius: 3px; }
+        .needle-knob { position: absolute; bottom: -25px; left: 50%; width: 50px; height: 50px; background: #fff; border: 4px solid var(--accent-color); border-radius: 50%; transform: translateX(-50%); z-index: 11; }
+        
+        .controls-area { background: var(--panel-color); padding: 15px 30px; border-radius: 15px; width: 90%; max-width: 800px; text-align: center; margin-top: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .range-slider { width: 100%; cursor: pointer; accent-color: var(--accent-color); }
+        #qr-container { background: white; padding: 10px; border-radius: 10px; display: inline-block; cursor: pointer; }
+        
+        .btn-action { background:var(--accent-color); color:white; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1.1rem; }
+        .btn-recycle { background: none; border: none; font-size: 1.8rem; cursor: pointer; transition: 0.2s; }
+        .btn-recycle:hover { transform: rotate(180deg); }
+
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="campeonato">
-        <div id="lista-equipes-config"></div>
-        <button onclick="adicionarEquipe()">+</button>
+    <div id="painel-equipes" class="hidden">
+        <div id="lista-equipes"></div>
+        <button class="btn-add-team" onclick="adicionarEquipe()">+</button>
     </div>
 
     <div id="tela-tv">
-        <div class="gauge-wrapper" onclick="moveByClick(event)">
-            <div id="ticks-container"></div>
+        <div id="feedback-score"></div>
+        <h1>Sintonia Online</h1>
+        <div class="gauge-wrapper" id="gauge-main" onclick="moveByClick(event)">
+            <div class="gauge-bg"></div>
+            <div id="ticks-container"></div> 
             <div id="target-zone" class="target-zone">
                 <div class="wedge-outer"></div>
                 <div class="wedge-inner"></div>
             </div>
             <div id="needle" class="needle"></div>
+            <div class="needle-knob"></div>
         </div>
-
-        <div class="controls">
-            <div id="theme-box">
-                <span id="theme-0">...</span>
-                <button onclick="shuffleTheme()">🔄</button>
-                <span id="theme-100">...</span>
+        
+        <div class="controls-area">
+            <p style="font-size: 1.2rem; margin: 10px 0;">Posição: <span id="display-val" style="color:var(--accent-color); font-weight:bold;">0</span></p>
+            <input type="range" id="dial-slider" class="range-slider" min="0" max="100" value="0" step="5" oninput="updateNeedle(this.value)">
+            
+            <div style="margin: 15px 0; height: 50px;">
+                <button onclick="revealAnimation()" id="btn-reveal" class="btn-action">👁️ Revelar</button>
+                <button onclick="startNewRound()" id="btn-new" class="btn-action" style="background:#4ecca3; color:#1a1a2e; display:none;">🎲 Nova Rodada</button>
             </div>
-            <input type="range" style="width:100%" id="dial" min="0" max="100" value="50" oninput="updateNeedle(this.value)">
-            <br><br>
-            <button class="btn" style="background:#e94560; color:#fff;" id="btn-reveal" onclick="revealAlvo()">REVELAR</
+            
+            <div id="info-section" style="display:flex; justify-content:center; align-items:center; gap:25px;">
+                <div id="qr-container" onclick="window.open(currentUrl, '_blank')"></div>
+                
+                <div id="theme-display" style="display:flex; align-items:center; background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border: 1px solid rgba(255,255,255,0.1); min-width: 350px;">
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-size:1.1rem; margin-bottom:5px;"><span style="color:var(--accent-color); font-weight:bold;">0:</span> <span id="theme-0">...</span></div>
+                        <div style="font-size:1.1rem;"><span style="color:var(--accent-color); font-weight:bold;">100:</span> <span id="theme-100">...</span></div>
+                    </div>
+                    <button class="btn-recycle" onclick="shuffleTheme()" title="Trocar Tema">🔄</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tela-celular" class="hidden">
+        <div class="remote-container">
+            <div class="remote-card" id="card-remoto">
+                <h2 style="color:var(--accent-color); margin-top:0;">SINTONIA</h2>
+                <p>O seu alvo da rodada é:</p>
+                <div id="secret-val">--</div>
+                <button class="btn-send-tv" onclick="comandoRevelar()">📢 REVELAR NA TV</button>
+            </div>
+            <div id="msg-bloqueio" class="hidden">
+                <div class="remote-card">
+                    <p style="color:#4ecca3; font-weight:bold; font-size:1.2rem;">Ação Enviada!</p>
+                    <p style="color:#888; font-style:italic;">O alvo está sendo revelado na TV.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let peer, conn, currentTarget = 0, currentUrl = "", autoTimer = null;
+        let wakeLock = null;
+        
+        let equipes = [
+            { id: 1, nome: "TIME A", pontos: 0 },
+            { id: 2, nome: "TIME B", pontos: 0 }
+        ];
+
+        // 100 Temas Variados
+        const themesBase = [
+            { min: "Cidade ruim", max: "Cidade incrível" }, { min: "Comida ruim", max: "Comida gostosa" },
+            { min: "Superpoder inútil", max: "Superpoder incrível" }, { min: "Animal inofensivo", max: "Animal letal" },
+            { min: "Música triste", max: "Música feliz" }, { min: "Cheiro ruim", max: "Cheiro maravilhoso" },
+            { min: "Hobby barato", max: "Hobby caro" }, { min: "Emoji inútil", max: "Emoji indispensável" },
+            { min: "Filme ruim", max: "Obra-prima do cinema" }, { min: "Trabalho chato", max: "Trabalho dos sonhos" },
+            { min: "Vilão com razão", max: "Vilão puramente mau" }, { min: "Invenção inútil", max: "Mudou o mundo" },
+            { min: "Desenho para criança", max: "Desenho para adulto" }, { min: "Sabor de pizza polêmico", max: "Unanimidade" },
+            { min: "País subestimado", max: "País superestimado" }, { min: "Rede social tóxica", max: "Rede social saudável" },
+            { min: "Tendência feia", max: "Moda atemporal" }, { min: "Música irritante", max: "Música relaxante" },
+            { min: "Presente de grego", max: "Melhor presente" }, { min: "Habilidade inútil", max: "Talento único" },
+            { min: "Destino clichê", max: "Lugar exótico" }, { min: "Marca barata", max: "Marca de luxo" },
+            { min: "Quebra fácil", max: "Indestrutível" }, { min: "Palavra difícil de falar", max: "Satisfatória de dizer" },
+            { min: "Acessório brega", max: "Acessório elegante" }, { min: "Famoso esquecível", max: "Ícone eterno" },
+            { min: "Site antigo", max: "Interface futurista" }, { min: "Meme datado", max: "Meme imortal" },
+            { min: "Sabor de sorvete básico", max: "Sabor gourmet" }, { min: "Esporte tedioso", max: "Pura adrenalina" },
+            { min: "Conversa fiada", max: "Conversa profunda" }, { min: "Livro de autoajuda", max: "Literatura clássica" },
+            { min: "App inútil", max: "App essencial" }, { min: "Atitude imatura", max: "Atitude sábia" },
+            { min: "Cantor de chuveiro", max: "Voz angelical" }, { min: "Sobremesa enjoativa", max: "Sobremesa perfeita" },
+            { min: "Vilão de desenho", max: "Ditador cruel" }, { min: "Tecnologia obsoleta", max: "Tecnologia de ponta" },
+            { min: "Animal fofinho", max: "Animal bizarro" }, { min: "Clima depressivo", max: "Dia perfeito" },
+            { min: "Fruta sem graça", max: "Explosão de sabor" }, { min: "Profissão perigosa", max: "Trabalho seguro" },
+            { min: "Gíria velha", max: "Gíria atual" }, { min: "Bebida que queima", max: "Suave como seda" },
+            { min: "Personagem fraco", max: "Chefe apelão" }, { min: "Lugar barulhento", max: "Silêncio absoluto" },
+            { min: "Roupa desconfortável", max: "Segunda pele" }, { min: "Comédia sem graça", max: "Morrer de rir" },
+            { min: "Pior pesadelo", max: "Sonho lúcido" }, { min: "Conselho ruim", max: "Sabedoria pura" },
+            { min: "Pessoa irrelevante", max: "Protagonista" }, { min: "Dica duvidosa", max: "Fato científico" },
+            { min: "Perde fácil", max: "Sempre à mão" }, { min: "Canção de ninar", max: "Heavy Metal" },
+            { min: "Sucesso passageiro", max: "Carreira sólida" }, { min: "Cachorro de madame", max: "Lobo selvagem" },
+            { min: "Refrigerante sem gás", max: "Champanhe gelada" }, { min: "Conversa de elevador", max: "Terapia" },
+            { min: "Faz muito barulho", max: "Silencioso" }, { min: "Pior época para viver", max: "Era de ouro" },
+            { min: "Cor depressiva", max: "Cor vibrante" }, { min: "Presente de amigo oculto", max: "Herança" },
+            { min: "Ator de comercial", max: "Ganhador do Oscar" }, { min: "Lanche de posto", max: "Banquete" },
+            { min: "Lugar assustador", max: "Santuário" }, { min: "Regra chata", max: "Liberdade total" },
+            { min: "Som irritante", max: "ASMR relaxante" }, { min: "DIY (Faça você mesmo) ruim", max: "Obra de mestre" },
+            { min: "Série arrastada", max: "Ritmo frenético" }, { min: "Personagem secundário", max: "Lenda do jogo" },
+            { min: "Cheiro de produto químico", max: "Cheiro de natureza" }, { min: "Estraga amizades", max: "Une a galera" },
+            { min: "Mentira inocente", max: "Conspiração" }, { min: "Atitude egoísta", max: "Altruísmo puro" },
+            { min: "Lata velha", max: "Carro de colecionador" }, { min: "Festa de criança", max: "Rave" },
+            { min: "Segredo bobo", max: "Confissão de crime" }, { min: "Pessoa normal", max: "Alienígena disfarçado" },
+            { min: "Futebol de várzea", max: "Final de Copa" }, { min: "Culinária exótica", max: "Comida de mãe" },
+            { min: "Estrela mirim", max: "Veterano" }, { min: "Clichê de terror", max: "Reviravolta genial" },
+            { min: "Hobby que dá sono", max: "Vício" }, { min: "Produto pirata", max: "Produto original" },
+            { min: "Dica inútil", max: "Guia definitivo" }, { min: "Música de rádio", max: "Lado B alternativo" },
+            { min: "Brinquedo de plástico", max: "Objeto de arte" }, { min: "Cidade do interior", max: "Metrópole global" },
+            { min: "Segunda-feira", max: "Sexta-feira" }, { min: "Sentimento passageiro", max: "Amor eterno" },
+            { min: "Comida sem sal", max: "Tempero perfeito" }, { min: "Café frio", max: "Café fresco" },
+            { min: "Roupa rasgada", max: "Alta costura" }, { min: "Transporte lotado", max: "Primeira classe" },
+            { min: "Internet lenta", max: "Fibra óptica" }, { min: "Bateria acabando", max: "100% carregado" },
+            { min: "Chuva no feriado", max: "Sol na praia" }, { min: "Fila de banco", max: "Atendimento VIP" },
+            { min: "Cadeira dura", max: "Poltrona macia" }, { min: "Susto de manhã", max: "Acordar naturalmente" }
+        ];
+        
+        let themesPool = [];
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Wake Lock API
+        async function ativarWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.log("Wake Lock falhou:", err);
+            }
+        }
+
+        // Lógica de Áudio Original Mantida
+        function playSfx(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            
+            if (type === 'tick') {
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            } else if (type === 'suspense') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 1.2);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 1.2);
+            } else if (type === 'win') {
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                setTimeout(() => {
+                    const osc2 = audioCtx.createOscillator();
+                    osc2.connect(gain);
+                    osc2.frequency.setValueAtTime(659.25, audioCtx.currentTime);
+                    osc2.start(); osc2.stop(audioCtx.currentTime + 0.3);
+                }, 100);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            }
+        }
+
+        window.onload = () => {
+            const salaId = new URLSearchParams(window.location.search).get('sala');
+            if (salaId) iniciarCelular(salaId); else iniciarTV();
+        };
+
+        function iniciarTV() {
+            document.getElementById('painel-equipes').classList.remove('hidden');
+            ativarWakeLock();
+            peer = new Peer();
+            peer.on('open', (id) => {
+                currentUrl = window.location.href.split('?')[0] + '?sala=' + id;
+                document.getElementById('qr-container').innerHTML = '';
+                new QRCode(document.getElementById("qr-container"), { text: currentUrl, width: 140, height: 140 });
+                drawScale(); 
+                renderEquipes(); 
+                startNewRound();
+            });
+            peer.on('connection', (c) => {
+                conn = c;
+                conn.on('open', () => conn.send({ type: 'ALVO', valor: currentTarget }));
+                conn.on('data', (d) => { if(d.type === 'REVELAR') revealAnimation(); });
+            });
+        }
+
+        function iniciarCelular(id) {
+            document.getElementById('tela-tv').classList.add('hidden');
+            document.getElementById('tela-celular').classList.remove('hidden');
+            peer = new Peer();
+            peer.on('open', () => {
+                const c = peer.connect(id);
+                c.on('data', (d) => { if(d.type === 'ALVO') document.getElementById('secret-val').innerText = d.valor; });
+                window.minhaConexao = c;
+            });
+        }
+
+        function comandoRevelar() {
+            if(window.minhaConexao) {
+                window.minhaConexao.send({ type: 'REVELAR' });
+                document.getElementById('card-remoto').classList.add('hidden');
+                document.getElementById('msg-bloqueio').classList.remove('hidden');
+            }
+        }
+
+        // Sistema de Equipes
+        function renderEquipes() {
+            const container = document.getElementById('lista-equipes');
+            container.innerHTML = '';
+            equipes.forEach((eq, idx) => {
+                container.innerHTML += `
+                    <div class="equipe-config">
+                        <input type="text" class="edit-nome" value="${eq.nome}" onchange="equipes[${idx}].nome = this.value">
+                        <input type="number" class="vit-num" value="${eq.pontos}" onchange="equipes[${idx}].pontos = parseInt(this.value)">
+                    </div>`;
+            });
+        }
+
+        function adicionarEquipe() {
+            equipes.push({ id: equipes.length + 1, nome: `TIME ${String.fromCharCode(65 + equipes.length)}`, pontos: 0 });
+            renderEquipes();
+        }
+
+        // Lógica do Jogo
+        function startNewRound() {
+            if(autoTimer) clearInterval(autoTimer);
+            document.getElementById('btn-new').style.display = 'none';
+            document.getElementById('btn-reveal').style.display = 'inline-block';
+            document.getElementById('gauge-main').classList.remove('spotlight-active');
+            
+            const targetEl = document.getElementById('target-zone');
+            targetEl.style.opacity = '0';
+            targetEl.style.transition = "none";
+            targetEl.style.transform = "translateX(-50%) rotate(-90deg)";
+            
+            // Sorteia alvo entre 5 e 95 (evita 0 e 100 absoluto)
+            currentTarget = (Math.floor(Math.random() * 19) + 1) * 5; 
+            updateNeedle(50);
+            shuffleTheme();
+            
+            // Se houver conexão com celular, envia o novo alvo
+            if (conn && conn.open) {
+                conn.send({ type: 'ALVO', valor: currentTarget });
+            }
+        }
+
+        function shuffleTheme() {
+            if (themesPool.length === 0) {
+                themesPool = [...themesBase]; // Recarrega a piscina de temas
+            }
+            // Pega um tema aleatório e remove da piscina para não repetir
+            const idx = Math.floor(Math.random() * themesPool.length);
+            const t = themesPool.splice(idx, 1)[0];
+            
+            document.getElementById('theme-0').innerText = t.min;
+            document.getElementById('theme-100').innerText = t.max;
+        }
+
+        function revealAnimation() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            document.getElementById('btn-reveal').style.display = 'none';
+            document.getElementById('gauge-main').classList.add('spotlight-active');
+            
+            playSfx('suspense');
+            
+            const targetEl = document.getElementById('target-zone');
+            const deg = (currentTarget / 100 * 180) - 90;
+            targetEl.style.opacity = '1';
+            targetEl.style.transition = "transform 1.8s cubic-bezier(0.4, 0, 0.2, 1)";
+            targetEl.style.transform = `translateX(-50%) rotate(${deg}deg)`;
+
+            setTimeout(() => {
+                checkScore();
+                document.getElementById('btn-new').style.display = 'inline-block';
+                document.getElementById('btn-new').innerText = `🎲 Nova Rodada`;
+            }, 2000);
+        }
+
+        function updateNeedle(val) {
+            document.getElementById('needle').style.transform = `translateX(-50%) rotate(${(val/100*180)-90}deg)`;
+            document.getElementById('display-val').innerText = val;
+            document.getElementById('dial-slider').value = val;
+            playSfx('tick');
+        }
+
+        function moveByClick(e) {
+            const rect = document.getElementById('gauge-main').getBoundingClientRect();
+            // Calcula com base no centro da base do semicírculo
+            const x = e.clientX - rect.left - (rect.width / 2);
+            const y = rect.height - (e.clientY - rect.top);
+            let val = 100 - (Math.atan2(y, x) * 180 / Math.PI / 180 * 100);
+            updateNeedle(Math.round(Math.max(0, Math.min(100, val)) / 5) * 5);
+        }
+
+        function checkScore() {
+            const diff = Math.abs(currentTarget - document.getElementById('dial-slider').value);
+            if(diff <= 10) {
+                playSfx('win');
+                const f = document.getElementById('feedback-score');
+                f.innerText = diff <= 5 ? "+4" : "+2";
+                f.classList.add('anim-pop');
+                setTimeout(() => f.classList.remove('anim-pop'), 1500);
+            }
+        }
+
+        function drawScale() {
+            const container = document.getElementById('ticks-container');
+            container.innerHTML = '';
+            for (let i = 0; i <= 100; i += 10) {
+                const tick = document.createElement('div');
+                tick.className = 'tick-mark';
+                tick.style.transform = `translateX(-50%) rotate(${(i/100*180)-90}deg)`;
+                tick.innerHTML = `<div class="tick-number">${i}</div>`;
+                container.appendChild(tick);
+            }
+        }
+    </script>
+</body>
+</html>
