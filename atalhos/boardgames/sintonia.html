@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sintonia - Edição Suspense Automática</title>
+    <title>Sintonia - TV - By Gabriel Angst / Gemini</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -312,10 +312,10 @@
             equipes.forEach((eq, idx) => {
                 const isAtivo = (idx === turnoAtual) ? 'turno-ativo' : '';
                 container.innerHTML += `
-                    <div class="equipe-config ${isAtivo}">
-                        <input type="text" class="edit-nome" value="${eq.nome}" onchange="equipes[${idx}].nome = this.value">
-                        <input type="number" class="vit-num" value="${eq.pontos}" onchange="equipes[${idx}].pontos = parseInt(this.value)">
-                        ${equipes.length > 1 ? `<button class="btn-remove-team" onclick="removerEquipe(${idx})" title="Remover Time">✖</button>` : ''}
+                    <div class="equipe-config ${isAtivo}" onclick="mudarTurnoManualmente(${idx})" style="cursor: pointer;" title="Clique para passar a vez para este time">
+                        <input type="text" class="edit-nome" value="${eq.nome}" onchange="equipes[${idx}].nome = this.value" onclick="event.stopPropagation()">
+                        <input type="number" class="vit-num" value="${eq.pontos}" onchange="equipes[${idx}].pontos = parseInt(this.value)" onclick="event.stopPropagation()">
+                        ${equipes.length > 1 ? `<button class="btn-remove-team" onclick="event.stopPropagation(); removerEquipe(${idx})" title="Remover Time">✖</button>` : ''}
                     </div>`;
             });
         }
@@ -459,6 +459,11 @@
                 tick.innerHTML = `<div class="tick-number">${i}</div>`;
                 container.appendChild(tick);
             }
+        }
+
+        function mudarTurnoManualmente(index) {
+            turnoAtual = index;
+            renderEquipes();
         }
     </script>
 </body>
