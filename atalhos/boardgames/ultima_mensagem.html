@@ -17,11 +17,32 @@
 
         /* Layout da TV */
         #tv-view { display: none; width: 100vw; height: 100vh; }
+        
         #board-area { 
+            position: relative; /* Adicionado para permitir o posicionamento do dropdown */
             width: 75%; 
             background: #222 url('https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC.jpg') center/contain no-repeat; 
             border-right: 4px solid #000; 
         }
+        
+        /* Novo estilo para o dropdown do tabuleiro */
+        #board-selector {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            font-size: 16px;
+            background-color: rgba(44, 62, 80, 0.9);
+            color: #ecf0f1;
+            border: 2px solid #34495e;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            outline: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        #board-selector:hover { background-color: rgba(52, 73, 94, 0.95); }
+
         #sidebar-area { width: 25%; display: flex; flex-direction: column; background-color: #34495e; }
         
         #hint-card { height: 65%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; border-bottom: 4px solid #000; background-color: #fff; }
@@ -39,7 +60,7 @@
         .cfg-row { display: flex; justify-content: space-between; width: 100%; max-width: 200px; margin-bottom: 5px; align-items: center; }
         .cfg-row input { width: 50px; text-align: center; padding: 3px; border-radius: 4px; border: none; font-weight: bold; }
 
-        /* Layout do Celular ATUALIZADO para permitir scroll */
+        /* Layout do Celular */
         #mobile-view { 
             display: none; 
             flex-direction: column; 
@@ -50,7 +71,7 @@
             padding: 20px; 
             text-align: center; 
             position: relative; 
-            overflow-y: auto; /* Permite rolar a tela do celular */
+            overflow-y: auto; 
         }
         
         #mobile-start, #mobile-draw, #mobile-erase, #mobile-end { 
@@ -58,14 +79,13 @@
             flex-direction: column; 
             align-items: center; 
             width: 100%; 
-            height: max-content; /* Permite que o conteúdo defina a altura */
-            justify-content: flex-start; /* Joga os itens para o topo */
-            padding-bottom: 40px; /* Espaço extra no final para o botão */
+            height: max-content; 
+            justify-content: flex-start; 
+            padding-bottom: 40px; 
         }
         
         .header-info { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #2c3e50; }
         
-        /* Nova classe para colocar rodada e timer na mesma linha */
         .mobile-header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 250px; margin-bottom: 10px; }
         .mobile-header-row .round-info { font-size: 18px; color: #7f8c8d; font-weight: bold; margin-bottom: 0; }
         .mobile-header-row .timer-display { font-size: 36px; color: #e74c3c; font-weight: bold; margin-bottom: 0; line-height: 1; }
@@ -74,7 +94,6 @@
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
         #grid-overlay { pointer-events: none; }
 
-        /* Tela preta de transição */
         #transition-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: black; z-index: 1000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
         #transition-overlay h2 { color: #e74c3c; font-size: 32px; margin-bottom: 15px; }
         #transition-overlay p { color: #fff; font-size: 20px; margin-bottom: 30px; }
@@ -89,7 +108,17 @@
     </div>
 
     <div id="tv-view">
-        <div id="board-area"></div>
+        <div id="board-area">
+            <select id="board-selector" onchange="changeBoard()">
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC.jpg">01 - Western</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC02.jpg">02 - Idade Antiga</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC03.jpg">03 - Aliens</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC04.jpg">04 - Zumbis</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC05.jpg">05 - Herois</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC06.jpg">06 - Tem de tudo</option>
+            </select>
+        </div>
+        
         <div id="sidebar-area">
             <div id="hint-card">
                 <img id="hint-image" src="" alt="Dica da Rodada">
@@ -219,6 +248,21 @@
             for(let i = 1; i < GRID_ROWS; i++) { ctxGrid.beginPath(); ctxGrid.moveTo(0, i * QUAD_H); ctxGrid.lineTo(CANVAS_WIDTH, i * QUAD_H); ctxGrid.stroke(); }
             for(let i = 1; i < GRID_COLS; i++) { ctxGrid.beginPath(); ctxGrid.moveTo(i * QUAD_W, 0); ctxGrid.lineTo(i * QUAD_W, CANVAS_HEIGHT); ctxGrid.stroke(); }
         }
+
+        // --- NOVA FUNÇÃO: Trocar o Tabuleiro ---
+        window.changeBoard = () => {
+            const selector = document.getElementById('board-selector');
+            const boardArea = document.getElementById('board-area');
+            const selectedUrl = selector.value;
+            
+            // Só altera se a URL for válida (não for o placeholder)
+            if (selectedUrl && selectedUrl.startsWith('http')) {
+                boardArea.style.background = `#222 url('${selectedUrl}') center/contain no-repeat`;
+            } else {
+                alert("Você precisa preencher a URL da imagem desse tabuleiro no código HTML primeiro.");
+                selector.selectedIndex = 0; // Volta para a opção 1 (Western) provisoriamente
+            }
+        };
 
         window.openView = (role) => {
             document.getElementById('role-selection').style.display = 'none';
