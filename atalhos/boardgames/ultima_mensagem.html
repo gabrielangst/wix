@@ -35,23 +35,46 @@
         #qr-code { width: 90px; height: 90px; border-radius: 4px; margin-bottom: 5px; }
         #room-code { font-size: 14px; font-weight: bold; color: #e74c3c; }
 
-        /* Novo Painel de Configurações na TV */
         #tv-config { height: 15%; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #2c3e50; padding: 10px; font-size: 14px; }
         .cfg-row { display: flex; justify-content: space-between; width: 100%; max-width: 200px; margin-bottom: 5px; align-items: center; }
         .cfg-row input { width: 50px; text-align: center; padding: 3px; border-radius: 4px; border: none; font-weight: bold; }
 
-        /* Layout do Celular */
-        #mobile-view { display: none; flex-direction: column; height: 100vh; background-color: #ecf0f1; color: #333; align-items: center; padding: 20px; text-align: center; position: relative; }
-        #mobile-start, #mobile-draw, #mobile-erase, #mobile-end { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; justify-content: center; }
+        /* Layout do Celular ATUALIZADO para permitir scroll */
+        #mobile-view { 
+            display: none; 
+            flex-direction: column; 
+            height: 100vh; 
+            background-color: #ecf0f1; 
+            color: #333; 
+            align-items: center; 
+            padding: 20px; 
+            text-align: center; 
+            position: relative; 
+            overflow-y: auto; /* Permite rolar a tela do celular */
+        }
         
-        .header-info { font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #2c3e50; }
-        .round-info { font-size: 18px; color: #7f8c8d; margin-bottom: 15px; font-weight: bold; }
-        .timer-display { font-size: 48px; color: #e74c3c; font-weight: bold; margin-bottom: 10px; }
+        #mobile-start, #mobile-draw, #mobile-erase, #mobile-end { 
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            width: 100%; 
+            height: max-content; /* Permite que o conteúdo defina a altura */
+            justify-content: flex-start; /* Joga os itens para o topo */
+            padding-bottom: 40px; /* Espaço extra no final para o botão */
+        }
+        
+        .header-info { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #2c3e50; }
+        
+        /* Nova classe para colocar rodada e timer na mesma linha */
+        .mobile-header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 250px; margin-bottom: 10px; }
+        .mobile-header-row .round-info { font-size: 18px; color: #7f8c8d; font-weight: bold; margin-bottom: 0; }
+        .mobile-header-row .timer-display { font-size: 36px; color: #e74c3c; font-weight: bold; margin-bottom: 0; line-height: 1; }
         
         .canvas-container { position: relative; width: 100%; max-width: 250px; aspect-ratio: 2 / 5; background-color: #fff; border: 3px solid #34495e; touch-action: none; margin-bottom: 10px; }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
         #grid-overlay { pointer-events: none; }
 
+        /* Tela preta de transição */
         #transition-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: black; z-index: 1000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
         #transition-overlay h2 { color: #e74c3c; font-size: 32px; margin-bottom: 15px; }
         #transition-overlay p { color: #fff; font-size: 20px; margin-bottom: 30px; }
@@ -74,7 +97,7 @@
                 <div id="hint-nav"></div>
             </div>
             <div id="qr-area">
-                <h3>Escaneie para jogar</h3>
+                <h3>Escaneie ou clique para jogar</h3>
                 <a id="qr-link" href="#" target="_blank" title="Abrir controle em nova aba">
                     <img id="qr-code" src="" alt="QR Code">
                 </a>
@@ -100,16 +123,19 @@
             <button class="btn" onclick="startErasingPhase()">Iniciar rodada do assassino</button>
         </div>
 
-        <div id="mobile-start" style="display: flex;">
+        <div id="mobile-start" style="display: flex; justify-content: center; height: 100%;">
             <div class="header-info">Pronto para começar?</div>
-            <div class="round-info">Rodada <span id="start-round-display">1</span>/4</div>
+            <div class="round-info" style="font-size: 18px; color: #7f8c8d; font-weight: bold; margin-bottom: 15px;">Rodada <span id="start-round-display">1</span>/4</div>
             <button class="btn" onclick="startDrawingPhase()">Vítima: Começar a Desenhar</button>
         </div>
 
         <div id="mobile-draw">
             <div class="header-info">Desenhe a Dica!</div>
-            <div class="round-info">Rodada <span id="draw-round-display">1</span>/4</div>
-            <div id="timer" class="timer-display">30</div>
+            <div class="mobile-header-row">
+                <div class="round-info">Rodada <span id="draw-round-display">1</span>/4</div>
+                <div id="timer" class="timer-display">30</div>
+            </div>
+            
             <div class="canvas-container">
                 <canvas id="draw-canvas"></canvas>
                 <canvas id="grid-overlay"></canvas>
@@ -119,16 +145,19 @@
 
         <div id="mobile-erase">
             <div class="header-info" style="color:#c0392b;">Assassino</div>
-            <div class="round-info">Rodada <span id="erase-round-display">1</span>/4</div>
-            <div id="erase-timer" class="timer-display">10</div>
-            <p style="font-size: 18px; margin-bottom: 10px;">Toque para apagar <strong id="erases-left">5</strong> quadrantes.</p>
+            <div class="mobile-header-row">
+                <div class="round-info">Rodada <span id="erase-round-display">1</span>/4</div>
+                <div id="erase-timer" class="timer-display">10</div>
+            </div>
+            
+            <p style="font-size: 16px; margin-bottom: 10px;">Toque para apagar <strong id="erases-left">5</strong> quadrantes.</p>
             <div class="canvas-container">
                 <canvas id="erase-canvas"></canvas>
             </div>
             <button id="send-btn" class="btn" disabled onclick="sendToTV()">Enviar Dica Parcial</button>
         </div>
 
-        <div id="mobile-end">
+        <div id="mobile-end" style="justify-content: center; height: 100%;">
             <div class="header-info" style="font-size: 36px;">Fim de Jogo!</div>
             <p style="margin-bottom: 30px; font-size: 18px;">Olhem para o tabuleiro. A vítima conseguiu se salvar?</p>
             <button class="btn" onclick="restartGame()">Recomeçar o Jogo</button>
@@ -141,13 +170,13 @@
 
         // COLOQUE SUAS CREDENCIAIS DO FIREBASE AQUI
         const firebaseConfig = {
-            apiKey: "AIzaSyCougosBCWI3woqCWAOLec_Dbl7IwrWR-s",
-            authDomain: "jogo-ultima-mensagem.firebaseapp.com",
-            databaseURL: "https://jogo-ultima-mensagem-default-rtdb.firebaseio.com",
-            projectId: "jogo-ultima-mensagem",
-            storageBucket: "jogo-ultima-mensagem.firebasestorage.app",
-            messagingSenderId: "175546695039",
-            appId: "1:175546695039:web:51a36a6edf16ce9c66ee4a"
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_PROJETO.firebaseapp.com",
+            databaseURL: "https://SEU_PROJETO-default-rtdb.firebaseio.com",
+            projectId: "SEU_PROJETO",
+            storageBucket: "SEU_PROJETO.appspot.com",
+            messagingSenderId: "SEU_SENDER_ID",
+            appId: "SEU_APP_ID"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -163,7 +192,6 @@
         let erasedQuadrants = [];
         let savedHints = []; 
         
-        // Tempos configuráveis
         let configVictimTime = 30;
         let configAssassinTime = 10;
 
@@ -192,7 +220,6 @@
             for(let i = 1; i < GRID_COLS; i++) { ctxGrid.beginPath(); ctxGrid.moveTo(i * QUAD_W, 0); ctxGrid.lineTo(i * QUAD_W, CANVAS_HEIGHT); ctxGrid.stroke(); }
         }
 
-        // Expondo as funções para o HTML chamar nos botões
         window.openView = (role) => {
             document.getElementById('role-selection').style.display = 'none';
             if(role === 'tv') {
@@ -213,27 +240,18 @@
             }
         };
 
-        // --- LÓGICA DA TV ---
         function initTV() {
             const currentUrl = window.location.origin + window.location.pathname + '?sala=' + roomId;
             document.getElementById('qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUrl)}`;
             document.getElementById('qr-link').href = currentUrl;
             document.getElementById('room-code').innerText = `Sala: ${roomId}`;
 
-            // Seta as configurações iniciais no Firebase
             window.updateConfig();
 
-            // Escuta o estado do jogo (desenhos)
             onValue(ref(db, 'salas/' + roomId + '/gameState'), (snapshot) => {
                 const data = snapshot.val();
                 if (!data) return;
-
-                if (data.reset) {
-                    savedHints = [];
-                    updateTVUI(null);
-                    return;
-                }
-
+                if (data.reset) { savedHints = []; updateTVUI(null); return; }
                 if (data.image && data.round) {
                     savedHints[data.round - 1] = data.image;
                     updateTVUI(data.round - 1); 
@@ -273,11 +291,8 @@
             });
         }
 
-        // --- LÓGICA DO CELULAR ---
         function initMobile() {
             setupCanvases();
-            
-            // Escuta alterações no tempo feitas pela TV
             onValue(ref(db, 'salas/' + roomId + '/config'), (snapshot) => {
                 const data = snapshot.val();
                 if(data) {
@@ -384,7 +399,6 @@
             clearInterval(eraseTimerInterval);
             const finalImageBase64 = eraseCanvas.toDataURL('image/png');
             
-            // Salva no banco de dados do Firebase
             set(ref(db, 'salas/' + roomId + '/gameState'), { 
                 round: currentRound, 
                 image: finalImageBase64,
@@ -406,7 +420,6 @@
             currentRound = 1;
             updateRoundDisplays();
             
-            // Reseta a sala no Firebase
             set(ref(db, 'salas/' + roomId + '/gameState'), { reset: true, timestamp: Date.now() });
             
             document.getElementById('mobile-end').style.display = 'none';
