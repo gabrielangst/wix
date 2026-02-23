@@ -292,7 +292,19 @@
             peer = new Peer();
             peer.on('open', () => {
                 const c = peer.connect(id);
-                c.on('data', (d) => { if(d.type === 'ALVO') document.getElementById('secret-val').innerText = d.valor; });
+                c.on('data', (d) => { 
+                    if(d.type === 'ALVO') {
+                        document.getElementById('secret-val').innerText = d.valor;
+                        // Garante que o alvo volte a aparecer na nova rodada
+                        document.getElementById('card-remoto').classList.remove('hidden');
+                        document.getElementById('msg-bloqueio').classList.add('hidden');
+                    }
+                    // Oculta o alvo se o comando vier da TV
+                    if(d.type === 'ESCONDER_ALVO') {
+                        document.getElementById('card-remoto').classList.add('hidden');
+                        document.getElementById('msg-bloqueio').classList.remove('hidden');
+                    }
+                });
                 window.minhaConexao = c;
             });
         }
@@ -376,6 +388,11 @@
             if (audioCtx.state === 'suspended') audioCtx.resume();
             document.getElementById('btn-reveal').style.display = 'none';
             document.getElementById('gauge-main').classList.add('spotlight-active');
+
+            // Se a TV clicou em revelar, avisa o celular para esconder a tela
+            if (conn && conn.open) {
+                conn.send({ type: 'ESCONDER_ALVO' });
+            }
             
             playSfx('suspense');
             
@@ -468,3 +485,4 @@
     </script>
 </body>
 </html>
+
