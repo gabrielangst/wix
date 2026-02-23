@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A Última Mensagem - Digital</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #222; color: #fff; overflow: hidden; }
+        
+        #role-selection { display: flex; flex-direction: column; height: 100vh; justify-content: center; align-items: center; gap: 20px; }
+        .btn { padding: 15px 30px; font-size: 20px; cursor: pointer; background-color: #e74c3c; color: white; border: none; border-radius: 8px; font-weight: bold; transition: background 0.3s; }
+        .btn:hover { background-color: #c0392b; }
+        .btn:disabled { background-color: #7f8c8d; cursor: not-allowed; }
+        .btn-warning { background-color: #f39c12; margin-top: 15px; font-size: 16px; padding: 10px 20px; }
+        .btn-warning:hover { background-color: #e67e22; }
+
+        /* Layout da TV */
+        #tv-view { display: none; width: 100vw; height: 100vh; }
+        #board-area { 
+            width: 75%; 
+            background: #222 url('https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC.jpg') center/contain no-repeat; 
+            border-right: 4px solid #000; 
+        }
+        #sidebar-area { width: 25%; display: flex; flex-direction: column; background-color: #34495e; }
+        
+        #hint-card { height: 65%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; border-bottom: 4px solid #000; background-color: #fff; }
+        #hint-image { width: auto; height: auto; max-width: 100%; max-height: 85%; display: none; border: 2px solid #333; object-fit: contain; }
+        #hint-nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 15px; width: 100%; }
+        .nav-btn { padding: 8px 15px; background: #34495e; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .nav-btn.active { background: #e74c3c; box-shadow: 0 0 5px #c0392b; }
+
+        #qr-area { height: 20%; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #ecf0f1; color: #333; border-bottom: 4px solid #000;}
+        #qr-area h3 { font-size: 16px; margin-bottom: 5px; text-align: center; padding: 0 10px; }
+        #qr-code { width: 90px; height: 90px; border-radius: 4px; margin-bottom: 5px; }
+        #room-code { font-size: 14px; font-weight: bold; color: #e74c3c; }
+
+        /* Novo Painel de Configurações na TV */
+        #tv-config { height: 15%; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #2c3e50; padding: 10px; font-size: 14px; }
+        .cfg-row { display: flex; justify-content: space-between; width: 100%; max-width: 200px; margin-bottom: 5px; align-items: center; }
+        .cfg-row input { width: 50px; text-align: center; padding: 3px; border-radius: 4px; border: none; font-weight: bold; }
+
+        /* Layout do Celular */
+        #mobile-view { display: none; flex-direction: column; height: 100vh; background-color: #ecf0f1; color: #333; align-items: center; padding: 20px; text-align: center; position: relative; }
+        #mobile-start, #mobile-draw, #mobile-erase, #mobile-end { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; justify-content: center; }
+        
+        .header-info { font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #2c3e50; }
+        .round-info { font-size: 18px; color: #7f8c8d; margin-bottom: 15px; font-weight: bold; }
+        .timer-display { font-size: 48px; color: #e74c3c; font-weight: bold; margin-bottom: 10px; }
+        
+        .canvas-container { position: relative; width: 100%; max-width: 250px; aspect-ratio: 2 / 5; background-color: #fff; border: 3px solid #34495e; touch-action: none; margin-bottom: 10px; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
+        #grid-overlay { pointer-events: none; }
+
+        #transition-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: black; z-index: 1000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        #transition-overlay h2 { color: #e74c3c; font-size: 32px; margin-bottom: 15px; }
+        #transition-overlay p { color: #fff; font-size: 20px; margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+
+    <div id="role-selection">
+        <h1>A Última Mensagem</h1>
+        <button class="btn" onclick="openView('tv')">Abrir na TV (Tabuleiro)</button>
+        <button class="btn" onclick="openView('mobile')">Abrir no Celular (Controle)</button>
+    </div>
+
+    <div id="tv-view">
+        <div id="board-area"></div>
+        <div id="sidebar-area">
+            <div id="hint-card">
+                <img id="hint-image" src="" alt="Dica da Rodada">
+                <h2 id="hint-placeholder" style="color:#bdc3c7; text-align: center;">Aguardando Dica...<br><span style="font-size: 14px; font-weight: normal;">(A vítima está desenhando)</span></h2>
+                <div id="hint-nav"></div>
+            </div>
+            <div id="qr-area">
+                <h3>Escaneie para jogar</h3>
+                <a id="qr-link" href="#" target="_blank" title="Abrir controle em nova aba">
+                    <img id="qr-code" src="" alt="QR Code">
+                </a>
+                <div id="room-code">Sala: ----</div>
+            </div>
+            <div id="tv-config">
+                <div class="cfg-row">
+                    <span>Tempo Vítima:</span>
+                    <input type="number" id="cfg-victim" value="30" onchange="updateConfig()">
+                </div>
+                <div class="cfg-row">
+                    <span>Tempo Assassino:</span>
+                    <input type="number" id="cfg-assassin" value="10" onchange="updateConfig()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mobile-view">
+        <div id="transition-overlay">
+            <h2>Tempo Esgotado!</h2>
+            <p>Passe o celular para o <strong>Assassino</strong>.</p>
+            <button class="btn" onclick="startErasingPhase()">Iniciar rodada do assassino</button>
+        </div>
+
+        <div id="mobile-start" style="display: flex;">
+            <div class="header-info">Pronto para começar?</div>
+            <div class="round-info">Rodada <span id="start-round-display">1</span>/4</div>
+            <button class="btn" onclick="startDrawingPhase()">Vítima: Começar a Desenhar</button>
+        </div>
+
+        <div id="mobile-draw">
+            <div class="header-info">Desenhe a Dica!</div>
+            <div class="round-info">Rodada <span id="draw-round-display">1</span>/4</div>
+            <div id="timer" class="timer-display">30</div>
+            <div class="canvas-container">
+                <canvas id="draw-canvas"></canvas>
+                <canvas id="grid-overlay"></canvas>
+            </div>
+            <button class="btn btn-warning" onclick="finishDrawingEarly()">Terminei o Desenho</button>
+        </div>
+
+        <div id="mobile-erase">
+            <div class="header-info" style="color:#c0392b;">Assassino</div>
+            <div class="round-info">Rodada <span id="erase-round-display">1</span>/4</div>
+            <div id="erase-timer" class="timer-display">10</div>
+            <p style="font-size: 18px; margin-bottom: 10px;">Toque para apagar <strong id="erases-left">5</strong> quadrantes.</p>
+            <div class="canvas-container">
+                <canvas id="erase-canvas"></canvas>
+            </div>
+            <button id="send-btn" class="btn" disabled onclick="sendToTV()">Enviar Dica Parcial</button>
+        </div>
+
+        <div id="mobile-end">
+            <div class="header-info" style="font-size: 36px;">Fim de Jogo!</div>
+            <p style="margin-bottom: 30px; font-size: 18px;">Olhem para o tabuleiro. A vítima conseguiu se salvar?</p>
+            <button class="btn" onclick="restartGame()">Recomeçar o Jogo</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // COLOQUE SUAS CREDENCIAIS DO FIREBASE AQUI
+        const firebaseConfig = {
+            apiKey: "AIzaSyCougosBCWI3woqCWAOLec_Dbl7IwrWR-s",
+            authDomain: "jogo-ultima-mensagem.firebaseapp.com",
+            databaseURL: "https://jogo-ultima-mensagem-default-rtdb.firebaseio.com",
+            projectId: "jogo-ultima-mensagem",
+            storageBucket: "jogo-ultima-mensagem.firebasestorage.app",
+            messagingSenderId: "175546695039",
+            appId: "1:175546695039:web:51a36a6edf16ce9c66ee4a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // --- VARIÁVEIS GLOBAIS ---
+        let roomId = new URLSearchParams(window.location.search).get('sala');
+        let currentRound = 1;
+        const erasesPerRound = [5, 4, 3, 2];
+        let currentErasesLeft = 0;
+        let timerInterval, eraseTimerInterval;
+        let isDrawing = false;
+        let erasedQuadrants = [];
+        let savedHints = []; 
+        
+        // Tempos configuráveis
+        let configVictimTime = 30;
+        let configAssassinTime = 10;
+
+        const CANVAS_WIDTH = 400; const CANVAS_HEIGHT = 1000;
+        const GRID_COLS = 2; const GRID_ROWS = 5;
+        const QUAD_W = CANVAS_WIDTH / GRID_COLS; const QUAD_H = CANVAS_HEIGHT / GRID_ROWS;
+
+        const drawCanvas = document.getElementById('draw-canvas');
+        const gridCanvas = document.getElementById('grid-overlay');
+        const eraseCanvas = document.getElementById('erase-canvas');
+        const ctxDraw = drawCanvas.getContext('2d', { willReadFrequently: true });
+        const ctxGrid = gridCanvas.getContext('2d');
+        const ctxErase = eraseCanvas.getContext('2d');
+
+        function setupCanvases() {
+            [drawCanvas, gridCanvas, eraseCanvas].forEach(c => { c.width = CANVAS_WIDTH; c.height = CANVAS_HEIGHT; });
+            drawGrid();
+            ctxDraw.fillStyle = "white"; ctxDraw.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            ctxDraw.lineWidth = 6; ctxDraw.lineCap = 'round'; ctxDraw.strokeStyle = 'black';
+        }
+
+        function drawGrid() {
+            ctxGrid.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            ctxGrid.strokeStyle = 'rgba(0,0,0,0.3)'; ctxGrid.lineWidth = 2;
+            for(let i = 1; i < GRID_ROWS; i++) { ctxGrid.beginPath(); ctxGrid.moveTo(0, i * QUAD_H); ctxGrid.lineTo(CANVAS_WIDTH, i * QUAD_H); ctxGrid.stroke(); }
+            for(let i = 1; i < GRID_COLS; i++) { ctxGrid.beginPath(); ctxGrid.moveTo(i * QUAD_W, 0); ctxGrid.lineTo(i * QUAD_W, CANVAS_HEIGHT); ctxGrid.stroke(); }
+        }
+
+        // Expondo as funções para o HTML chamar nos botões
+        window.openView = (role) => {
+            document.getElementById('role-selection').style.display = 'none';
+            if(role === 'tv') {
+                if(!roomId) {
+                    roomId = Math.random().toString(36).substring(2, 6).toUpperCase();
+                    window.history.pushState({}, '', '?sala=' + roomId);
+                }
+                document.getElementById('tv-view').style.display = 'flex';
+                initTV();
+            } else {
+                if(!roomId) {
+                    roomId = prompt("Digite o código da sala de 4 letras que aparece na TV:");
+                    if(!roomId) { location.reload(); return; }
+                    roomId = roomId.toUpperCase();
+                }
+                document.getElementById('mobile-view').style.display = 'flex';
+                initMobile();
+            }
+        };
+
+        // --- LÓGICA DA TV ---
+        function initTV() {
+            const currentUrl = window.location.origin + window.location.pathname + '?sala=' + roomId;
+            document.getElementById('qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUrl)}`;
+            document.getElementById('qr-link').href = currentUrl;
+            document.getElementById('room-code').innerText = `Sala: ${roomId}`;
+
+            // Seta as configurações iniciais no Firebase
+            window.updateConfig();
+
+            // Escuta o estado do jogo (desenhos)
+            onValue(ref(db, 'salas/' + roomId + '/gameState'), (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+
+                if (data.reset) {
+                    savedHints = [];
+                    updateTVUI(null);
+                    return;
+                }
+
+                if (data.image && data.round) {
+                    savedHints[data.round - 1] = data.image;
+                    updateTVUI(data.round - 1); 
+                }
+            });
+        }
+
+        window.updateConfig = () => {
+            update(ref(db, 'salas/' + roomId + '/config'), {
+                victimTime: parseInt(document.getElementById('cfg-victim').value) || 30,
+                assassinTime: parseInt(document.getElementById('cfg-assassin').value) || 10
+            });
+        };
+
+        function updateTVUI(indexToShow) {
+            const placeholder = document.getElementById('hint-placeholder');
+            const imgEl = document.getElementById('hint-image');
+            const nav = document.getElementById('hint-nav');
+
+            if (indexToShow === null) {
+                placeholder.style.display = 'block'; imgEl.style.display = 'none'; nav.innerHTML = '';
+                return;
+            }
+            placeholder.style.display = 'none';
+            imgEl.src = savedHints[indexToShow];
+            imgEl.style.display = 'block';
+
+            nav.innerHTML = '';
+            savedHints.forEach((img, i) => {
+                if (img) {
+                    const btn = document.createElement('button');
+                    btn.innerText = `Rodada ${i + 1}`;
+                    btn.className = (i === indexToShow) ? 'nav-btn active' : 'nav-btn';
+                    btn.onclick = () => updateTVUI(i);
+                    nav.appendChild(btn);
+                }
+            });
+        }
+
+        // --- LÓGICA DO CELULAR ---
+        function initMobile() {
+            setupCanvases();
+            
+            // Escuta alterações no tempo feitas pela TV
+            onValue(ref(db, 'salas/' + roomId + '/config'), (snapshot) => {
+                const data = snapshot.val();
+                if(data) {
+                    configVictimTime = data.victimTime || 30;
+                    configAssassinTime = data.assassinTime || 10;
+                }
+            });
+        }
+
+        function updateRoundDisplays() {
+            document.getElementById('start-round-display').innerText = currentRound;
+            document.getElementById('draw-round-display').innerText = currentRound;
+            document.getElementById('erase-round-display').innerText = currentRound;
+        }
+
+        window.startDrawingPhase = () => {
+            updateRoundDisplays();
+            document.getElementById('mobile-start').style.display = 'none';
+            document.getElementById('mobile-draw').style.display = 'flex';
+            
+            ctxDraw.fillStyle = "white"; ctxDraw.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            let timeLeft = configVictimTime; 
+            document.getElementById('timer').innerText = timeLeft;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft;
+                if(timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('transition-overlay').style.display = 'flex';
+                }
+            }, 1000);
+        };
+
+        window.finishDrawingEarly = () => {
+            clearInterval(timerInterval);
+            document.getElementById('transition-overlay').style.display = 'flex';
+        };
+
+        function getPos(canvas, evt) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+            const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+            return { x: ((clientX - rect.left) / rect.width) * CANVAS_WIDTH, y: ((clientY - rect.top) / rect.height) * CANVAS_HEIGHT };
+        }
+
+        drawCanvas.addEventListener('mousedown', (e) => { isDrawing = true; const pos = getPos(drawCanvas, e); ctxDraw.beginPath(); ctxDraw.moveTo(pos.x, pos.y); });
+        drawCanvas.addEventListener('mousemove', (e) => { if(isDrawing) { const pos = getPos(drawCanvas, e); ctxDraw.lineTo(pos.x, pos.y); ctxDraw.stroke(); }});
+        drawCanvas.addEventListener('mouseup', () => isDrawing = false);
+        drawCanvas.addEventListener('mouseout', () => isDrawing = false);
+        drawCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; const pos = getPos(drawCanvas, e); ctxDraw.beginPath(); ctxDraw.moveTo(pos.x, pos.y); });
+        drawCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); if(isDrawing) { const pos = getPos(drawCanvas, e); ctxDraw.lineTo(pos.x, pos.y); ctxDraw.stroke(); }});
+        drawCanvas.addEventListener('touchend', () => isDrawing = false);
+
+        window.startErasingPhase = () => {
+            document.getElementById('transition-overlay').style.display = 'none';
+            document.getElementById('mobile-draw').style.display = 'none';
+            document.getElementById('mobile-erase').style.display = 'flex';
+            
+            currentErasesLeft = erasesPerRound[currentRound - 1];
+            document.getElementById('erases-left').innerText = currentErasesLeft;
+            document.getElementById('send-btn').disabled = true;
+            erasedQuadrants = [];
+
+            ctxErase.drawImage(drawCanvas, 0, 0);
+            ctxErase.strokeStyle = 'rgba(0,0,0,0.5)'; ctxErase.lineWidth = 2;
+            for(let i = 1; i < GRID_ROWS; i++) { ctxErase.beginPath(); ctxErase.moveTo(0, i * QUAD_H); ctxErase.lineTo(CANVAS_WIDTH, i * QUAD_H); ctxErase.stroke(); }
+            for(let i = 1; i < GRID_COLS; i++) { ctxErase.beginPath(); ctxErase.moveTo(i * QUAD_W, 0); ctxErase.lineTo(i * QUAD_W, CANVAS_HEIGHT); ctxErase.stroke(); }
+
+            let eraseTimeLeft = configAssassinTime; 
+            document.getElementById('erase-timer').innerText = eraseTimeLeft;
+
+            eraseTimerInterval = setInterval(() => {
+                eraseTimeLeft--;
+                document.getElementById('erase-timer').innerText = eraseTimeLeft;
+                if (eraseTimeLeft <= 0) {
+                    clearInterval(eraseTimerInterval);
+                    window.sendToTV();
+                }
+            }, 1000);
+        };
+
+        eraseCanvas.addEventListener('mousedown', handleErase);
+        eraseCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleErase(e); });
+
+        function handleErase(e) {
+            if (currentErasesLeft <= 0) return;
+            const pos = getPos(eraseCanvas, e);
+            const col = Math.floor(pos.x / QUAD_W); const row = Math.floor(pos.y / QUAD_H);
+            const quadId = `${col}-${row}`;
+
+            if (!erasedQuadrants.includes(quadId)) {
+                erasedQuadrants.push(quadId);
+                ctxErase.fillStyle = '#ecf0f1'; ctxErase.fillRect(col * QUAD_W, row * QUAD_H, QUAD_W, QUAD_H);
+                ctxErase.strokeRect(col * QUAD_W, row * QUAD_H, QUAD_W, QUAD_H);
+                currentErasesLeft--;
+                document.getElementById('erases-left').innerText = currentErasesLeft;
+                if (currentErasesLeft === 0) document.getElementById('send-btn').disabled = false;
+            }
+        }
+
+        window.sendToTV = () => {
+            clearInterval(eraseTimerInterval);
+            const finalImageBase64 = eraseCanvas.toDataURL('image/png');
+            
+            // Salva no banco de dados do Firebase
+            set(ref(db, 'salas/' + roomId + '/gameState'), { 
+                round: currentRound, 
+                image: finalImageBase64,
+                timestamp: Date.now() 
+            });
+            
+            if (currentRound >= 4) {
+                document.getElementById('mobile-erase').style.display = 'none';
+                document.getElementById('mobile-end').style.display = 'flex';
+            } else {
+                currentRound++;
+                updateRoundDisplays();
+                document.getElementById('mobile-erase').style.display = 'none';
+                document.getElementById('mobile-start').style.display = 'flex';
+            }
+        };
+
+        window.restartGame = () => {
+            currentRound = 1;
+            updateRoundDisplays();
+            
+            // Reseta a sala no Firebase
+            set(ref(db, 'salas/' + roomId + '/gameState'), { reset: true, timestamp: Date.now() });
+            
+            document.getElementById('mobile-end').style.display = 'none';
+            document.getElementById('mobile-start').style.display = 'flex';
+        };
+    </script>
+</body>
+</html>
