@@ -295,16 +295,29 @@
                 c.on('data', (d) => { 
                     if(d.type === 'ALVO') {
                         document.getElementById('secret-val').innerText = d.valor;
-                        // Garante que o alvo volte a aparecer na nova rodada
                         document.getElementById('card-remoto').classList.remove('hidden');
                         document.getElementById('msg-bloqueio').classList.add('hidden');
                     }
-                    // Oculta o alvo se o comando vier da TV
                     if(d.type === 'ESCONDER_ALVO') {
                         document.getElementById('card-remoto').classList.add('hidden');
                         document.getElementById('msg-bloqueio').classList.remove('hidden');
                     }
                 });
+                
+                // --- ADICIONE ESTE BLOCO ---
+                // Detecta quando a TV encerra a rodada e bloqueia o celular antigo
+                c.on('close', () => {
+                    document.getElementById('card-remoto').classList.add('hidden');
+                    document.getElementById('msg-bloqueio').classList.remove('hidden');
+                    document.getElementById('msg-bloqueio').innerHTML = `
+                        <div class="remote-card">
+                            <p style="color:#e94560; font-weight:bold; font-size:1.5rem;">Vez Encerrada!</p>
+                            <p style="color:#fff;">O próximo jogador deve escanear o QR Code na TV.</p>
+                        </div>
+                    `;
+                });
+                // ---------------------------
+
                 window.minhaConexao = c;
             });
         }
@@ -367,9 +380,10 @@
             updateNeedle(50);
             shuffleTheme();
             
-            // Reabilita o botão remoto do celular
+            // Derruba a conexão do jogador anterior para que ele não veja o novo alvo
             if (conn && conn.open) {
-                conn.send({ type: 'ALVO', valor: currentTarget });
+                conn.close();
+                conn = null;
             }
         }
 
