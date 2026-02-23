@@ -46,20 +46,24 @@
 
         #sidebar-area { width: 25%; display: flex; flex-direction: column; background-color: #34495e; }
         
-        #hint-card { height: 65%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; border-bottom: 4px solid #000; background-color: #fff; }
+        /* Aumentamos o painel da dica de 65% para 75% da altura da tela */
+        #hint-card { height: 75%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; border-bottom: 4px solid #000; background-color: #fff; }
         #hint-image { width: auto; height: auto; max-width: 100%; max-height: 85%; display: none; border: 2px solid #333; object-fit: contain; }
         #hint-nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 15px; width: 100%; }
         .nav-btn { padding: 8px 15px; background: #34495e; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .nav-btn.active { background: #e74c3c; box-shadow: 0 0 5px #c0392b; }
 
-        #qr-area { height: 20%; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #ecf0f1; color: #333; border-bottom: 4px solid #000;}
-        #qr-area h3 { font-size: 16px; margin-bottom: 5px; text-align: center; padding: 0 10px; }
-        #qr-code { width: 90px; height: 90px; border-radius: 4px; margin-bottom: 5px; }
-        #room-code { font-size: 14px; font-weight: bold; color: #e74c3c; }
+        /* Novo Rodapé Lateral Agrupado (QR Code + Configurações) */
+        #sidebar-footer { height: 25%; display: flex; flex-direction: row; justify-content: space-evenly; align-items: center; background-color: #2c3e50; padding: 10px; }
+        
+        #qr-area { display: flex; flex-direction: column; align-items: center; }
+        #qr-area h3 { display: none; } /* Ocultado para focar no tamanho do QR Code */
+        #qr-code { width: 150px; height: 150px; border-radius: 6px; margin-bottom: 8px; background-color: #fff; padding: 5px; }
+        #room-code { font-size: 16px; font-weight: bold; color: #fff; background-color: #e74c3c; padding: 4px 10px; border-radius: 4px; letter-spacing: 1px; }
 
-        #tv-config { height: 15%; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #2c3e50; padding: 10px; font-size: 14px; }
-        .cfg-row { display: flex; justify-content: space-between; width: 100%; max-width: 200px; margin-bottom: 5px; align-items: center; }
-        .cfg-row input { width: 50px; text-align: center; padding: 3px; border-radius: 4px; border: none; font-weight: bold; }
+        #tv-config { display: flex; flex-direction: column; gap: 15px; color: #ecf0f1; font-size: 14px; font-weight: bold; }
+        .cfg-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .cfg-row input { width: 50px; text-align: center; padding: 5px; border-radius: 4px; border: none; font-weight: bold; }
 
         /* Layout do Celular */
         #mobile-view { 
@@ -73,7 +77,7 @@
             text-align: center; 
             position: relative; 
             overflow-y: auto; 
-            scroll-behavior: smooth; /* Adiciona suavidade na rolagem para o topo */
+            scroll-behavior: smooth; 
         }
         
         #mobile-start {
@@ -141,23 +145,26 @@
                 <h2 id="hint-placeholder" style="color:#bdc3c7; text-align: center;">Aguardando Dica...<br><span style="font-size: 14px; font-weight: normal;">(A vítima está desenhando)</span></h2>
                 <div id="hint-nav"></div>
             </div>
-            <div id="qr-area">
-                <h3>Escaneie ou clique para jogar</h3>
-                <a id="qr-link" href="#" target="_blank" title="Abrir controle em nova aba">
-                    <img id="qr-code" src="" alt="QR Code">
-                </a>
-                <div id="room-code">Sala: ----</div>
-            </div>
-            <div id="tv-config">
-                <div class="cfg-row">
-                    <span>Tempo Vítima:</span>
-                    <input type="number" id="cfg-victim" value="30" onchange="updateConfig()">
+            
+            <div id="sidebar-footer">
+                <div id="qr-area">
+                    <a id="qr-link" href="#" target="_blank" title="Abrir controle em nova aba">
+                        <img id="qr-code" src="" alt="QR Code">
+                    </a>
+                    <div id="room-code">Sala: ----</div>
                 </div>
-                <div class="cfg-row">
-                    <span>Tempo Assassino:</span>
-                    <input type="number" id="cfg-assassin" value="10" onchange="updateConfig()">
+                <div id="tv-config">
+                    <div class="cfg-row">
+                        <span>Tempo Vítima:</span>
+                        <input type="number" id="cfg-victim" value="30" onchange="updateConfig()">
+                    </div>
+                    <div class="cfg-row">
+                        <span>Tempo Assassino:</span>
+                        <input type="number" id="cfg-assassin" value="10" onchange="updateConfig()">
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -287,7 +294,7 @@
             document.getElementById('mobile-board-img').style.width = '100%';
         };
 
-        // --- LÓGICA DE MOVIMENTO DE PINÇA (PINCH-TO-ZOOM) ---
+        // --- LÓGICA DE MOVIMENTO DE PINÇA ---
         const boardContainer = document.getElementById('mobile-board-container');
         const zoomSlider = document.getElementById('zoom-slider');
         let initialPinchDistance = null;
@@ -327,7 +334,6 @@
                 initialPinchDistance = null;
             }
         });
-        // ----------------------------------------------------
 
         window.changeBoard = () => {
             const selector = document.getElementById('board-selector');
@@ -419,7 +425,7 @@
         function initMobile() {
             setupCanvases();
             window.resetMobileZoom();
-            updateRoundDisplays(); // Garante que a tela start exiba certo já no início
+            updateRoundDisplays();
             
             onValue(ref(db, 'salas/' + roomId + '/config'), (snapshot) => {
                 const data = snapshot.val();
@@ -433,7 +439,6 @@
             });
         }
 
-        // --- ATUALIZADO: Esconde o mapa a partir da rodada 2 ---
         function updateRoundDisplays() {
             document.getElementById('start-round-display').innerText = currentRound;
             document.getElementById('draw-round-display').innerText = currentRound;
@@ -462,7 +467,6 @@
             document.getElementById('mobile-start').style.display = 'none';
             document.getElementById('mobile-draw').style.display = 'flex';
             
-            // NOVO: Rola a tela para o topo para a vítima
             document.getElementById('mobile-view').scrollTop = 0;
             
             ctxDraw.fillStyle = "white"; ctxDraw.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -505,7 +509,6 @@
             document.getElementById('mobile-draw').style.display = 'none';
             document.getElementById('mobile-erase').style.display = 'flex';
             
-            // NOVO: Rola a tela para o topo para o assassino não perder tempo
             document.getElementById('mobile-view').scrollTop = 0;
             
             currentErasesLeft = erasesPerRound[currentRound - 1];
@@ -570,7 +573,7 @@
                 window.resetMobileZoom();
                 document.getElementById('mobile-erase').style.display = 'none';
                 document.getElementById('mobile-start').style.display = 'flex';
-                document.getElementById('mobile-view').scrollTop = 0; // Rola pro topo na volta
+                document.getElementById('mobile-view').scrollTop = 0; 
             }
         };
 
