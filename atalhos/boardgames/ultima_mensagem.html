@@ -80,8 +80,7 @@
             flex-direction: column; 
             align-items: center; 
             width: 100%; 
-            height: 100%; /* Ocupa a tela toda para o visualizador de imagem funcionar bem */
-            position: relative;
+            height: auto; 
         }
 
         #mobile-draw, #mobile-erase, #mobile-end { 
@@ -121,11 +120,17 @@
         <div id="board-area">
             <select id="board-selector" onchange="changeBoard()">
                 <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC.jpg">01 - Western</option>
-                <option value="URL_DO_TABULEIRO_2_AQUI">02 - Tabuleiro 2</option>
-                <option value="URL_DO_TABULEIRO_3_AQUI">03 - Tabuleiro 3</option>
-                <option value="URL_DO_TABULEIRO_4_AQUI">04 - Tabuleiro 4</option>
-                <option value="URL_DO_TABULEIRO_5_AQUI">05 - Tabuleiro 5</option>
-                <option value="URL_DO_TABULEIRO_6_AQUI">06 - Tabuleiro 6</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC02.jpg">02 - Idade Antiga</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC03.jpg">03 - Aliens</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC04.jpg">04 - Zumbis</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC05.jpg">05 - Herois</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC06.jpg">06 - Tem de tudo</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/tabuleiro07.jpg">07 - Asa Delta</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/tabuleiro08.webp">08 - Escola</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/tabuleiro09.jpg">09 - Praia</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/tabuleiro10.jpg">10 - Food Trucks</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/tabuleiro11.jpg">11 - Book Shop</option>
+                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/tabuleiro12.jpg">12 - Cidade</option>
             </select>
         </div>
         
@@ -167,16 +172,16 @@
             <p style="font-size: 14px; margin-bottom: 5px;">Assassino, mostre o local para a vítima.</p>
             <div class="round-info" style="font-size: 16px; margin-bottom: 10px; font-weight: bold; color: #7f8c8d;">Rodada <span id="start-round-display">1</span>/4</div>
             
-            <div id="mobile-board-container" style="width: 100%; flex-grow: 1; overflow: auto; border: 2px solid #34495e; background: #222; border-radius: 8px; margin-bottom: 10px;">
+            <div id="mobile-board-container" style="width: 100%; height: 40vh; min-height: 250px; overflow: auto; border: 2px solid #34495e; background: #222; border-radius: 8px; margin-bottom: 15px;">
                 <img id="mobile-board-img" src="" style="width: 100%; height: auto; display: block; transform-origin: top left;">
             </div>
             
-            <div style="width: 100%; padding-bottom: 60px; display: flex; align-items: center; gap: 10px;">
+            <div style="width: 100%; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                 <span style="font-weight: bold; font-size: 14px;">Zoom:</span>
                 <input type="range" id="zoom-slider" min="100" max="500" step="10" value="100" style="flex-grow: 1;" oninput="updateMobileZoom()">
             </div>
 
-            <button class="btn btn-success" style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); box-shadow: 0 4px 8px rgba(0,0,0,0.5); padding: 12px 24px; font-size: 18px; width: max-content; z-index: 10;" onclick="startDrawingPhase()">Começar Rodada</button>
+            <button class="btn btn-success" style="box-shadow: 0 4px 8px rgba(0,0,0,0.5); padding: 12px 24px; font-size: 18px; width: max-content; margin-bottom: 20px;" onclick="startDrawingPhase()">Começar Rodada</button>
         </div>
 
         <div id="mobile-draw">
@@ -218,7 +223,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // SUAS CHAVES REAIS RESTAURADAS:
         const firebaseConfig = {
             apiKey: "AIzaSyCougosBCWI3woqCWAOLec_Dbl7IwrWR-s",
             authDomain: "jogo-ultima-mensagem.firebaseapp.com",
@@ -232,7 +236,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- VARIÁVEIS GLOBAIS ---
         let roomId = new URLSearchParams(window.location.search).get('sala');
         let currentRound = 1;
         const erasesPerRound = [5, 4, 3, 2];
@@ -270,10 +273,8 @@
             for(let i = 1; i < GRID_COLS; i++) { ctxGrid.beginPath(); ctxGrid.moveTo(i * QUAD_W, 0); ctxGrid.lineTo(i * QUAD_W, CANVAS_HEIGHT); ctxGrid.stroke(); }
         }
 
-        // --- FUNÇÃO DO ZOOM DO CELULAR ---
         window.updateMobileZoom = () => {
             const zoomVal = document.getElementById('zoom-slider').value;
-            // Aumenta a largura da imagem para gerar barras de rolagem
             document.getElementById('mobile-board-img').style.width = zoomVal + '%';
         };
 
@@ -281,6 +282,49 @@
             document.getElementById('zoom-slider').value = 100;
             document.getElementById('mobile-board-img').style.width = '100%';
         };
+
+        // --- LÓGICA DE MOVIMENTO DE PINÇA (PINCH-TO-ZOOM) ---
+        const boardContainer = document.getElementById('mobile-board-container');
+        const zoomSlider = document.getElementById('zoom-slider');
+        let initialPinchDistance = null;
+        let initialZoomValue = 100;
+
+        boardContainer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault(); // Impede outras ações ao usar dois dedos
+                initialPinchDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                initialZoomValue = parseInt(zoomSlider.value);
+            }
+        }, { passive: false });
+
+        boardContainer.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && initialPinchDistance) {
+                e.preventDefault(); // Impede o scroll da tela inteira ao dar zoom
+                const currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                
+                const scale = currentDistance / initialPinchDistance;
+                let newZoom = initialZoomValue * scale;
+                
+                // Limita o zoom entre 100 e 500
+                newZoom = Math.max(100, Math.min(500, newZoom));
+                
+                zoomSlider.value = newZoom;
+                window.updateMobileZoom();
+            }
+        }, { passive: false });
+
+        boardContainer.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) {
+                initialPinchDistance = null;
+            }
+        });
+        // ----------------------------------------------------
 
         window.changeBoard = () => {
             const selector = document.getElementById('board-selector');
@@ -290,9 +334,6 @@
             if (selectedUrl && selectedUrl.startsWith('http')) {
                 boardArea.style.background = `#222 url('${selectedUrl}') center/contain no-repeat`;
                 window.updateConfig(); 
-            } else {
-                alert("Você precisa preencher a URL da imagem desse tabuleiro no código HTML primeiro.");
-                selector.selectedIndex = 0; 
             }
         };
 
@@ -312,7 +353,7 @@
                     roomId = roomId.toUpperCase();
                 }
                 document.getElementById('mobile-view').style.display = 'flex';
-                document.getElementById('mobile-start').style.display = 'flex';
+                document.getElementById('mobile-start').style.display = 'flex'; 
                 initMobile();
             }
         };
@@ -376,7 +417,6 @@
             setupCanvases();
             window.resetMobileZoom();
             
-            // Escuta as configurações da TV (Tempo e URL do Tabuleiro)
             onValue(ref(db, 'salas/' + roomId + '/config'), (snapshot) => {
                 const data = snapshot.val();
                 if(data) {
