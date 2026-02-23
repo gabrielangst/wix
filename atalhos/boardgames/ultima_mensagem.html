@@ -73,6 +73,7 @@
             text-align: center; 
             position: relative; 
             overflow-y: auto; 
+            scroll-behavior: smooth; /* Adiciona suavidade na rolagem para o topo */
         }
         
         #mobile-start {
@@ -168,20 +169,23 @@
         </div>
 
         <div id="mobile-start">
-            <div class="header-info" style="font-size: 22px;">Onde você está?</div>
-            <p style="font-size: 14px; margin-bottom: 5px;">Assassino, mostre o local para a vítima.</p>
+            <div id="mobile-start-intro" style="width: 100%;">
+                <div class="header-info" style="font-size: 22px;">Onde você está?</div>
+                <p style="font-size: 14px; margin-bottom: 5px;">Assassino, mostre o local para a vítima.</p>
+            </div>
+            
             <div class="round-info" style="font-size: 16px; margin-bottom: 10px; font-weight: bold; color: #7f8c8d;">Rodada <span id="start-round-display">1</span>/4</div>
             
             <div id="mobile-board-container" style="width: 100%; height: 40vh; min-height: 250px; overflow: auto; border: 2px solid #34495e; background: #222; border-radius: 8px; margin-bottom: 15px;">
                 <img id="mobile-board-img" src="" style="width: 100%; height: auto; display: block; transform-origin: top left;">
             </div>
             
-            <div style="width: 100%; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <div id="mobile-zoom-control" style="width: 100%; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                 <span style="font-weight: bold; font-size: 14px;">Zoom:</span>
                 <input type="range" id="zoom-slider" min="100" max="500" step="10" value="100" style="flex-grow: 1;" oninput="updateMobileZoom()">
             </div>
 
-            <button class="btn btn-success" style="box-shadow: 0 4px 8px rgba(0,0,0,0.5); padding: 12px 24px; font-size: 18px; width: max-content; margin-bottom: 20px;" onclick="startDrawingPhase()">Começar Rodada</button>
+            <button id="btn-start-round" class="btn btn-success" style="box-shadow: 0 4px 8px rgba(0,0,0,0.5); padding: 12px 24px; font-size: 18px; width: max-content; margin-bottom: 20px; margin-top: 20px;" onclick="startDrawingPhase()">Começar Rodada</button>
         </div>
 
         <div id="mobile-draw">
@@ -291,7 +295,7 @@
 
         boardContainer.addEventListener('touchstart', (e) => {
             if (e.touches.length === 2) {
-                e.preventDefault(); // Impede outras ações ao usar dois dedos
+                e.preventDefault(); 
                 initialPinchDistance = Math.hypot(
                     e.touches[0].clientX - e.touches[1].clientX,
                     e.touches[0].clientY - e.touches[1].clientY
@@ -302,7 +306,7 @@
 
         boardContainer.addEventListener('touchmove', (e) => {
             if (e.touches.length === 2 && initialPinchDistance) {
-                e.preventDefault(); // Impede o scroll da tela inteira ao dar zoom
+                e.preventDefault(); 
                 const currentDistance = Math.hypot(
                     e.touches[0].clientX - e.touches[1].clientX,
                     e.touches[0].clientY - e.touches[1].clientY
@@ -311,7 +315,6 @@
                 const scale = currentDistance / initialPinchDistance;
                 let newZoom = initialZoomValue * scale;
                 
-                // Limita o zoom entre 100 e 500
                 newZoom = Math.max(100, Math.min(500, newZoom));
                 
                 zoomSlider.value = newZoom;
@@ -416,6 +419,7 @@
         function initMobile() {
             setupCanvases();
             window.resetMobileZoom();
+            updateRoundDisplays(); // Garante que a tela start exiba certo já no início
             
             onValue(ref(db, 'salas/' + roomId + '/config'), (snapshot) => {
                 const data = snapshot.val();
@@ -429,16 +433,37 @@
             });
         }
 
+        // --- ATUALIZADO: Esconde o mapa a partir da rodada 2 ---
         function updateRoundDisplays() {
             document.getElementById('start-round-display').innerText = currentRound;
             document.getElementById('draw-round-display').innerText = currentRound;
             document.getElementById('erase-round-display').innerText = currentRound;
+            
+            const intro = document.getElementById('mobile-start-intro');
+            const boardContainer = document.getElementById('mobile-board-container');
+            const zoomControl = document.getElementById('mobile-zoom-control');
+            const btnStart = document.getElementById('btn-start-round');
+            
+            if (currentRound === 1) {
+                if(intro) intro.style.display = 'block';
+                if(boardContainer) boardContainer.style.display = 'block';
+                if(zoomControl) zoomControl.style.display = 'flex';
+                if(btnStart) btnStart.innerText = "Começar Rodada";
+            } else {
+                if(intro) intro.style.display = 'none';
+                if(boardContainer) boardContainer.style.display = 'none';
+                if(zoomControl) zoomControl.style.display = 'none';
+                if(btnStart) btnStart.innerText = "Iniciar rodada " + currentRound;
+            }
         }
 
         window.startDrawingPhase = () => {
             updateRoundDisplays();
             document.getElementById('mobile-start').style.display = 'none';
             document.getElementById('mobile-draw').style.display = 'flex';
+            
+            // NOVO: Rola a tela para o topo para a vítima
+            document.getElementById('mobile-view').scrollTop = 0;
             
             ctxDraw.fillStyle = "white"; ctxDraw.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
             
@@ -479,6 +504,9 @@
             document.getElementById('transition-overlay').style.display = 'none';
             document.getElementById('mobile-draw').style.display = 'none';
             document.getElementById('mobile-erase').style.display = 'flex';
+            
+            // NOVO: Rola a tela para o topo para o assassino não perder tempo
+            document.getElementById('mobile-view').scrollTop = 0;
             
             currentErasesLeft = erasesPerRound[currentRound - 1];
             document.getElementById('erases-left').innerText = currentErasesLeft;
@@ -535,12 +563,14 @@
             if (currentRound >= 4) {
                 document.getElementById('mobile-erase').style.display = 'none';
                 document.getElementById('mobile-end').style.display = 'flex';
+                document.getElementById('mobile-view').scrollTop = 0;
             } else {
                 currentRound++;
                 updateRoundDisplays();
                 window.resetMobileZoom();
                 document.getElementById('mobile-erase').style.display = 'none';
                 document.getElementById('mobile-start').style.display = 'flex';
+                document.getElementById('mobile-view').scrollTop = 0; // Rola pro topo na volta
             }
         };
 
@@ -553,6 +583,7 @@
             
             document.getElementById('mobile-end').style.display = 'none';
             document.getElementById('mobile-start').style.display = 'flex';
+            document.getElementById('mobile-view').scrollTop = 0;
         };
     </script>
 </body>
