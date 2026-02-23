@@ -14,18 +14,19 @@
         .btn:disabled { background-color: #7f8c8d; cursor: not-allowed; }
         .btn-warning { background-color: #f39c12; margin-top: 15px; font-size: 16px; padding: 10px 20px; }
         .btn-warning:hover { background-color: #e67e22; }
+        .btn-success { background-color: #27ae60; }
+        .btn-success:hover { background-color: #2ecc71; }
 
         /* Layout da TV */
         #tv-view { display: none; width: 100vw; height: 100vh; }
         
         #board-area { 
-            position: relative; /* Adicionado para permitir o posicionamento do dropdown */
+            position: relative; 
             width: 75%; 
             background: #222 url('https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC.jpg') center/contain no-repeat; 
             border-right: 4px solid #000; 
         }
         
-        /* Novo estilo para o dropdown do tabuleiro */
         #board-selector {
             position: absolute;
             bottom: 20px;
@@ -74,7 +75,16 @@
             overflow-y: auto; 
         }
         
-        #mobile-start, #mobile-draw, #mobile-erase, #mobile-end { 
+        #mobile-start {
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            width: 100%; 
+            height: 100%; /* Ocupa a tela toda para o visualizador de imagem funcionar bem */
+            position: relative;
+        }
+
+        #mobile-draw, #mobile-erase, #mobile-end { 
             display: none; 
             flex-direction: column; 
             align-items: center; 
@@ -84,7 +94,7 @@
             padding-bottom: 40px; 
         }
         
-        .header-info { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #2c3e50; }
+        .header-info { font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #2c3e50; }
         
         .mobile-header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 250px; margin-bottom: 10px; }
         .mobile-header-row .round-info { font-size: 18px; color: #7f8c8d; font-weight: bold; margin-bottom: 0; }
@@ -111,18 +121,11 @@
         <div id="board-area">
             <select id="board-selector" onchange="changeBoard()">
                 <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC.jpg">01 - Western</option>
-                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC02.jpg">02 - Idade Antiga</option>
-                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC03.jpg">03 - Aliens</option>
-                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC04.jpg">04 - Zumbis</option>
-                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC05.jpg">05 - Herois</option>
-                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/Western-tabuleiroPC06.jpg">06 - Tem de tudo</option>
-                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/tabuleiro07.jpg">07 - Asa Delta</option>
-                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/tabuleiro08.webp">08 - Escola</option>
-                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/tabuleiro09.jpg">09 - Praia</option>
-                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/tabuleiro10.jpg">10 - Food Trucks</option>
-                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/tabuleiro11.jpg">11 - Book Shop</option>
-                <option value="https://www.guiadebrasilia.com/atalhos/boardgames/tabuleiro12.jpg">12 - Cidade</option>
-
+                <option value="URL_DO_TABULEIRO_2_AQUI">02 - Tabuleiro 2</option>
+                <option value="URL_DO_TABULEIRO_3_AQUI">03 - Tabuleiro 3</option>
+                <option value="URL_DO_TABULEIRO_4_AQUI">04 - Tabuleiro 4</option>
+                <option value="URL_DO_TABULEIRO_5_AQUI">05 - Tabuleiro 5</option>
+                <option value="URL_DO_TABULEIRO_6_AQUI">06 - Tabuleiro 6</option>
             </select>
         </div>
         
@@ -159,10 +162,21 @@
             <button class="btn" onclick="startErasingPhase()">Iniciar rodada do assassino</button>
         </div>
 
-        <div id="mobile-start" style="display: flex; justify-content: center; height: 100%;">
-            <div class="header-info">Pronto para começar?</div>
-            <div class="round-info" style="font-size: 18px; color: #7f8c8d; font-weight: bold; margin-bottom: 15px;">Rodada <span id="start-round-display">1</span>/4</div>
-            <button class="btn" onclick="startDrawingPhase()">Vítima: Começar a Desenhar</button>
+        <div id="mobile-start">
+            <div class="header-info" style="font-size: 22px;">Onde você está?</div>
+            <p style="font-size: 14px; margin-bottom: 5px;">Assassino, mostre o local para a vítima.</p>
+            <div class="round-info" style="font-size: 16px; margin-bottom: 10px; font-weight: bold; color: #7f8c8d;">Rodada <span id="start-round-display">1</span>/4</div>
+            
+            <div id="mobile-board-container" style="width: 100%; flex-grow: 1; overflow: auto; border: 2px solid #34495e; background: #222; border-radius: 8px; margin-bottom: 10px;">
+                <img id="mobile-board-img" src="" style="width: 100%; height: auto; display: block; transform-origin: top left;">
+            </div>
+            
+            <div style="width: 100%; padding-bottom: 60px; display: flex; align-items: center; gap: 10px;">
+                <span style="font-weight: bold; font-size: 14px;">Zoom:</span>
+                <input type="range" id="zoom-slider" min="100" max="500" step="10" value="100" style="flex-grow: 1;" oninput="updateMobileZoom()">
+            </div>
+
+            <button class="btn btn-success" style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); box-shadow: 0 4px 8px rgba(0,0,0,0.5); padding: 12px 24px; font-size: 18px; width: max-content; z-index: 10;" onclick="startDrawingPhase()">Começar Rodada</button>
         </div>
 
         <div id="mobile-draw">
@@ -196,7 +210,7 @@
         <div id="mobile-end" style="justify-content: center; height: 100%;">
             <div class="header-info" style="font-size: 36px;">Fim de Jogo!</div>
             <p style="margin-bottom: 30px; font-size: 18px;">Olhem para o tabuleiro. A vítima conseguiu se salvar?</p>
-            <button class="btn" onclick="restartGame()">Recomeçar o Jogo</button>
+            <button class="btn btn-success" onclick="restartGame()">Recomeçar o Jogo</button>
         </div>
     </div>
 
@@ -204,7 +218,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // COLOQUE SUAS CREDENCIAIS DO FIREBASE AQUI
+        // SUAS CHAVES REAIS RESTAURADAS:
         const firebaseConfig = {
             apiKey: "AIzaSyCougosBCWI3woqCWAOLec_Dbl7IwrWR-s",
             authDomain: "jogo-ultima-mensagem.firebaseapp.com",
@@ -256,18 +270,29 @@
             for(let i = 1; i < GRID_COLS; i++) { ctxGrid.beginPath(); ctxGrid.moveTo(i * QUAD_W, 0); ctxGrid.lineTo(i * QUAD_W, CANVAS_HEIGHT); ctxGrid.stroke(); }
         }
 
-        // --- NOVA FUNÇÃO: Trocar o Tabuleiro ---
+        // --- FUNÇÃO DO ZOOM DO CELULAR ---
+        window.updateMobileZoom = () => {
+            const zoomVal = document.getElementById('zoom-slider').value;
+            // Aumenta a largura da imagem para gerar barras de rolagem
+            document.getElementById('mobile-board-img').style.width = zoomVal + '%';
+        };
+
+        window.resetMobileZoom = () => {
+            document.getElementById('zoom-slider').value = 100;
+            document.getElementById('mobile-board-img').style.width = '100%';
+        };
+
         window.changeBoard = () => {
             const selector = document.getElementById('board-selector');
             const boardArea = document.getElementById('board-area');
             const selectedUrl = selector.value;
             
-            // Só altera se a URL for válida (não for o placeholder)
             if (selectedUrl && selectedUrl.startsWith('http')) {
                 boardArea.style.background = `#222 url('${selectedUrl}') center/contain no-repeat`;
+                window.updateConfig(); 
             } else {
                 alert("Você precisa preencher a URL da imagem desse tabuleiro no código HTML primeiro.");
-                selector.selectedIndex = 0; // Volta para a opção 1 (Western) provisoriamente
+                selector.selectedIndex = 0; 
             }
         };
 
@@ -311,9 +336,13 @@
         }
 
         window.updateConfig = () => {
+            const selector = document.getElementById('board-selector');
+            const selectedUrl = selector ? selector.value : '';
+
             update(ref(db, 'salas/' + roomId + '/config'), {
                 victimTime: parseInt(document.getElementById('cfg-victim').value) || 30,
-                assassinTime: parseInt(document.getElementById('cfg-assassin').value) || 10
+                assassinTime: parseInt(document.getElementById('cfg-assassin').value) || 10,
+                boardUrl: selectedUrl
             });
         };
 
@@ -344,11 +373,17 @@
 
         function initMobile() {
             setupCanvases();
+            window.resetMobileZoom();
+            
+            // Escuta as configurações da TV (Tempo e URL do Tabuleiro)
             onValue(ref(db, 'salas/' + roomId + '/config'), (snapshot) => {
                 const data = snapshot.val();
                 if(data) {
                     configVictimTime = data.victimTime || 30;
                     configAssassinTime = data.assassinTime || 10;
+                    if(data.boardUrl) {
+                        document.getElementById('mobile-board-img').src = data.boardUrl;
+                    }
                 }
             });
         }
@@ -462,6 +497,7 @@
             } else {
                 currentRound++;
                 updateRoundDisplays();
+                window.resetMobileZoom();
                 document.getElementById('mobile-erase').style.display = 'none';
                 document.getElementById('mobile-start').style.display = 'flex';
             }
@@ -470,6 +506,7 @@
         window.restartGame = () => {
             currentRound = 1;
             updateRoundDisplays();
+            window.resetMobileZoom();
             
             set(ref(db, 'salas/' + roomId + '/gameState'), { reset: true, timestamp: Date.now() });
             
