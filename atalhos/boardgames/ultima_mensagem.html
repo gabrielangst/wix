@@ -162,6 +162,10 @@
                         <span>Tempo Assassino:</span>
                         <input type="number" id="cfg-assassin" value="10" onchange="updateConfig()">
                     </div>
+                    <div class="cfg-row">
+                        <span>Apagar (Rodada 1):</span>
+                        <input type="number" id="cfg-erases" value="5" onchange="updateConfig()">
+                    </div>
                 </div>
             </div>
 
@@ -249,7 +253,7 @@
 
         let roomId = new URLSearchParams(window.location.search).get('sala');
         let currentRound = 1;
-        const erasesPerRound = [5, 4, 3, 2];
+        //const erasesPerRound = [5, 4, 3, 2];
         let currentErasesLeft = 0;
         let timerInterval, eraseTimerInterval;
         let isDrawing = false;
@@ -258,6 +262,7 @@
         
         let configVictimTime = 30;
         let configAssassinTime = 10;
+        let configInitialErases = 5;
 
         const CANVAS_WIDTH = 400; const CANVAS_HEIGHT = 1000;
         const GRID_COLS = 2; const GRID_ROWS = 5;
@@ -418,6 +423,7 @@
             update(ref(db, 'salas/' + roomId + '/config'), {
                 victimTime: parseInt(document.getElementById('cfg-victim').value) || 30,
                 assassinTime: parseInt(document.getElementById('cfg-assassin').value) || 10,
+                initialErases: parseInt(document.getElementById('cfg-erases').value) || 5,
                 boardUrl: selectedUrl
             });
         };
@@ -457,6 +463,7 @@
                 if(data) {
                     configVictimTime = data.victimTime || 30;
                     configAssassinTime = data.assassinTime || 10;
+                    configInitialErases = data.initialErases || 5;
                     if(data.boardUrl) {
                         document.getElementById('mobile-board-img').src = data.boardUrl;
                     }
@@ -536,7 +543,8 @@
             
             document.getElementById('mobile-view').scrollTop = 0;
             
-            currentErasesLeft = erasesPerRound[currentRound - 1];
+            currentErasesLeft = Math.max(0, configInitialErases - (currentRound - 1));//diminui um quadrante por rodada para o assassino
+
             document.getElementById('erases-left').innerText = currentErasesLeft;
             document.getElementById('send-btn').disabled = true;
             erasedQuadrants = [];
