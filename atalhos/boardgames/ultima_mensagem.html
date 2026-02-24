@@ -270,6 +270,27 @@
         const ctxGrid = gridCanvas.getContext('2d');
         const ctxErase = eraseCanvas.getContext('2d');
 
+        // --- WAKE LOCK (Manter tela acesa) ---
+        let wakeLock = null;
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Tela mantida acesa!');
+                }
+            } catch (err) {
+                console.error(`Erro no Wake Lock: ${err.name}, ${err.message}`);
+            }
+        }
+
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                await requestWakeLock();
+            }
+        });
+        // ------------------------------------
+
         function setupCanvases() {
             [drawCanvas, gridCanvas, eraseCanvas].forEach(c => { c.width = CANVAS_WIDTH; c.height = CANVAS_HEIGHT; });
             drawGrid();
@@ -348,6 +369,10 @@
 
         window.openView = (role) => {
             document.getElementById('role-selection').style.display = 'none';
+
+            // Ativa o Wake Lock assim que o jogador escolhe a tela
+            requestWakeLock();
+            
             if(role === 'tv') {
                 if(!roomId) {
                     roomId = Math.random().toString(36).substring(2, 6).toUpperCase();
