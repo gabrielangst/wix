@@ -1,1 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sessões de Spinning</title>
+    <style>
+        /* Estilos básicos para garantir boa aparência em telas menores */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
 
+        .playlist-container {
+            width: 100%;
+            max-width: 500px; /* Limita o tamanho em telas grandes, mas fica 100% no celular */
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #1a1a1a;
+        }
+
+        .audio-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .track-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #4a4a4a;
+            word-wrap: break-word; /* Evita que nomes muito longos quebrem o layout */
+        }
+
+        /* Faz o player nativo se adaptar à largura do container */
+        audio {
+            width: 100%;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="playlist-container">
+        <div class="header">
+            <h2>Minhas Faixas de Spinning</h2>
+        </div>
+
+        <div class="audio-card">
+            <div class="track-title">01 Spinning 30min 140bpm</div>
+            <audio controls preload="metadata">
+                <source src="01 Spinning 30min 140bpm.mp3" type="audio/mpeg">
+                Seu navegador não suporta o elemento de áudio.
+            </audio>
+        </div>
+
+        <div class="audio-card">
+            <div class="track-title">02 Spinning 30min 140bpm</div>
+            <audio controls preload="metadata">
+                <source src="02 Spinning 30min 140bpm.mp3" type="audio/mpeg">
+                Seu navegador não suporta o elemento de áudio.
+            </audio>
+        </div>
+
+        <div class="audio-card">
+            <div class="track-title">03 Spinning 30min 140bpm</div>
+            <audio controls preload="metadata">
+                <source src="03 Spinning 30min 140bpm.mp3" type="audio/mpeg">
+                Seu navegador não suporta o elemento de áudio.
+            </audio>
+        </div>
+
+        <div class="audio-card">
+            <div class="track-title">04 Spinning 30min 140bpm</div>
+            <audio controls preload="metadata">
+                <source src="04 Spinning 30min 140bpm.mp3" type="audio/mpeg">
+                Seu navegador não suporta o elemento de áudio.
+            </audio>
+        </div>
+
+        <div class="audio-card">
+            <div class="track-title">05 Spinning 30min 130bpm Disco</div>
+            <audio controls preload="metadata">
+                <source src="05 Spinning 30min 130bpm Disco.mp3" type="audio/mpeg">
+                Seu navegador não suporta o elemento de áudio.
+            </audio>
+        </div>
+
+        <div class="audio-card">
+            <div class="track-title">06 Spinning 30min 130bpm Disco</div>
+            <audio controls preload="metadata">
+                <source src="06 Spinning 30min 130bpm Disco.mp3" type="audio/mpeg">
+                Seu navegador não suporta o elemento de áudio.
+            </audio>
+        </div>
+
+    </div>
+
+</body>
+</html>
