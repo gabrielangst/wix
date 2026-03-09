@@ -16,6 +16,9 @@
         .btn-warning:hover { background-color: #e67e22; }
         .btn-success { background-color: #27ae60; }
         .btn-success:hover { background-color: #2ecc71; }
+        /* Novo estilo para o botão azul */
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-primary:hover { background-color: #2980b9; }
 
         /* Layout da TV */
         #tv-view { display: none; width: 100vw; height: 100vh; }
@@ -46,22 +49,20 @@
 
         #sidebar-area { width: 25%; display: flex; flex-direction: column; background-color: #34495e; }
         
-        /* Aumentamos o painel da dica de 65% para 75% da altura da tela */
         #hint-card { height: 75%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; border-bottom: 4px solid #000; background-color: #fff; }
         #hint-image { width: auto; height: auto; max-width: 100%; max-height: 85%; display: none; border: 2px solid #333; object-fit: contain; }
         #hint-nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 15px; width: 100%; }
         .nav-btn { padding: 8px 15px; background: #34495e; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .nav-btn.active { background: #e74c3c; box-shadow: 0 0 5px #c0392b; }
 
-        /* Novo Rodapé Lateral Agrupado (QR Code + Configurações) */
         #sidebar-footer { height: 25%; display: flex; flex-direction: row; justify-content: space-evenly; align-items: center; background-color: #2c3e50; padding: 10px; }
         
         #qr-area { display: flex; flex-direction: column; align-items: center; }
-        #qr-area h3 { display: none; } /* Ocultado para focar no tamanho do QR Code */
+        #qr-area h3 { display: none; } 
         #qr-code { width: 150px; height: 150px; border-radius: 6px; margin-bottom: 8px; background-color: #fff; padding: 5px; }
         #room-code { font-size: 16px; font-weight: bold; color: #fff; background-color: #e74c3c; padding: 4px 10px; border-radius: 4px; letter-spacing: 1px; }
 
-        #tv-config { display: flex; flex-direction: column; gap: 15px; color: #ecf0f1; font-size: 14px; font-weight: bold; }
+        #tv-config { display: flex; flex-direction: column; gap: 15px; color: #ecf0f1; font-size: 14px; font-weight: bold; width: 45%; }
         .cfg-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
         .cfg-row input { width: 50px; text-align: center; padding: 5px; border-radius: 4px; border: none; font-weight: bold; }
 
@@ -166,6 +167,7 @@
                         <span>Apagar (Rodada 1):</span>
                         <input type="number" id="cfg-erases" value="5" onchange="updateConfig()">
                     </div>
+                    <button class="btn btn-primary" style="width: 100%; font-size: 14px; padding: 10px;" onclick="resetGameFromTV()">Iniciar Novo Jogo</button>
                 </div>
             </div>
 
@@ -253,7 +255,6 @@
 
         let roomId = new URLSearchParams(window.location.search).get('sala');
         let currentRound = 1;
-        //const erasesPerRound = [5, 4, 3, 2];
         let currentErasesLeft = 0;
         let timerInterval, eraseTimerInterval;
         let isDrawing = false;
@@ -375,7 +376,6 @@
         window.openView = (role) => {
             document.getElementById('role-selection').style.display = 'none';
 
-            // Ativa o Wake Lock assim que o jogador escolhe a tela
             requestWakeLock();
             
             if(role === 'tv') {
@@ -428,6 +428,13 @@
             });
         };
 
+        // --- FUNÇÃO PARA RESETAR PELA TV ---
+        window.resetGameFromTV = () => {
+            if (confirm("Tem certeza que deseja iniciar um novo jogo? Todos os desenhos serão apagados.")) {
+                set(ref(db, 'salas/' + roomId + '/gameState'), { reset: true, timestamp: Date.now() });
+            }
+        };
+
         function updateTVUI(indexToShow) {
             const placeholder = document.getElementById('hint-placeholder');
             const imgEl = document.getElementById('hint-image');
@@ -458,6 +465,7 @@
             window.resetMobileZoom();
             updateRoundDisplays();
             
+            // Escuta as configurações da TV
             onValue(ref(db, 'salas/' + roomId + '/config'), (snapshot) => {
                 const data = snapshot.val();
                 if(data) {
@@ -467,6 +475,26 @@
                     if(data.boardUrl) {
                         document.getElementById('mobile-board-img').src = data.boardUrl;
                     }
+                }
+            });
+
+            // Escuta o estado do jogo para resetar se a TV mandar
+            onValue(ref(db, 'salas/' + roomId + '/gameState'), (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.reset) {
+                    clearInterval(timerInterval);
+                    clearInterval(eraseTimerInterval);
+                    currentRound = 1;
+                    updateRoundDisplays();
+                    window.resetMobileZoom();
+                    
+                    document.getElementById('mobile-draw').style.display = 'none';
+                    document.getElementById('mobile-erase').style.display = 'none';
+                    document.getElementById('mobile-end').style.display = 'none';
+                    document.getElementById('transition-overlay').style.display = 'none';
+                    
+                    document.getElementById('mobile-start').style.display = 'flex';
+                    document.getElementById('mobile-view').scrollTop = 0;
                 }
             });
         }
@@ -543,7 +571,7 @@
             
             document.getElementById('mobile-view').scrollTop = 0;
             
-            currentErasesLeft = Math.max(0, configInitialErases - (currentRound - 1));//diminui um quadrante por rodada para o assassino
+            currentErasesLeft = Math.max(0, configInitialErases - (currentRound - 1));
 
             document.getElementById('erases-left').innerText = currentErasesLeft;
             document.getElementById('send-btn').disabled = true;
@@ -611,15 +639,7 @@
         };
 
         window.restartGame = () => {
-            currentRound = 1;
-            updateRoundDisplays();
-            window.resetMobileZoom();
-            
             set(ref(db, 'salas/' + roomId + '/gameState'), { reset: true, timestamp: Date.now() });
-            
-            document.getElementById('mobile-end').style.display = 'none';
-            document.getElementById('mobile-start').style.display = 'flex';
-            document.getElementById('mobile-view').scrollTop = 0;
         };
     </script>
 </body>
