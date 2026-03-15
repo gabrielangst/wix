@@ -14,6 +14,14 @@
         h1 {
             text-align: center;
             color: #333;
+            margin-bottom: 10px;
+        }
+        h2 {
+            text-align: center;
+            color: #555;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-size: 1.5em;
         }
         .container {
             display: grid;
@@ -76,13 +84,48 @@
             box-sizing: border-box;
             background-color: #fff9e6; /* Tom leve de papel para destacar */
         }
+        .divisor {
+            max-width: 1200px;
+            margin: 40px auto;
+            border: 0;
+            border-top: 2px solid #ddd;
+        }
     </style>
 </head>
 <body>
 
     <h1>Imóveis Selecionados</h1>
 
+    <h2>⭐ Imóveis Preferenciais</h2>
     <div class="container">
+        
+        <div class="card">
+            <img src="https://img.dfimoveis.com.br/fotos/1284212/f62a7a7415cf020c665deb1d13756e9b.webp" alt="Foto da Casa">
+            <div class="card-content">
+                <h3>Jardins do Lago Q9</h3>
+                <p class="price">R$ 2.690.000,00</p>
+                <a href="https://www.dfimoveis.com.br/imovel/casa-condominio-4-quartos-venda-jardim-botanico-brasilia-df-condominio-residencial-jardins-do-lago-1284212" class="btn" target="_blank">Ver Anúncio</a>
+            </div>
+            <textarea class="notes-area" rows="3" placeholder="">Não visitada ainda</textarea>
+        </div>
+
+        <div class="card">
+            <img src="https://imgbr.imovelwebcdn.com/avisos/resize/2/29/62/13/66/86/1200x1200/2518898774.jpg" alt="Foto da Casa">
+            <div class="card-content">
+                <h3>Ville de Montagne</h3>
+                <p class="price">R$ 2.399.000,00</p>
+                <a href="https://www.wimoveis.com.br/propriedades/casa-top-terrea-completa-de-4-quartos-com-habite-se-2962136686.html" class="btn" target="_blank">Ver Anúncio</a>
+            </div>
+            <textarea class="notes-area" rows="3" placeholder="">Melhor casa até o momento, considerar a R$ 2.100.000,00</textarea>
+        </div>
+
+    </div>
+
+    <hr class="divisor">
+
+    <h2>Outros Imóveis</h2>
+    <div class="container">
+        
         <div class="card">
             <img src="https://imgbr.imovelwebcdn.com/avisos/resize/2/30/18/94/88/61/1200x1200/5541259120.jpg" alt="Foto da Casa">
             <div class="card-content">
@@ -104,16 +147,6 @@
         </div>
 
         <div class="card">
-            <img src="https://img.dfimoveis.com.br/fotos/1284212/f62a7a7415cf020c665deb1d13756e9b.webp" alt="Foto da Casa">
-            <div class="card-content">
-                <h3>Jardins do Lago Q9</h3>
-                <p class="price">R$ 2.690.000,00</p>
-                <a href="https://www.dfimoveis.com.br/imovel/casa-condominio-4-quartos-venda-jardim-botanico-brasilia-df-condominio-residencial-jardins-do-lago-1284212" class="btn" target="_blank">Ver Anúncio</a>
-            </div>
-            <textarea class="notes-area" rows="3" placeholder="">Não visitada ainda</textarea>
-        </div>
-
-        <div class="card">
             <img src="https://img.dfimoveis.com.br/fotos/339092/46dd11eb58b4b58afe7da4e164d4d260.webp" alt="Foto da Casa">
             <div class="card-content">
                 <h3>Jardins do Lago Q9</h3>
@@ -121,16 +154,6 @@
                 <a href="https://www.dfimoveis.com.br/imovel/casa-condominio-4-quartos-venda-jardim-botanico-brasilia-df-condominio-residencial-jardins-do-lago-339092" class="btn" target="_blank">Ver Anúncio</a>
             </div>
             <textarea class="notes-area" rows="3" placeholder="">A casa foi feita na diagonal, piscina pequena, considerar apenas a R$ 2.000,000</textarea>
-        </div>
-
-        <div class="card">
-            <img src="https://imgbr.imovelwebcdn.com/avisos/resize/2/29/62/13/66/86/1200x1200/2518898774.jpg" alt="Foto da Casa">
-            <div class="card-content">
-                <h3>Ville de Montagne</h3>
-                <p class="price">R$ 2.399.000,00</p>
-                <a href="https://www.wimoveis.com.br/propriedades/casa-top-terrea-completa-de-4-quartos-com-habite-se-2962136686.html" class="btn" target="_blank">Ver Anúncio</a>
-            </div>
-            <textarea class="notes-area" rows="3" placeholder="">Melhor casa até o momento, considerar a R$ 2.100.000,00</textarea>
         </div>
 
         <div class="card">
