@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bora Jogar?</title>
+    <title>🎲 Bora Jogar?</title>
     <style>
         :root {
             --primary: #6366f1; /* Roxo vibrante */
@@ -120,12 +120,38 @@
         .btn-modal-ok:active {
             transform: scale(0.98);
         }
+
+        /* Rodapé Fixo */
+        .fixed-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--surface);
+            text-align: center;
+            padding: 10px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            font-size: 0.85rem;
+            z-index: 90; /* Fica abaixo dos modais (200) e dos botões flutuantes (100) */
+        }
+        
+        .fixed-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .fixed-footer a:hover {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Bora Jogar?</h1>
+        <h1>🎲 Bora Jogar?</h1>
         <p id="luderia-name">Carregando local...</p>
     </header>
 
@@ -136,6 +162,10 @@
         <button class="fab-secondary" id="fab-minha-mesa" onclick="abrirMinhaMesa()" title="Gerenciar Minha Mesa">⚙️</button>
         <button class="fab" onclick="abrirModalNovaMesa()" title="Nova Mesa">+</button>
     </div>
+
+    <footer class="fixed-footer">
+        <a href="mailto:gabriel.angst@hotmail.com">Contate o Bora Jogar</a>
+    </footer>
 
     <div class="modal-overlay" id="modal-nova-mesa">
         <div class="modal">
