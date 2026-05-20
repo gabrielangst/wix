@@ -130,8 +130,8 @@
                     <input type="number" id="input-max" required min="2" max="20" placeholder="Ex: 8">
                 </div>
                 <div class="input-group">
-                    <label>Crie uma senha de 4 números para gerenciar</label>
-                    <input type="password" id="input-senha" required inputmode="numeric" minlength="4" maxlength="4">
+                    <label>Crie uma senha de 4 caracteres ou números para gerenciar a mesa</label>
+                    <input id="input-senha" required inputmode="numeric" minlength="4" maxlength="4">
                 </div>
                 <button type="submit" class="btn-primary">Publicar Mesa</button>
                 <button type="button" class="btn-secondary" onclick="fecharModais()">Cancelar</button>
@@ -146,7 +146,7 @@
             
             <div class="input-group">
                 <label>Senha da Mesa</label>
-                <input type="password" id="input-confirmar-senha" required placeholder="Ex: 1234" inputmode="numeric" minlength="4" maxlength="4">
+                <input  id="input-confirmar-senha" required placeholder="Ex: 1234" inputmode="numeric" minlength="4" maxlength="4">
             </div>
 
             <button class="btn-primary btn-renovar" id="btn-renovar">Renovar Tempo (+20min)</button>            
