@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <link rel="icon" type="image/png" href="icon-512.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎲 Bora Jogar?</title>
+    <title>Bora Jogar?</title>
     <style>
         :root {
             --primary: #6366f1; /* Roxo vibrante */
@@ -236,13 +237,18 @@
             
             <div class="input-group">
                 <label>Senha da Mesa</label>
-                <input  id="input-confirmar-senha" required placeholder="" inputmode="numeric" minlength="4" maxlength="4">
+                <input id="input-confirmar-senha" required inputmode="numeric" minlength="4" maxlength="4">
             </div>
 
-            <button class="btn-primary btn-renovar" id="btn-renovar">Renovar Tempo (+20min)</button>            
-            <button class="btn-primary btn-danger" id="btn-encerrar">Encerrar (Mesa Cheia)</button>
-            <br><br><br>
-            <button class="btn-primary" id="btn-abrir-editar" style="background: #0c2b65;">Editar Mesa</button>
+            <button class="btn-primary" id="btn-validar-senha">Validar Senha</button>
+
+            <div id="grupo-acoes-gerenciar" class="hidden">
+                <button class="btn-primary" id="btn-renovar">Renovar Tempo (+20m)</button>            
+                <button class="btn-primary btn-danger" id="btn-encerrar">Encerrar (Mesa Cheia)</button>
+                <button class="btn-primary" id="btn-abrir-editar" style="background: #0c7a36; margin-top: 16px;">Editar Informações</button>
+            </div>
+            
+            <br>
             <button class="btn-secondary" onclick="fecharModais()">Cancelar</button>
         </div>
     </div>
@@ -449,7 +455,7 @@
                 const textoTempo = diffMinutos > 0 ? `Expira em ${diffMinutos}min` : `Menos de 1 min`;
                 
                 const vagas = mesa.maxJogadores - mesa.jogadoresAtuais;
-                const textoVagas = vagas > 1 ? `${vagas} vagas` : `1 vaga`;
+                const textoVagas = vagas > 1 ? `${vagas} jogadores` : `1 jogador`;
                 const expiraMillis = docItem.expiraEm.getTime();
                 
                 let classeBadge = "badge"; // Mantém azul por padrão
@@ -473,7 +479,7 @@
                         <span class="${classeBadge}">${mesa.tipoJogo}</span>
                     </div>
                     <div class="card-details">
-                        <strong>${mesa.nome}</strong> abriu a mesa.<br>
+                        <strong>${mesa.nome}</strong> abriu a mesa com <strong>${mesa.jogadoresAtuais} jogadores</strong> no total.<br>
                         Buscando mais <span class="text-green">${textoVagas}</span> para fechar.
                     </div>
                     <div class="card-actions">
@@ -693,9 +699,15 @@
         
         window.abrirModalGerenciar = (cardId, numeroMesa) => {
             mesaSelecionadaId = cardId;
-            document.getElementById('input-confirmar-senha').value = '';
             
-            // Muda o título se o número da mesa foi passado
+            // Reseta o estado do modal de gerenciamento
+            const inputSenha = document.getElementById('input-confirmar-senha');
+            inputSenha.value = '';
+            inputSenha.disabled = false; // Libera o campo de digitar
+            
+            document.getElementById('btn-validar-senha').classList.remove('hidden');
+            document.getElementById('grupo-acoes-gerenciar').classList.add('hidden');
+            
             const titulo = document.getElementById('titulo-modal-gerenciar');
             if (numeroMesa) {
                 titulo.innerText = `Gerenciar Mesa ${numeroMesa}`;
@@ -741,6 +753,33 @@
             document.getElementById('texto-participar').innerHTML = texto;
             document.getElementById('modal-participar').classList.add('active');
         };
+
+        // NOVA FUNÇÃO: Valida a senha para liberar os botões de ação
+        document.getElementById('btn-validar-senha').addEventListener('click', async () => {
+            const senhaDigitada = document.getElementById('input-confirmar-senha').value;
+            
+            if (senhaDigitada.length !== 4) {
+                alert("A senha precisa ter 4 números.");
+                return;
+            }
+
+            const btnValidar = document.getElementById('btn-validar-senha');
+            btnValidar.innerText = "Validando...";
+            btnValidar.disabled = true;
+
+            // Usa a sua função já existente para checar no banco
+            const docRef = await validarSenha(mesaSelecionadaId, senhaDigitada);
+            
+            if (docRef) {
+                // Senha correta: Esconde o botão de validar, trava o input e mostra as ações
+                btnValidar.classList.add('hidden');
+                document.getElementById('input-confirmar-senha').disabled = true;
+                document.getElementById('grupo-acoes-gerenciar').classList.remove('hidden');
+            }
+            
+            btnValidar.innerText = "Validar Senha";
+            btnValidar.disabled = false;
+        });
 
     </script>
 </body>
