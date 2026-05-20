@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Admin - Bora Jogar?</title>
     <style>
+
+        /* Layout Base (Mobile First) */
+        .header-dash { display: flex; flex-direction: column; gap: 15px; align-items: stretch; text-align: center; margin-bottom: 30px; }
+        .header-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .header-actions button { width: 100% !important; margin: 0; }
+        
+        /* Filtros - Empilhados no telemóvel */
+        .filtros-bar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .filtros-group { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        
+        /* Grid do formulário (1 coluna no telemóvel) */
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .form-span-2 { grid-column: span 1; }
+
+        /* Estilos para Telas Maiores (Desktop e Tablets deitados) */
+        @media (min-width: 768px) {
+            .header-dash { flex-direction: row; justify-content: space-between; align-items: center; text-align: left; }
+            .header-actions { flex-direction: row; width: auto; align-items: center; }
+            .header-actions button { width: auto !important; }
+            
+            .filtros-bar { flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+            .filtros-group { flex-direction: row; align-items: center; width: auto; flex: 1; min-width: 250px; }
+            
+            /* Grid do formulário (2 colunas no desktop) */
+            .form-grid { grid-template-columns: 1fr 1fr; }
+            .form-span-2 { grid-column: span 2; }
+        }
+
         :root {
             --primary: #6366f1;
             --bg: #f8fafc;
@@ -37,7 +65,7 @@
         th { background: #f1f5f9; font-weight: bold; color: var(--text-light); }
         
         .login-box { max-width: 350px; margin: 100px auto; }
-        .header-dash { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
+        
         
         /* Subtítulo dinâmico para Gerentes */
         #luderia-gerenciada { color: var(--success); font-weight: 600; font-size: 1.1rem; }
@@ -48,7 +76,7 @@
         .modal.active, .modal-overlay.active { display: flex; }
 
         /* Estilo da barra de filtros */
-        .filtros-bar { display: flex; gap: 15px; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; align-items: center; }
+        
         .filtros-bar select { margin: 0; padding: 8px; font-size: 0.95rem; flex: 1; }
         .filtros-label { font-weight: bold; color: var(--text-light); font-size: 0.9rem; white-space: nowrap; }
     </style>
@@ -68,9 +96,9 @@
                 <h1 id="boas-vindas">Painel de Controle ⚙️</h1>
                 <div id="luderia-gerenciada" class="hidden">📍 Carregando local...</div>
             </div>
-            <div style="display: flex; gap: 10px; align-items: flex-start;">
-                <button id="btn-abrir-luderias" class="hidden" style="background: var(--success); width: auto; padding: 10px 15px; margin: 0;">Gerenciar Luderias</button>
-                <button id="btn-logout" style="width: 80px; background: #64748b; margin: 0; padding: 10px;">Sair</button>
+            <div class="header-actions">
+                <button id="btn-abrir-luderias" class="hidden" style="background: var(--success); padding: 10px 15px;">Gerenciar Luderias</button>
+                <button id="btn-logout" style="background: #64748b; padding: 10px;">Sair</button>
             </div>
         </div>
         
