@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bora Jogar?</title>
+    <style>
+        :root {
+            --primary: #6366f1; /* Roxo vibrante */
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #334155;
+            --text-light: #64748b;
+            --success: #16a34a; /* Verde para destaque */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        
+        body { background-color: var(--bg); color: var(--text); padding-bottom: 100px; }
+
+        header { background-color: var(--surface); padding: 20px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        header h1 { font-size: 1.5rem; color: var(--primary); }
+        header p { font-size: 0.9rem; color: var(--text-light); margin-top: 5px; }
+
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; }
+
+        /* Estilo dos Cards */
+        .card { background: var(--surface); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 4px solid var(--primary); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .card-title { font-weight: bold; font-size: 1.2rem; }
+        
+        /* Badges de Categoria */
+        .badge { background: #e0e7ff; color: var(--primary); padding: 6px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; }
+        .badge-green { background: #dcfce7; color: #15803d; } 
+        
+        .card-details { font-size: 0.95rem; margin-bottom: 12px; line-height: 1.5; }
+        .text-green { color: var(--success); font-weight: 800; font-size: 1.05rem; }
+
+        .card-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 12px; }
+        .timer { font-size: 0.85rem; color: #ef4444; font-weight: bold; }
+        .btn-manage { background: none; border: none; color: var(--primary); font-weight: bold; cursor: pointer; }
+
+        /* Botões Flutuantes */
+        .fab-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 12px; z-index: 100; }
+        .fab { background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 50%; font-size: 30px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4); border: none; cursor: pointer; }
+        .fab-secondary { background: var(--success); color: white; width: 50px; height: 50px; border-radius: 50%; font-size: 24px; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.4); border: none; cursor: pointer; align-self: flex-end; }
+
+        /* Modais */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; }
+        .modal { background: var(--surface); width: 90%; max-width: 400px; border-radius: 16px; padding: 24px; max-height: 90vh; overflow-y: auto; }
+        .modal.active, .modal-overlay.active { display: flex; }
+        
+        .modal h2 { margin-bottom: 16px; font-size: 1.3rem; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 0.9rem; margin-bottom: 6px; color: var(--text-light); }
+        .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; }
+        .hidden { display: none; }
+        
+        .btn-primary { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 8px; }
+        .btn-secondary { width: 100%; padding: 12px; background: transparent; color: var(--text-light); border: none; font-size: 1rem; cursor: pointer; margin-top: 8px; }
+        .btn-renovar { background: #01a334; margin-top: 16px; }
+        .btn-danger { background: #ef4444; margin-top: 16px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Bora Jogar?</h1>
+        <p id="luderia-name">Carregando local...</p>
+    </header>
+
+    <div class="container" id="feed-mesas">
+        </div>
+
+    <div class="fab-container">
+        <button class="fab-secondary" id="fab-minha-mesa" onclick="abrirMinhaMesa()" title="Gerenciar Minha Mesa">⚙️</button>
+        <button class="fab" onclick="abrirModalNovaMesa()" title="Nova Mesa">+</button>
+    </div>
+
+    <div class="modal-overlay" id="modal-nova-mesa">
+        <div class="modal">
+            <h2>Abrir Mesa para Jogadores</h2>
+            <form id="form-nova-mesa">
+                <div class="input-group">
+                    <label>Seu Nome</label>
+                    <input type="text" id="input-nome" required placeholder="Ex: Gabriel">
+                </div>
+                <div class="input-group">
+                    <label>Número da sua Mesa</label>
+                    <input type="text" id="input-mesa" required placeholder="Ex: 13 ou A2">
+                </div>
+                <div class="input-group">
+                    <label>Tipo de Jogo</label>
+                    <select id="input-tipo" onchange="verificarCampoExtra('input-tipo', 'grupo-tipo-especifico', 'grupo-outro-estilo', 'input-jogo-nome', 'input-outro-texto')">
+                        <option value="🎲 Party Games">🎲 Party Games (Rápidos/Divertidos)</option>
+                        <option value="♟️ Estratégia/Euro">♟️ Estratégia/Euro</option>
+                        <option value="🐉 RPG">🐉 RPG</option>
+                        <option value="🃏 Qualquer um">🃏 Qualquer um</option>
+                        <option value="🧩 Outro estilo">🧩 Outro estilo...</option>
+                        <option value="📦 Jogo Específico">📦 Jogo Específico...</option>
+                    </select>
+                </div>
+                
+                <div class="input-group hidden" id="grupo-tipo-especifico">
+                    <label>Qual o nome do jogo?</label>
+                    <input type="text" id="input-jogo-nome" placeholder="Ex: The Resistance">
+                    
+                    <label style="margin-top: 10px;">Qual o estilo desse jogo?</label>
+                    <select id="input-jogo-estilo" onchange="verificarEstiloEspecifico('input-jogo-estilo', 'input-jogo-outro-estilo')">
+                        <option value="🎲 Party Games">🎲 Party Games (Rápidos/Divertidos)</option>
+                        <option value="♟️ Estratégia/Euro">♟️ Estratégia/Euro</option>
+                        <option value="🐉 RPG">🐉 RPG</option>
+                        <option value="Outro">🧩 Outro estilo</option>
+                    </select>
+                    
+                    <input type="text" id="input-jogo-outro-estilo" class="hidden" placeholder="Ex: Blefe, Dedutível..." style="margin-top: 10px;">
+                </div>
+
+                <div class="input-group hidden" id="grupo-outro-estilo">
+                    <label>Qual o estilo de jogo?</label>
+                    <input type="text" id="input-outro-texto" placeholder="Ex: Cooperativo, Família...">
+                </div>
+
+                <div class="input-group">
+                    <label>Quantos jogadores estão na sua mesa?</label>
+                    <input type="number" id="input-atuais" required min="1" max="19" placeholder="Ex: 2">
+                </div>
+                <div class="input-group">
+                    <label>Máximo de Jogadores (Total)</label>
+                    <input type="number" id="input-max" required min="2" max="20" placeholder="Ex: 8">
+                </div>
+                <div class="input-group">
+                    <label>Crie uma senha de 4 números para gerenciar</label>
+                    <input type="password" id="input-senha" required inputmode="numeric" minlength="4" maxlength="4">
+                </div>
+                <button type="submit" class="btn-primary">Publicar Mesa</button>
+                <button type="button" class="btn-secondary" onclick="fecharModais()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-gerenciar">
+        <div class="modal">
+            <h2 id="titulo-modal-gerenciar">Gerenciar Mesa</h2>
+            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 16px;">Informe a senha criada para gerenciar este chamado.</p>
+            
+            <div class="input-group">
+                <label>Senha da Mesa</label>
+                <input type="password" id="input-confirmar-senha" required placeholder="Ex: 1234" inputmode="numeric" minlength="4" maxlength="4">
+            </div>
+
+            <button class="btn-primary btn-renovar" id="btn-renovar">Renovar Tempo (+20min)</button>            
+            <button class="btn-primary btn-danger" id="btn-encerrar">Encerrar (Mesa Cheia)</button>
+            <br><br><br>
+            <button class="btn-primary" id="btn-abrir-editar" style="background: #0c2b65;">Editar Mesa</button>
+            <button class="btn-secondary" onclick="fecharModais()">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-editar">
+        <div class="modal">
+            <h2>Editar Informações</h2>
+            <form id="form-editar-mesa">
+                <div class="input-group">
+                    <label>Seu Nome</label>
+                    <input type="text" id="edit-nome" required>
+                </div>
+                <div class="input-group">
+                    <label>Número da sua Mesa</label>
+                    <input type="text" id="edit-mesa" required>
+                </div>
+                <div class="input-group">
+                    <label>Tipo de Jogo</label>
+                    <select id="edit-tipo" onchange="verificarCampoExtra('edit-tipo', 'edit-grupo-tipo-especifico', 'edit-grupo-outro-estilo', 'edit-jogo-nome', 'edit-outro-texto')">
+                        <option value="🎲 Party Games">🎲 Party Games (Rápidos/Divertidos)</option>
+                        <option value="♟️ Estratégia/Euro">♟️ Estratégia/Euro</option>
+                        <option value="🐉 RPG">🐉 RPG</option>
+                        <option value="🃏 Qualquer um">🃏 Qualquer um</option>
+                        <option value="🧩 Outro estilo">🧩 Outro estilo...</option>
+                        <option value="📦 Jogo Específico">📦 Jogo Específico...</option>
+                    </select>
+                </div>
+
+                <div class="input-group hidden" id="edit-grupo-tipo-especifico">
+                    <label>Qual o nome do jogo?</label>
+                    <input type="text" id="edit-jogo-nome">
+                    
+                    <label style="margin-top: 10px;">Qual o estilo desse jogo?</label>
+                    <select id="edit-jogo-estilo" onchange="verificarEstiloEspecifico('edit-jogo-estilo', 'edit-jogo-outro-estilo')">
+                        <option value="Party Games">Party Games</option>
+                        <option value="Estratégia/Euro">Estratégia/Euro</option>
+                        <option value="RPG">RPG</option>
+                        <option value="Outro">Outro estilo</option>
+                    </select>
+                    
+                    <input type="text" id="edit-jogo-outro-estilo" class="hidden" style="margin-top: 10px;">
+                </div>
+
+                <div class="input-group hidden" id="edit-grupo-outro-estilo">
+                    <label>Qual o estilo de jogo?</label>
+                    <input type="text" id="edit-outro-texto">
+                </div>
+
+                <div class="input-group">
+                    <label>Quantos jogadores estão na sua mesa?</label>
+                    <input type="number" id="edit-atuais" required min="1" max="19">
+                </div>
+                <div class="input-group">
+                    <label>Máximo de Jogadores (Total)</label>
+                    <input type="number" id="edit-max" required min="2" max="20">
+                </div>
+                <button type="submit" class="btn-primary">Salvar Alterações</button>
+                <button type="button" class="btn-secondary" onclick="fecharModais()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, getDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-Iw8ZoQ5lt6tS896SoFr4fgLZsjeJJ3g",
+            authDomain: "join-boardgames-live.firebaseapp.com",
+            projectId: "join-boardgames-live",
+            storageBucket: "join-boardgames-live.firebasestorage.app",
+            messagingSenderId: "299012794136",
+            appId: "1:299012794136:web:e087db86ac5a117427206d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const luderiaId = urlParams.get('luderia') ? urlParams.get('luderia').toLowerCase() : null;
+
+        // Se não tiver nenhum parâmetro na URL, avisa e para o script
+        if (!luderiaId) {
+            document.body.innerHTML = '<div style="text-align:center; padding:50px;"><h2>URL Inválida</h2><p>Por favor, escaneie o QR Code na mesa do restaurante ou tente colocar no final o código abaixo: <br> <br> <b>?luderia=luderia_teste</b></p></div>';
+            throw new Error("Nenhuma luderia informada na URL. Tente colocar no final o código ?luderia=luderia_teste");
+        }
+
+        // Verifica se a luderia existe no banco antes de continuar
+        const luderiaRegistroRef = doc(db, "luderias_registradas", luderiaId);
+        getDoc(luderiaRegistroRef).then((docSnap) => {
+            if (!docSnap.exists()) {
+                document.body.innerHTML = '<div style="text-align:center; padding:50px;"><h2>Local não cadastrado.</h2><p>Esta luderia não faz parte do sistema Bora Jogar.</p></div>';
+                throw new Error("Luderia não autorizada.");
+            }
+            
+            // Se existir, carrega o nome fantasia dela e segue o jogo normal
+            const dadosLuderia = docSnap.data();
+            document.getElementById('luderia-name').innerText = `Local: ${dadosLuderia.nomeFantasia || luderiaId}`;
+            
+        }).catch(err => console.error(err));
+
+        const mesasRef = collection(db, "luderias", luderiaId, "mesas_abertas");
+
+        let mesaSelecionadaId = null; 
+        let senhaValidadaAtual = ''; 
+        let mesasAtivasNumeros = []; 
+
+        // Lógica para mostrar/esconder campos extras principais
+        window.verificarCampoExtra = (selectId, grupoEspecificoId, grupoOutroId, inputJogoId, inputOutroId) => {
+            const select = document.getElementById(selectId);
+            const gEspecifico = document.getElementById(grupoEspecificoId);
+            const gOutro = document.getElementById(grupoOutroId);
+            const inputJogo = document.getElementById(inputJogoId);
+            const inputOutro = document.getElementById(inputOutroId);
+            
+            gEspecifico.classList.add('hidden');
+            gOutro.classList.add('hidden');
+            inputJogo.required = false;
+            inputOutro.required = false;
+
+            if (select.value === '📦 Jogo Específico') {
+                gEspecifico.classList.remove('hidden');
+                inputJogo.required = true;
+            } else if (select.value === '🧩 Outro estilo') {
+                gOutro.classList.remove('hidden');
+                inputOutro.required = true;
+            }
+        };
+
+        // NOVA FUNÇÃO: Monitora se o usuário quer digitar o estilo do Jogo Específico
+        window.verificarEstiloEspecifico = (selectId, inputOutroId) => {
+            const select = document.getElementById(selectId);
+            const inputOutro = document.getElementById(inputOutroId);
+            
+            if (select.value === 'Outro') {
+                inputOutro.classList.remove('hidden');
+                inputOutro.required = true;
+            } else {
+                inputOutro.classList.add('hidden');
+                inputOutro.required = false;
+                inputOutro.value = ''; // Limpa o campo caso ele desista
+            }
+        };
+
+        // Lógica de montar o texto formatado final (Agora puxando o campo "outro" do Jogo Específico se necessário)
+        function obterTipoJogoFinal(selectId, inputJogoId, selectEstiloId, inputJogoOutroEstiloId, inputOutroId) {
+            const selectVal = document.getElementById(selectId).value;
+            if (selectVal === '📦 Jogo Específico') {
+                const nomeJogo = document.getElementById(inputJogoId).value;
+                let estiloJogo = document.getElementById(selectEstiloId).value;
+                
+                // Se ele marcou 'Outro', pega o valor que ele digitou no campo invisível
+                if (estiloJogo === 'Outro') {
+                    estiloJogo = document.getElementById(inputJogoOutroEstiloId).value;
+                }
+                
+                return `📦 ${nomeJogo} (${estiloJogo})`;
+            }
+            if (selectVal === '🧩 Outro estilo') {
+                return `🧩 ${document.getElementById(inputOutroId).value}`;
+            }
+            return selectVal;
+        }
+
+        // Ouvir as mesas em tempo real
+        onSnapshot(mesasRef, (snapshot) => {
+            const feed = document.getElementById('feed-mesas');
+            feed.innerHTML = ''; 
+            mesasAtivasNumeros = []; 
+            const agora = new Date();
+            
+            let documentos = []; 
+
+            snapshot.forEach((docSnap) => {
+                const mesa = docSnap.data();
+                const expiraEm = mesa.expiraEm.toDate(); 
+
+                if (expiraEm > agora) {
+                    documentos.push({ id: docSnap.id, dados: mesa, expiraEm: expiraEm });
+                    mesasAtivasNumeros.push(mesa.numeroMesa.toString().trim()); 
+                }
+            });
+
+            // Ordena pelos que expiram primeiro
+            documentos.sort((a, b) => a.expiraEm - b.expiraEm);
+
+            let minhaMesaAindaExiste = false;
+            const minhaMesaIdSalva = localStorage.getItem('minhaMesaId');
+
+            documentos.forEach((docItem) => {
+                const mesa = docItem.dados;
+                
+                // NOVO CÁLCULO DE TEMPO AQUI
+                const diffMillis = docItem.expiraEm.getTime() - agora.getTime();
+                const diffMinutos = Math.floor(diffMillis / 60000);
+                const textoTempo = diffMinutos > 0 ? `Expira em ${diffMinutos}min` : `Menos de 1 min`;
+                
+                const vagas = mesa.maxJogadores - mesa.jogadoresAtuais;
+                const textoVagas = vagas > 1 ? `${vagas} vagas` : `1 vaga`;
+                const expiraMillis = docItem.expiraEm.getTime();
+                
+                let classeBadge = "badge"; // Mantém azul por padrão
+                
+                if (mesa.tipoJogo.startsWith('🎲') || 
+                    mesa.tipoJogo.startsWith('♟️') || 
+                    mesa.tipoJogo.startsWith('🐉') || 
+                    mesa.tipoJogo.startsWith('🃏') || 
+                    mesa.tipoJogo === 'Party Games' || 
+                    mesa.tipoJogo === 'Estratégia/Euro' || 
+                    mesa.tipoJogo === 'RPG' || 
+                    mesa.tipoJogo === 'Qualquer um') {
+                    classeBadge += " badge-green"; // Muda para verde
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="card-title">Mesa ${mesa.numeroMesa}</span>
+                        <span class="${classeBadge}">${mesa.tipoJogo}</span>
+                    </div>
+                    <div class="card-details">
+                        <strong>${mesa.nome}</strong> abriu a mesa.<br>
+                        Buscando mais <span class="text-green">${textoVagas}</span> para fechar.
+                    </div>
+                    <div class="card-actions">
+                        <span class="timer" data-expira="${expiraMillis}">${textoTempo}</span>
+                        <button class="btn-manage" data-id="${docItem.id}" data-mesa="${mesa.numeroMesa}">Gerenciar</button>
+                    </div>
+                `;
+                feed.appendChild(card);
+
+                if (docItem.id === minhaMesaIdSalva) {
+                    minhaMesaAindaExiste = true;
+                }
+            });
+
+            const fabMinhaMesa = document.getElementById('fab-minha-mesa');
+            if (minhaMesaAindaExiste) {
+                fabMinhaMesa.style.display = 'flex';
+            } else {
+                fabMinhaMesa.style.display = 'none';
+                localStorage.removeItem('minhaMesaId'); 
+            }
+
+            document.querySelectorAll('.btn-manage').forEach(btn => {
+                btn.addEventListener('click', (e) => abrirModalGerenciar(e.target.dataset.id, e.target.dataset.mesa));
+            });
+        });
+
+        // Criar Nova Mesa
+        document.getElementById('form-nova-mesa').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const numeroMesaDesejada = document.getElementById('input-mesa').value.trim();
+
+            if (mesasAtivasNumeros.includes(numeroMesaDesejada)) {
+                alert(`A Mesa ${numeroMesaDesejada} já possui um chamado aberto. Verifique o feed!`);
+                return;
+            }
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerText = "Publicando...";
+
+            // Chamada atualizada com os novos IDs
+            const tipoFinal = obterTipoJogoFinal('input-tipo', 'input-jogo-nome', 'input-jogo-estilo', 'input-jogo-outro-estilo', 'input-outro-texto');
+            const agora = new Date();
+            const expiraEm = new Date(agora.getTime() + 20 * 60000); 
+
+            try {
+                const docRef = await addDoc(mesasRef, {
+                    nome: document.getElementById('input-nome').value,
+                    numeroMesa: numeroMesaDesejada,
+                    tipoJogo: tipoFinal,
+                    jogadoresAtuais: parseInt(document.getElementById('input-atuais').value),
+                    maxJogadores: parseInt(document.getElementById('input-max').value),
+                    senha: document.getElementById('input-senha').value,
+                    expiraEm: Timestamp.fromDate(expiraEm)
+                });
+                
+                localStorage.setItem('minhaMesaId', docRef.id);
+                localStorage.setItem('minhaMesaNumero', numeroMesaDesejada);
+
+                fecharModais();
+                e.target.reset(); 
+                document.getElementById('grupo-tipo-especifico').classList.add('hidden');
+                document.getElementById('grupo-outro-estilo').classList.add('hidden');
+                document.getElementById('input-jogo-outro-estilo').classList.add('hidden');
+            } catch (error) {
+                console.error("Erro ao criar mesa:", error);
+                alert("Erro ao criar mesa.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Publicar Mesa";
+            }
+        });
+
+        async function validarSenha(docId, senhaDigitada) {
+            const docRef = doc(db, "luderias", luderiaId, "mesas_abertas", docId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists() && docSnap.data().senha === senhaDigitada) {
+                return docRef;
+            }
+            alert("Senha incorreta!");
+            return null;
+        }
+
+        document.getElementById('btn-renovar').addEventListener('click', async () => {
+            const senha = document.getElementById('input-confirmar-senha').value;
+            const docRef = await validarSenha(mesaSelecionadaId, senha);
+            
+            if (docRef) {
+                const novoExpiraEm = new Date(new Date().getTime() + 20 * 60000);
+                await updateDoc(docRef, { expiraEm: Timestamp.fromDate(novoExpiraEm) });
+                fecharModais();
+            }
+        });
+
+        // Confirmação ao Encerrar
+        document.getElementById('btn-encerrar').addEventListener('click', async () => {
+            if(!confirm("Tem certeza que deseja encerrar esta mesa? (Ela sumirá do feed para os outros jogadores)")) {
+                return; 
+            }
+
+            const senha = document.getElementById('input-confirmar-senha').value;
+            const docRef = await validarSenha(mesaSelecionadaId, senha);
+            
+            if (docRef) {
+                const expiracaoImediata = new Date(new Date().getTime() - 60000); 
+                await updateDoc(docRef, { 
+                    expiraEm: Timestamp.fromDate(expiracaoImediata),
+                    senha: senha 
+                });
+                fecharModais();
+            }
+        });
+
+        // Botão para abrir a tela de edição
+        document.getElementById('btn-abrir-editar').addEventListener('click', async () => {
+            const senha = document.getElementById('input-confirmar-senha').value;
+            const docRef = await validarSenha(mesaSelecionadaId, senha);
+            
+            if (docRef) {
+                senhaValidadaAtual = senha; 
+                const dados = (await getDoc(docRef)).data();
+
+                document.getElementById('edit-nome').value = dados.nome;
+                document.getElementById('edit-mesa').value = dados.numeroMesa;
+                
+                const selectEdit = document.getElementById('edit-tipo');
+                const gEspecificoEdit = document.getElementById('edit-grupo-tipo-especifico');
+                const gOutroEdit = document.getElementById('edit-grupo-outro-estilo');
+                
+                gEspecificoEdit.classList.add('hidden');
+                gOutroEdit.classList.add('hidden');
+
+                if (dados.tipoJogo.startsWith('📦')) {
+                    selectEdit.value = '📦 Jogo Específico';
+                    gEspecificoEdit.classList.remove('hidden');
+                    
+                    const textoPuro = dados.tipoJogo.substring(2).trim(); 
+                    const partes = textoPuro.match(/(.+)\((.+)\)/);
+                    
+                    if (partes) {
+                        document.getElementById('edit-jogo-nome').value = partes[1].trim();
+                        const estiloSalvo = partes[2].trim();
+                        
+                        const selectJogoEstiloEdit = document.getElementById('edit-jogo-estilo');
+                        const inputJogoOutroEstiloEdit = document.getElementById('edit-jogo-outro-estilo');
+                        
+                        // Verifica se o estilo salvo é uma das opções padrões, se não for, joga pro campo "Outro"
+                        const opcoesPadrao = Array.from(selectJogoEstiloEdit.options).map(opt => opt.value);
+                        
+                        if (opcoesPadrao.includes(estiloSalvo) && estiloSalvo !== 'Outro') {
+                            selectJogoEstiloEdit.value = estiloSalvo;
+                            inputJogoOutroEstiloEdit.classList.add('hidden');
+                        } else {
+                            selectJogoEstiloEdit.value = 'Outro';
+                            inputJogoOutroEstiloEdit.value = estiloSalvo;
+                            inputJogoOutroEstiloEdit.classList.remove('hidden');
+                        }
+                    } else {
+                        document.getElementById('edit-jogo-nome').value = textoPuro;
+                    }
+                } else if (dados.tipoJogo.startsWith('🧩')) {
+                    selectEdit.value = '🧩 Outro estilo';
+                    gOutroEdit.classList.remove('hidden');
+                    document.getElementById('edit-outro-texto').value = dados.tipoJogo.substring(2).trim();
+                } else {
+                    selectEdit.value = dados.tipoJogo;
+                }
+
+                document.getElementById('edit-atuais').value = dados.jogadoresAtuais;
+                document.getElementById('edit-max').value = dados.maxJogadores;
+
+                fecharModais(); 
+                document.getElementById('modal-editar').classList.add('active'); 
+            }
+        });
+
+        // Envio do formulário de edição
+        document.getElementById('form-editar-mesa').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerText = "Salvando...";
+
+            // Chamada atualizada
+            const tipoFinal = obterTipoJogoFinal('edit-tipo', 'edit-jogo-nome', 'edit-jogo-estilo', 'edit-jogo-outro-estilo', 'edit-outro-texto');
+
+            try {
+                const docRef = doc(db, "luderias", luderiaId, "mesas_abertas", mesaSelecionadaId);
+                
+                await updateDoc(docRef, {
+                    nome: document.getElementById('edit-nome').value,
+                    numeroMesa: document.getElementById('edit-mesa').value,
+                    tipoJogo: tipoFinal,
+                    jogadoresAtuais: parseInt(document.getElementById('edit-atuais').value),
+                    maxJogadores: parseInt(document.getElementById('edit-max').value),
+                    senha: senhaValidadaAtual 
+                });
+                
+                fecharModais();
+            } catch (error) {
+                console.error("Erro ao editar mesa:", error);
+                alert("Erro ao editar as informações.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Salvar Alterações";
+            }
+        });
+
+        // Funções Globais UI
+        window.abrirModalNovaMesa = () => document.getElementById('modal-nova-mesa').classList.add('active');
+        
+        window.abrirModalGerenciar = (cardId, numeroMesa) => {
+            mesaSelecionadaId = cardId;
+            document.getElementById('input-confirmar-senha').value = '';
+            
+            // Muda o título se o número da mesa foi passado
+            const titulo = document.getElementById('titulo-modal-gerenciar');
+            if (numeroMesa) {
+                titulo.innerText = `Gerenciar Mesa ${numeroMesa}`;
+            } else {
+                titulo.innerText = `Gerenciar Mesa`;
+            }
+            
+            document.getElementById('modal-gerenciar').classList.add('active');
+        };
+
+        window.abrirMinhaMesa = () => {
+            const minhaMesaId = localStorage.getItem('minhaMesaId');
+            const minhaMesaNumero = localStorage.getItem('minhaMesaNumero'); // Busca o número salvo
+            if(minhaMesaId) abrirModalGerenciar(minhaMesaId, minhaMesaNumero);
+        }
+
+        window.fecharModais = () => {
+            document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('active'));
+        };
+
+        // Atualizador de Cronômetro
+        setInterval(() => {
+            const agora = new Date().getTime();
+            document.querySelectorAll('.timer').forEach(cronometro => {
+                const expiraEm = parseInt(cronometro.getAttribute('data-expira'));
+                const diffMillis = expiraEm - agora;
+                
+                // Agora ele verifica os milissegundos exatos para saber se expirou
+                if (diffMillis > 0) {
+                    const diffMinutos = Math.floor(diffMillis / 60000);
+                    // Atualiza o texto para Minutos ou "Menos de 1 min"
+                    cronometro.innerText = diffMinutos > 0 ? `Expira em ${diffMinutos}min` : `Menos de 1 min`;
+                } else {
+                    const card = cronometro.closest('.card');
+                    if(card) card.remove();
+                }
+            });
+        }, 10000); 
+    </script>
+</body>
+</html>
