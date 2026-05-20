@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Bora Jogar?</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #334155;
+            --text-light: #64748b;
+            --danger: #ef4444;
+            --success: #16a34a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 20px; }
+        
+        .container { max-width: 900px; margin: 0 auto; background: var(--surface); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1 { color: var(--primary); margin-bottom: 5px; font-size: 1.8rem; }
+        h2 { font-size: 1.3rem; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+        
+        .hidden { display: none !important; }
+        
+        input, select, button { padding: 12px; margin: 6px 0; width: 100%; box-sizing: border-box; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; }
+        input:focus, select:focus { outline: none; border-color: var(--primary); }
+        
+        button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        button:hover { filter: brightness(0.9); }
+        button.btn-danger { background: var(--danger); }
+        button.btn-secondary { background: transparent; color: var(--text-light); border: 1px solid #cbd5e1; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 0.95rem; }
+        th { background: #f1f5f9; font-weight: bold; color: var(--text-light); }
+        
+        .login-box { max-width: 350px; margin: 100px auto; }
+        .header-dash { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
+        
+        /* Subtítulo dinâmico para Gerentes */
+        #luderia-gerenciada { color: var(--success); font-weight: 600; font-size: 1.1rem; }
+
+        /* Estilos dos Modais */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; }
+        .modal { background: var(--surface); width: 90%; max-width: 600px; border-radius: 12px; padding: 24px; max-height: 90vh; overflow-y: auto; }
+        .modal.active, .modal-overlay.active { display: flex; }
+
+        /* Estilo da barra de filtros */
+        .filtros-bar { display: flex; gap: 15px; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; align-items: center; }
+        .filtros-bar select { margin: 0; padding: 8px; font-size: 0.95rem; flex: 1; }
+        .filtros-label { font-weight: bold; color: var(--text-light); font-size: 0.9rem; white-space: nowrap; }
+    </style>
+</head>
+<body>
+
+    <div id="login-view" class="container login-box">
+        <h2>Acesso Administrativo</h2>
+        <input type="email" id="admin-email" placeholder="E-mail">
+        <input type="password" id="admin-senha" placeholder="Senha">
+        <button id="btn-login">Entrar</button>
+    </div>
+
+    <div id="dashboard-view" class="container hidden">
+        <div class="header-dash">
+            <div>
+                <h1 id="boas-vindas">Painel de Controle ⚙️</h1>
+                <div id="luderia-gerenciada" class="hidden">📍 Carregando local...</div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: flex-start;">
+                <button id="btn-abrir-luderias" class="hidden" style="background: var(--success); width: auto; padding: 10px 15px; margin: 0;">Gerenciar Luderias</button>
+                <button id="btn-logout" style="width: 80px; background: #64748b; margin: 0; padding: 10px;">Sair</button>
+            </div>
+        </div>
+        
+        <h2>📋 Mesas Ativas em Tempo Real</h2>
+
+        <div class="filtros-bar" id="barra-filtros">
+            <span class="filtros-label">Filtrar por:</span>
+            <select id="filtro-luderia">
+                <option value="">Todas as Luderias</option>
+            </select>
+            <select id="filtro-estilo">
+                <option value="">Todos os Estilos</option>
+            </select>
+            <button id="btn-encerrar-lote" class="btn-danger hidden" style="width: auto; padding: 8px 15px; margin: 0; font-size: 0.9rem;">Excluir Visíveis</button>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Luderia</th>
+                        <th>Mesa</th>
+                        <th>Jogo/Estilo</th>
+                        <th>Criador</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-mesas">
+                    <tr id="tr-carregando"><td colspan="5" style="text-align:center; color:var(--text-light);">Carregando chamados...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-lista-luderias">
+        <div class="modal">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="margin: 0; border: none;">Luderias Cadastradas</h2>
+                <button id="btn-nova-luderia" style="width: auto; padding: 8px 15px; margin: 0; background: var(--success);">+ Nova Luderia</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="margin-top: 0;">
+                    <thead>
+                        <tr>
+                            <th>Código (URL)</th>
+                            <th>Nome Fantasia</th>
+                            <th>Gerente</th>
+                            <th style="text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-luderias">
+                        </tbody>
+                </table>
+            </div>
+            <button class="btn-secondary" onclick="fecharModaisAdmin()" style="margin-top: 20px;">Fechar Painel</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-form-luderia">
+        <div class="modal" style="max-width: 400px;">
+            <h2 id="titulo-form-luderia">Cadastrar Luderia</h2>
+            <form id="form-luderia">
+                <input type="text" id="lud-id" required placeholder="Código (Ex: luderia0002)">
+                <input type="text" id="lud-nome" required placeholder="Nome Fantasia (Ex: Taverna do Dragão)">
+                <input type="email" id="lud-gerente" required placeholder="E-mail do Gerente">
+                <input type="password" id="lud-senha" minlength="6" placeholder="Senha do Gerente">
+                <p id="aviso-senha" style="font-size: 0.8rem; color: var(--text-light); margin-top: -5px; margin-bottom: 10px;">
+                    * Mínimo de 6 caracteres. Deixe em branco para manter a atual se for edição.
+                </p>
+                
+                <button type="submit" id="btn-salvar-luderia" style="background: var(--primary);">Salvar</button>
+                <button type="button" class="btn-secondary" onclick="voltarListaLuderias()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signOut as signOutSecondary } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, collectionGroup, collection, query, where, getDocs, onSnapshot, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-Iw8ZoQ5lt6tS896SoFr4fgLZsjeJJ3g",
+            authDomain: "join-boardgames-live.firebaseapp.com",
+            projectId: "join-boardgames-live",
+            storageBucket: "join-boardgames-live.firebasestorage.app",
+            messagingSenderId: "299012794136",
+            appId: "1:299012794136:web:e087db86ac5a117427206d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // App secundário para criar contas sem deslogar
+        const secondaryApp = initializeApp(firebaseConfig, "SecondaryInstance");
+        const secondaryAuth = getAuth(secondaryApp);
+
+        const loginView = document.getElementById('login-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const btnAbrirLuderias = document.getElementById('btn-abrir-luderias');
+        const displayLuderiaGerenciada = document.getElementById('luderia-gerenciada');
+        
+        let ouvintesAtivos = []; 
+        let editMode = false;
+
+        // Variáveis globais de Filtro
+        let filtroLuderiaAtual = "";
+        let filtroEstiloAtual = "";
+
+        // Eventos dos Dropdowns de Filtro
+        document.getElementById('filtro-luderia').addEventListener('change', (e) => {
+            filtroLuderiaAtual = e.target.value;
+            aplicarFiltrosNaTabela();
+        });
+
+        document.getElementById('filtro-estilo').addEventListener('change', (e) => {
+            filtroEstiloAtual = e.target.value;
+            aplicarFiltrosNaTabela();
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginView.classList.add('hidden');
+                dashboardView.classList.remove('hidden');
+                
+                if (user.email === 'gabriel.angst@hotmail.com') {
+                    document.getElementById('boas-vindas').innerText = "Painel Super Admin 👑";
+                    btnAbrirLuderias.classList.remove('hidden');
+                    displayLuderiaGerenciada.classList.add('hidden');
+                } else {
+                    document.getElementById('boas-vindas').innerText = "Painel do Gerente ♟️";
+                    btnAbrirLuderias.classList.add('hidden');
+                    displayLuderiaGerenciada.classList.remove('hidden');
+                }
+                
+                carregarMesasPermitidas(user.email);
+            } else {
+                loginView.classList.remove('hidden');
+                dashboardView.classList.add('hidden');
+                ouvintesAtivos.forEach(unsub => unsub());
+                ouvintesAtivos = [];
+            }
+        });
+
+        // ==========================================
+        // LÓGICA DE GERENCIAMENTO DE LUDERIAS
+        // ==========================================
+
+        btnAbrirLuderias.addEventListener('click', carregarListaLuderias);
+        document.getElementById('btn-nova-luderia').addEventListener('click', () => abrirFormLuderia(false));
+
+        window.fecharModaisAdmin = () => {
+            document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('active'));
+        };
+
+        window.voltarListaLuderias = () => {
+            document.getElementById('modal-form-luderia').classList.remove('active');
+            document.getElementById('modal-lista-luderias').classList.add('active');
+        };
+
+        async function carregarListaLuderias() {
+            const tbody = document.getElementById('tbody-luderias');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Carregando...</td></tr>';
+            document.getElementById('modal-lista-luderias').classList.add('active');
+
+            try {
+                const snap = await getDocs(collection(db, 'luderias_registradas'));
+                tbody.innerHTML = '';
+                
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhuma luderia cadastrada.</td></tr>';
+                    return;
+                }
+
+                snap.forEach(docSnap => {
+                    const dados = docSnap.data();
+                    const gerente = dados.gerentes && dados.gerentes.length > 0 ? dados.gerentes[0] : '-';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${docSnap.id}</strong></td>
+                        <td>${dados.nomeFantasia || '-'}</td>
+                        <td>${gerente}</td>
+                        <td style="text-align: right;">
+                            <button class="btn-editar-luderia" style="width:auto; padding:6px 12px; font-size:0.8rem; background:#3b82f6; margin-right:5px;" 
+                                data-id="${docSnap.id}" data-nome="${dados.nomeFantasia || ''}" data-gerente="${gerente}">Editar</button>
+                            <button class="btn-deletar-luderia" style="width:auto; padding:6px 12px; font-size:0.8rem; background:var(--danger);" 
+                                data-id="${docSnap.id}" data-nome="${dados.nomeFantasia || docSnap.id}">Excluir</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.querySelectorAll('.btn-editar-luderia').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        abrirFormLuderia(true, e.target.dataset.id, e.target.dataset.nome, e.target.dataset.gerente);
+                    });
+                });
+
+                document.querySelectorAll('.btn-deletar-luderia').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const nome = e.target.dataset.nome;
+                        if(confirm(`Tem certeza que deseja EXCLUIR DEFINITIVAMENTE o registro da luderia "${nome}"?\nAs mesas abertas atreladas a ela deixarão de ser acessíveis.`)) {
+                            await deleteDoc(doc(db, "luderias_registradas", e.target.dataset.id));
+                            carregarListaLuderias(); 
+                        }
+                    });
+                });
+
+            } catch (error) {
+                console.error("Erro ao carregar luderias:", error);
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Erro ao carregar dados.</td></tr>';
+            }
+        }
+
+        function abrirFormLuderia(isEdit, id = '', nome = '', gerente = '') {
+            editMode = isEdit;
+            document.getElementById('modal-lista-luderias').classList.remove('active');
+            
+            const form = document.getElementById('form-luderia');
+            const inputId = document.getElementById('lud-id');
+            const inputSenha = document.getElementById('lud-senha');
+            const avisoSenha = document.getElementById('aviso-senha');
+            
+            form.reset();
+            
+            if (isEdit) {
+                document.getElementById('titulo-form-luderia').innerText = "Editar Luderia";
+                inputId.value = id;
+                inputId.disabled = true; 
+                inputId.style.background = "#f1f5f9";
+                document.getElementById('lud-nome').value = nome;
+                document.getElementById('lud-gerente').value = gerente !== '-' ? gerente : '';
+                
+                inputSenha.required = false;
+                avisoSenha.innerText = "* Deixe em branco se não quiser criar uma nova conta para este e-mail.";
+            } else {
+                document.getElementById('titulo-form-luderia').innerText = "Cadastrar Nova Luderia";
+                inputId.disabled = false;
+                inputId.style.background = "#ffffff";
+                inputSenha.required = true;
+                avisoSenha.innerText = "* A senha é obrigatória na criação (mínimo 6 caracteres).";
+            }
+            
+            document.getElementById('modal-form-luderia').classList.add('active');
+        }
+
+        document.getElementById('form-luderia').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-salvar-luderia');
+            btn.disabled = true;
+            btn.innerText = "Salvando...";
+
+            const id = document.getElementById('lud-id').value.trim().toLowerCase();
+            const nome = document.getElementById('lud-nome').value.trim();
+            const email = document.getElementById('lud-gerente').value.trim();
+            const senha = document.getElementById('lud-senha').value;
+
+            try {
+                if (senha) {
+                    await createUserWithEmailAndPassword(secondaryAuth, email, senha);
+                    await signOutSecondary(secondaryAuth);
+                }
+
+                await setDoc(doc(db, "luderias_registradas", id), {
+                    nomeFantasia: nome,
+                    gerentes: [email]
+                });
+
+                alert(`Luderia ${editMode ? 'atualizada' : 'registrada'} com sucesso!`);
+                voltarListaLuderias();
+                carregarListaLuderias(); 
+
+            } catch (error) {
+                console.error("Erro ao salvar luderia:", error);
+                
+                if (error.code === 'auth/email-already-in-use') {
+                    await setDoc(doc(db, "luderias_registradas", id), { nomeFantasia: nome, gerentes: [email] });
+                    alert(`O e-mail informado já possuía uma conta no sistema.\nOs dados da luderia foram ${editMode ? 'atualizados' : 'registrados'} e vinculados a esse utilizador com sucesso!`);
+                    voltarListaLuderias();
+                    carregarListaLuderias();
+                } else {
+                    alert("Erro ao salvar: " + error.message);
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Salvar";
+            }
+        });
+
+        // ==========================================
+        // LÓGICA DE LOGIN E EXIBIÇÃO DE MESAS
+        // ==========================================
+
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const email = document.getElementById('admin-email').value;
+            const senha = document.getElementById('admin-senha').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, senha);
+            } catch (error) {
+                alert("Erro ao logar. Verifique as credenciais.");
+            }
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+
+        async function carregarMesasPermitidas(emailUsuario) {
+            const tbody = document.getElementById('lista-mesas');
+            tbody.innerHTML = '';
+            
+            ouvintesAtivos.forEach(unsub => unsub());
+            ouvintesAtivos = [];
+            filtroLuderiaAtual = ""; filtroEstiloAtual = "";
+
+            if (emailUsuario === 'gabriel.angst@hotmail.com') {
+                const mesasGlobaisQuery = collectionGroup(db, 'mesas_abertas');
+                const unsub = onSnapshot(mesasGlobaisQuery, (snapshot) => renderizarCardsAdmin(snapshot, tbody));
+                ouvintesAtivos.push(unsub);
+            } else {
+                const luderiasRef = collection(db, 'luderias_registradas');
+                const q = query(luderiasRef, where('gerentes', 'array-contains', emailUsuario));
+                
+                try {
+                    const luderiasSnap = await getDocs(q);
+                    
+                    if(luderiasSnap.empty) {
+                        displayLuderiaGerenciada.innerText = "📍 Nenhuma luderia vinculada.";
+                        tbody.innerHTML = '<tr id="tr-vazio"><td colspan="5" style="text-align:center;">Nenhuma luderia vinculada.</td></tr>';
+                        return;
+                    }
+
+                    const nomesLuderias = [];
+                    luderiasSnap.forEach(luderiaDoc => {
+                        const dados = luderiaDoc.data();
+                        nomesLuderias.push(dados.nomeFantasia || luderiaDoc.id);
+                        
+                        const mesasRef = collection(db, 'luderias', luderiaDoc.id, 'mesas_abertas');
+                        const unsub = onSnapshot(mesasRef, (snapshot) => renderizarCardsAdmin(snapshot, tbody));
+                        ouvintesAtivos.push(unsub);
+                    });
+                    
+                    displayLuderiaGerenciada.innerText = `📍 ${nomesLuderias.join(' / ')}`;
+
+                } catch (error) {
+                    console.error("Erro ao buscar permissões do gerente:", error);
+                    tbody.innerHTML = '<tr id="tr-vazio"><td colspan="5" style="text-align:center;color:red;">Erro de acesso ao carregar.</td></tr>';
+                }
+            }
+        }
+
+        function renderizarCardsAdmin(snapshot, tbody) {
+            const agora = new Date();
+            const trCarregando = document.getElementById('tr-carregando');
+            if (trCarregando) trCarregando.remove();
+
+            snapshot.docChanges().forEach((change) => {
+                const mesa = change.doc.data();
+                const caminho = change.doc.ref.path.split('/');
+                const nomeLuderia = caminho[1];
+                const trId = `tr-${change.doc.id}`;
+
+                if (change.type === "added" || change.type === "modified") {
+                    if(mesa.expiraEm.toDate() > agora) {
+                        let tr = document.getElementById(trId);
+                        if (!tr) {
+                            tr = document.createElement('tr');
+                            tr.id = trId;
+                            tr.className = 'linha-mesa';
+                            tbody.appendChild(tr);
+                        }
+
+                        tr.innerHTML = `
+                            <td class="td-luderia"><span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-size:0.8rem;">${nomeLuderia}</span></td>
+                            <td><strong>Mesa ${mesa.numeroMesa}</strong></td>
+                            <td class="td-estilo">${mesa.tipoJogo}</td>
+                            <td>${mesa.nome}</td>
+                            <td>
+                                <button class="btn-danger btn-deletar" data-caminho="${change.doc.ref.path}" style="padding:6px 12px; margin:0; width:auto; font-size:0.85rem;">Excluir</button>
+                            </td>
+                        `;
+                    }
+                }
+                
+                if (change.type === "removed" || (mesa && mesa.expiraEm.toDate() <= agora)) {
+                    const trRemover = document.getElementById(trId);
+                    if (trRemover) trRemover.remove();
+                }
+            });
+
+            atualizarFiltrosDisponiveis();
+
+            document.querySelectorAll('.btn-deletar').forEach(btn => {
+                const novoBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(novoBtn, btn);
+                
+                novoBtn.addEventListener('click', async (e) => {
+                    if(confirm("Deseja apagar permanentemente este chamado de mesa?")) {
+                        const caminhoRef = e.target.dataset.caminho;
+                        await deleteDoc(doc(db, caminhoRef));
+                    }
+                });
+            });
+        }
+
+        // ==========================================
+        // EXTRAÇÃO DOS DADOS ATIVOS E APLICAÇÃO DO FILTRO
+        // ==========================================
+        function atualizarFiltrosDisponiveis() {
+            const tbody = document.getElementById('lista-mesas');
+            const linhas = Array.from(tbody.querySelectorAll('.linha-mesa'));
+            
+            const luderiasSet = new Set();
+            const estilosSet = new Set();
+
+            linhas.forEach(tr => {
+                luderiasSet.add(tr.querySelector('.td-luderia').innerText.trim());
+                estilosSet.add(tr.querySelector('.td-estilo').innerText.trim());
+            });
+
+            // --- Dropdown Luderias ---
+            const selectLuderia = document.getElementById('filtro-luderia');
+            selectLuderia.innerHTML = '<option value="">Todas as Luderias</option>';
+            [...luderiasSet].sort().forEach(lud => {
+                const opt = document.createElement('option'); opt.value = lud; opt.innerText = lud;
+                selectLuderia.appendChild(opt);
+            });
+            
+            if (luderiasSet.size <= 1) { selectLuderia.style.display = 'none'; } 
+            else { selectLuderia.style.display = 'block'; }
+
+            if (luderiasSet.has(filtroLuderiaAtual)) { selectLuderia.value = filtroLuderiaAtual; } 
+            else { filtroLuderiaAtual = ""; }
+
+            // --- Dropdown Estilos ---
+            const selectEstilo = document.getElementById('filtro-estilo');
+            selectEstilo.innerHTML = '<option value="">Todos os Estilos</option>';
+            [...estilosSet].sort().forEach(est => {
+                const opt = document.createElement('option'); opt.value = est; opt.innerText = est;
+                selectEstilo.appendChild(opt);
+            });
+
+            if (estilosSet.has(filtroEstiloAtual)) { selectEstilo.value = filtroEstiloAtual; } 
+            else { filtroEstiloAtual = ""; }
+
+            aplicarFiltrosNaTabela();
+        }
+
+        function aplicarFiltrosNaTabela() {
+            const tbody = document.getElementById('lista-mesas');
+            const linhas = Array.from(tbody.querySelectorAll('.linha-mesa'));
+            let visiveis = 0;
+
+            linhas.forEach(tr => {
+                const luderiaTr = tr.querySelector('.td-luderia').innerText.trim();
+                const estiloTr = tr.querySelector('.td-estilo').innerText.trim();
+
+                const passaLuderia = filtroLuderiaAtual === "" || luderiaTr === filtroLuderiaAtual;
+                const passaEstilo = filtroEstiloAtual === "" || estiloTr === filtroEstiloAtual;
+
+                if (passaLuderia && passaEstilo) { tr.style.display = ''; visiveis++; } 
+                else { tr.style.display = 'none'; }
+            });
+
+            let trVazio = document.getElementById('tr-vazio-filtro');
+            if (visiveis === 0 && linhas.length > 0) {
+                if (!trVazio) {
+                    trVazio = document.createElement('tr'); trVazio.id = 'tr-vazio-filtro';
+                    trVazio.innerHTML = '<td colspan="5" style="text-align:center; color:var(--text-light); padding: 20px;">Nenhuma mesa corresponde ao filtro aplicado.</td>';
+                    tbody.appendChild(trVazio);
+                }
+            } else if (trVazio) {
+                trVazio.remove();
+            }
+
+            if (linhas.length === 0) {
+                if (!document.getElementById('tr-vazio-total')) {
+                    tbody.innerHTML = '<tr id="tr-vazio-total"><td colspan="5" style="text-align:center; color:var(--text-light);">Nenhuma mesa ativa no momento.</td></tr>';
+                }
+            } else {
+                const trTotal = document.getElementById('tr-vazio-total');
+                if(trTotal) trTotal.remove();
+            }
+
+            const btnEncerrarLote = document.getElementById('btn-encerrar-lote');
+            if (visiveis > 0) {
+                btnEncerrarLote.classList.remove('hidden');
+            } else {
+                btnEncerrarLote.classList.add('hidden');
+            }
+
+
+        }
+
+        // ==========================================
+        // EXCLUSÃO EM LOTE (BATCH DELETE)
+        // ==========================================
+        document.getElementById('btn-encerrar-lote').addEventListener('click', async () => {
+            const tbody = document.getElementById('lista-mesas');
+            // Filtra as linhas que não estão ocultas pelo filtro
+            const linhasVisiveis = Array.from(tbody.querySelectorAll('.linha-mesa')).filter(tr => tr.style.display !== 'none');
+
+            if (linhasVisiveis.length === 0) return;
+
+            if (confirm(`⚠️ ATENÇÃO!\nVocê está prestes a apagar permanentemente ${linhasVisiveis.length} mesa(s).\nEsta ação não pode ser desfeita.`)) {
+                try {
+                    const btn = document.getElementById('btn-encerrar-lote');
+                    btn.disabled = true;
+                    btn.innerText = "Excluindo...";
+
+                    // Mapeia e apaga apenas as visíveis
+                    const promessas = linhasVisiveis.map(tr => {
+                        const btnExcluir = tr.querySelector('.btn-deletar');
+                        return deleteDoc(doc(db, btnExcluir.dataset.caminho));
+                    });
+                    
+                    await Promise.all(promessas);
+                    alert("Mesas excluídas com sucesso!");
+                } catch (error) {
+                    console.error("Erro na exclusão:", error);
+                    alert("Erro ao excluir.");
+                } finally {
+                    const btn = document.getElementById('btn-encerrar-lote');
+                    btn.disabled = false;
+                    btn.innerText = "Excluir Visíveis";
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
