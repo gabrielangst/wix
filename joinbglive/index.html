@@ -60,6 +60,66 @@
         .btn-secondary { width: 100%; padding: 12px; background: transparent; color: var(--text-light); border: none; font-size: 1rem; cursor: pointer; margin-top: 8px; }
         .btn-renovar { background: #01a334; margin-top: 16px; }
         .btn-danger { background: #ef4444; margin-top: 16px; }
+
+        .btn-participar {
+            display: block;
+            width: 100%;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #10b981; /* Verde bem claro */
+            color: #ffffff; /* Verde escuro */
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-participar:hover {
+            background-color: #10b981;
+            color: white;
+        }
+
+        /* Estilo específico para o modal de participar */
+        #modal-participar .modal {
+            padding: 30px;
+            text-align: center;
+            border-radius: 16px;
+        }
+
+        #modal-participar h3 {
+            color: #176922;
+            margin-bottom: 15px;
+        }
+
+        #modal-participar p {
+            font-size: 1.1rem;
+            color: #000000;
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+
+        /* O botão estilizado */
+        .btn-modal-ok {
+            width: 100%;
+            padding: 14px;
+            background-color: #176922;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-modal-ok:hover {
+            filter: brightness(1.1);
+        }
+
+        .btn-modal-ok:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
@@ -212,6 +272,14 @@
                 <button type="submit" class="btn-primary">Salvar Alterações</button>
                 <button type="button" class="btn-secondary" onclick="fecharModais()">Cancelar</button>
             </form>
+        </div>
+    </div>
+
+    <div id="modal-participar" class="modal-overlay">
+        <div class="modal">
+            <h3>Quero participar!</h3>
+            <p id="texto-participar"></p>
+            <button class="btn-modal-ok" onclick="fecharModais()">Entendi!</button>
         </div>
     </div>
 
@@ -382,6 +450,10 @@
                         <span class="timer" data-expira="${expiraMillis}">${textoTempo}</span>
                         <button class="btn-manage" data-id="${docItem.id}" data-mesa="${mesa.numeroMesa}">Gerenciar</button>
                     </div>
+
+                    <button class="btn-participar" onclick="abrirModalParticipar('${mesa.nome}', '${mesa.numeroMesa}')">
+                        Quero participar!
+                    </button>
                 `;
                 feed.appendChild(card);
 
@@ -632,6 +704,14 @@
                 }
             });
         }, 10000); 
+
+
+        window.abrirModalParticipar = (nomeCriador, numeroMesa) => {
+            const texto = `Que legal que você quer participar! Procure o(a) <strong>${nomeCriador}</strong> na mesa n. <strong>${numeroMesa}</strong>, apresente-se e peça para se juntar ao grupo para jogar.`;
+            document.getElementById('texto-participar').innerHTML = texto;
+            document.getElementById('modal-participar').classList.add('active');
+        };
+
     </script>
 </body>
 </html>
