@@ -165,7 +165,7 @@
     </div>
 
     <footer class="fixed-footer">
-        <a href="mailto:gabriel.angst@hotmail.com">Contate o Bora Jogar</a>
+        <a href="mailto:gabriel.angst@hotmail.com">Contate o Bora Jogar | 1.0.1</a>
     </footer>
 
     <div class="modal-overlay" id="modal-nova-mesa">
@@ -446,57 +446,72 @@
             let minhaMesaAindaExiste = false;
             const minhaMesaIdSalva = localStorage.getItem('minhaMesaId');
 
-            documentos.forEach((docItem) => {
-                const mesa = docItem.dados;
-                
-                // NOVO CÁLCULO DE TEMPO AQUI
-                const diffMillis = docItem.expiraEm.getTime() - agora.getTime();
-                const diffMinutos = Math.floor(diffMillis / 60000);
-                const textoTempo = diffMinutos > 0 ? `Expira em ${diffMinutos}min` : `Menos de 1 min`;
-                
-                const vagas = mesa.maxJogadores - mesa.jogadoresAtuais;
-                const textoVagas = vagas > 1 ? `${vagas} jogadores` : `1 jogador`;
-                const expiraMillis = docItem.expiraEm.getTime();
-                
-                let classeBadge = "badge"; // Mantém azul por padrão
-                
-                if (mesa.tipoJogo.startsWith('🎲') || 
-                    mesa.tipoJogo.startsWith('♟️') || 
-                    mesa.tipoJogo.startsWith('🐉') || 
-                    mesa.tipoJogo.startsWith('🃏') || 
-                    mesa.tipoJogo === 'Party Games' || 
-                    mesa.tipoJogo === 'Estratégia/Euro' || 
-                    mesa.tipoJogo === 'RPG' || 
-                    mesa.tipoJogo === 'Qualquer um') {
-                    classeBadge += " badge-green"; // Muda para verde
-                }
-                
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div class="card-header">
-                        <span class="card-title">Mesa ${mesa.numeroMesa}</span>
-                        <span class="${classeBadge}">${mesa.tipoJogo}</span>
+            // NOVA VERIFICAÇÃO DE MESA VAZIA AQUI
+            if (documentos.length === 0) {
+                // Injeta a mensagem amigável no feed utilizando as próprias variáveis de cor do seu CSS
+                feed.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; background: var(--surface); border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-top: 10px;">
+                        <span style="font-size: 40px; display: block; margin-bottom: 15px;">👀</span>
+                        <p style="font-size: 1.05rem; line-height: 1.6; color: var(--text);">
+                            Nenhuma mesa aberta ainda. Crie a sua mesa agora clicando no botão <strong>+</strong> para que outros jogadores possam se juntar ou volte em alguns minutos para buscar uma mesa novamente.
+                        </p>
                     </div>
-                    <div class="card-details">
-                        <strong>${mesa.nome}</strong> abriu a mesa com <strong>${mesa.jogadoresAtuais} jogadores</strong> no total.<br>
-                        Buscando mais <span class="text-green">${textoVagas}</span> para fechar.
-                    </div>
-                    <div class="card-actions">
-                        <span class="timer" data-expira="${expiraMillis}">${textoTempo}</span>
-                        <button class="btn-manage" data-id="${docItem.id}" data-mesa="${mesa.numeroMesa}">Gerenciar</button>
-                    </div>
-
-                    <button class="btn-participar" onclick="abrirModalParticipar('${mesa.nome}', '${mesa.numeroMesa}')">
-                        Quero participar!
-                    </button>
                 `;
-                feed.appendChild(card);
+            } else {
+                // Se existirem mesas, roda o código original que cria os cards
+                documentos.forEach((docItem) => {
+                    const mesa = docItem.dados;
+                    
+                    // NOVO CÁLCULO DE TEMPO AQUI
+                    const diffMillis = docItem.expiraEm.getTime() - agora.getTime();
+                    const diffMinutos = Math.floor(diffMillis / 60000);
+                    const textoTempo = diffMinutos > 0 ? `Expira em ${diffMinutos}min` : `Menos de 1 min`;
+                    
+                    const vagas = mesa.maxJogadores - mesa.jogadoresAtuais;
+                    const textoVagas = vagas > 1 ? `${vagas} jogadores` : `1 jogador`;
+                    const expiraMillis = docItem.expiraEm.getTime();
+                    
+                    let classeBadge = "badge"; // Mantém azul por padrão
+                    
+                    if (mesa.tipoJogo.startsWith('🎲') || 
+                        mesa.tipoJogo.startsWith('♟️') || 
+                        mesa.tipoJogo.startsWith('🐉') || 
+                        mesa.tipoJogo.startsWith('🃏') || 
+                        mesa.tipoJogo === 'Party Games' || 
+                        mesa.tipoJogo === 'Estratégia/Euro' || 
+                        mesa.tipoJogo === 'RPG' || 
+                        mesa.tipoJogo === 'Qualquer um') {
+                        classeBadge += " badge-green"; // Muda para verde
+                    }
+                    
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <span class="card-title">Mesa ${mesa.numeroMesa}</span>
+                            <span class="${classeBadge}">${mesa.tipoJogo}</span>
+                        </div>
+                        <div class="card-details">
+                            <strong>${mesa.nome}</strong> abriu a mesa com <strong>${mesa.jogadoresAtuais} jogadores</strong> no total.<br>
+                            Buscando mais <span class="text-green">${textoVagas}</span> para fechar.
+                        </div>
+                        <div class="card-actions">
+                            <span class="timer" data-expira="${expiraMillis}">${textoTempo}</span>
+                            <button class="btn-manage" data-id="${docItem.id}" data-mesa="${mesa.numeroMesa}">Gerenciar</button>
+                        </div>
 
-                if (docItem.id === minhaMesaIdSalva) {
-                    minhaMesaAindaExiste = true;
-                }
-            });
+                        <button class="btn-participar" onclick="abrirModalParticipar('${mesa.nome}', '${mesa.numeroMesa}')">
+                            Quero participar!
+                        </button>
+                    `;
+                    feed.appendChild(card);
+
+                    if (docItem.id === minhaMesaIdSalva) {
+                        minhaMesaAindaExiste = true;
+                    }
+                });
+
+            }
 
             const fabMinhaMesa = document.getElementById('fab-minha-mesa');
             if (minhaMesaAindaExiste) {
