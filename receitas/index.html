@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <link rel="icon" href="favicon.png" type="image/png">
-  <link rel="manifest" href="manifest-receitas.json">
+  <link rel="manifest" href="manifest.json">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Receitas de Casa</title>
@@ -627,5 +627,20 @@ if (temVariacoesPreparo) {
 <div style="text-align:center">
   <p>V51</p>
 </div>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(registration => {
+              console.log('ServiceWorker registrado com sucesso:', registration.scope);
+            })
+            .catch(error => {
+              console.log('Falha ao registrar o ServiceWorker:', error);
+            });
+        });
+      }
+    </script>
+
 </body>
 </html>
