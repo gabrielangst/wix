@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="manifest" href="manifest-receitas.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Receitas de Casa</title>
+  <style>
+    body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #fff8f0;
+  color: #333;
+  margin: 0;
+  padding: 20px;
+  line-height: 1.6; /* Espaçamento entre linhas */
+  font-size: 18px;   /* Tamanho base do texto */
+}
+
+h1, h2, h3 {
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+p, ul, li {
+  margin-bottom: 12px;
+  font-size: 17px;
+}
+
+select {
+  padding: 14px;
+  font-size: 18px;
+  width: 100%;
+  max-width: 300px;
+  border-radius: 8px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    select {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+    ul {
+      padding-left: 20px;
+    }
+
+.especial {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: inline-block;
+  margin: 4px 0;
+  font-weight: bold;
+  color: #8a6d3b;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.especial.ativo {
+  background-color: #d4edda; /* verde claro */
+  color: #155724;            /* verde escuro */
+  border-color: #28a745;     /* verde vibrante */
+}
+
+
+ .toggle {
+  background-color: #f8f9fa;
+  border: 1px solid #ccc;
+  padding: 12px;
+  width: 100%;
+  text-align: left;
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.conteudo {
+  display: none;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #fff;
+  border-left: 3px solid #fffaeb;
+}
+   
+.toggle.ativo {
+  background-color: #d4edda; /* verde claro */
+  color: #155724;            /* verde escuro */
+  border-color: #28a745;
+}
+
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Receitas de Casa 🍴</h1>
+    <select id="menu" onchange="mostrarReceita()" style="width: 200px">
+      <option value="">-- Selecione --</option>
+      <option value="waffleLiege">Waffle de Liège</option>
+      <option value="waffleBrux">Waffle de Bruxelas</option>
+      <option value="pizzaFornoPizzaNOVO">Pizza no Forno 2026</option>
+      <option value="pizzaFornoPizza">Pizza no Forno de Pizza</option>
+      <option value="SaboresPizza">Sabores de Pizza</option>
+      <option value="crepe">Crepes</option>
+      <option value="cachorroQuente">Cachorro Quente</option>
+      <option value="paoCaseiro">Pão Caseiro</option>
+      <option value="Macarrao">Macarrão</option>
+      <option value="Espetinho">Espetinho</option>
+      <option value="Arroz">Arroz</option>
+      <option value="pinkL">Pink Lemonade</option>
+      <option value="IsaPanqueca">Isa Panqueca de Banana</option>      
+    </select>
+    <button onclick="mostrarReceita()" style="padding: 10px 10px; margin-left: 5px; font-size: 16px;">
+    🔄
+  </button>
+    <button onclick="window.open('https://gabrielangst.github.io/wix/pizzacalc.html')" style="padding: 10px 10px; margin-left: 5px; font-size: 16px;">🍕 Calc </button>
+
+  </header>
+
+  <div class="card" id="receita"></div>
+
+  <script>    
+    const receitas = {
+      pizzaFornoPizzaNOVO: {
+        titulo: "Pizza no Forno 2026",
+        ingredientes: [
+          "★ BROTINHO (abrindo na mão-170g):",
+          "1/2 (broto) ou 1 (média) xícara de trigo",
+          "1/2 colher de chá de sal",
+          "60ml de água gelada",
+          "1/4 colher de chá de fermento seco</b>",
+            //separador
+          "★ 1 pizza grande (abrindo na mão- 300g):",
+          "2 xícaras de farinha de trigo",
+          "1 colher de chá de sal",
+          "125ml de água gelada",
+          "1/2 colher chá de fermento instantâneo seco",
+            //separador
+          "★ 2 pizzas grandes (abrindo na mão- 300g):",
+          "4 xícaras de farinha de trigo",
+          "1,5 colher de chá de sal",
+          "250ml de água gelada",
+          "1 colher chá de fermento instantâneo seco",
+            //separador
+          "★ 3 pizzas grandes (abrindo na mão- 300g):",
+          "6 xícaras de farinha de trigo",
+          "2 colheres de chá de sal",
+          "375ml de água gelada",
+          "1 colher sopa RASA de fermento instantâneo seco"
+        ],
+        preparo: [
+                   "<a href='https://gabrielangst.github.io/wix/pizzacalc.html'>Calculadora de pizzas</a>",
+          "",
+          "PASSATA: mistrure com um pouco de sal, açúcar e pimenta do reino.",
+          "",
+          "1) Misturar tudo e deixar descansar 24h na geladeira;",
+"2) Retirar a massa 2h antes de abrir;",
+"3) Abrir, rechear e assar;",
+"4) Se for pré-assar, testar fazer isso apenas por 20 segundos",    
+          "",
+          "<b>Observações gerais:</b>",
+          "1) Untar a pá com farinha e testar se a pizza está deslizando sem grudar na pá antes de ir para o forno;",
+          "2) Se sair fumaça do forno, desligá-lo na hora, tirar a pizza e o que caiu no forno com a vassoura própria e, depois de limpar, religar o forno (não vai sair mais fumaça pq só sai quando tem alguma coisa queimando dentro - depois de removido, não tem pq continuar a fumaça);",
+          "3) Assar a pizza com 375 graus em cima e 350 graus embaixo parece ser a melhor forma que encontrei de assar (achei melhor que assar na potência máxima de 400 graus encima e embaixo - o tempo é o mesmo, ou seja: 45 segundos pra pré-assar a massa e depois 2m30 para terminar de assar;",
+          ]
+      },
+
+      pizzaFornoPizza: {
+        titulo: "Pizza no Forno de Pizza",
+        ingredientes: [
+          "★ BROTINHO (abrindo na mão-170g):",
+          "1/2 (broto) ou 1 (média) xícara de trigo",
+          "Uma “pitada” de óleo",
+          "1/2 pitada de sal",
+          "<b>2/4 de xícara de água morna (10s no microondas)</b>",
+          "<b>1/4 colher de sopa de fermento seco</b>",
+          "<b>1 colher de sopa de açúcar</b>",
+          "★ 1 pizza grande (abrindo na mão- 300g):",
+          "2 xícaras de farinha de trigo",
+          "1/4 colher de sopa de óleo",
+          "1/2 pitada de sal",
+          "<b>3/4 de xícara de água morna (10s no microondas)</b>",
+          "<b>1/4 colher de sopa de fermento seco</b>",
+          "<b>1 colher de sopa de açúcar</b>",
+          "★ 2 pizzas grandes (abrindo na mão- 2x 300g):",
+          "4 xícaras de farinha de trigo",
+          "1/2 colher de sopa de óleo",
+          "Uma pitada de sal",
+          "<b>1/2 de xícara de água morna (10s no microondas) + 3/4 xícara de água</b>",
+          "<b>1 colher de sopa de fermento seco</b>",
+          "<b>2 colheres de sopa de açúcar</b>",
+          "★ 3 pizzas grande (abrindo na mão- 3x 300g):",
+          "6 xícaras de farinha de trigo",
+          "1/2 colher de sopa de óleo",
+          "Uma boa pitada de sal",
+          "<b>1 xícara de água morna (10s no microondas) + 1,5 xícara de água</b>",
+          "<b>1 colher de sopa cheia de fermento seco</b>",
+          "<b>3 colheres de sopa de açúcar</b>"
+        ],
+        preparo: [
+                   "<a href='https://gabrielangst.github.io/wix/pizzacalc.html'>Calculadora de pizzas</a>",
+          "",
+          "PASSATA: mistrure com um pouco de sal, açúcar e pimenta do reino.",
+          "",
+          "1) Misture tudo, com exceção da água morna, fermento e açúcar, os quais serão misturados em separado primeiramente;",
+"2) Misturar tudo e acrescentar um pouco de água natural até dar liga e a massa virar uma só;",
+"3) Sovar, adicionando trigo na massa;",
+"4) Descansar a massa por 15 minutos e ligar o forno de 400º para pré aquecer (17 minutos). No forno convencional, pré aquecer por cerca de 1 hora em temperatura máxima;",
+"5.1) No forno de pizza: (TEMP 300º embaixo e 375º em cima) Abrir a massa com bordas mais altas, furar com um garfo toda ela e pré-assar por 45 segundos com molho de tomate, creme de leite ou queijo, para depois rechear com o restante e assar por mais 2,5 min. Se não assar de imediato, esperar ela esfriar e guardar a massa na caixa de pizza;",
+"5.2) No forno de convencional de 280º: ",
+"a) OPCIONAL: passar um pouco de creme de leite nas bordas (pouco), para evitar que ela fique muito crocante quando assar;",
+"b) Com rápidos movimentos “para frente e para trás“, colocar a massa na pedra, dentro do forno, para que ela não perca seu formato redondo e deixe-a pré-assar por 3 a 4 minutos, dependendo do tempo de pré-aquecimento do forno (até a massa ficar mais durinha e levemente assada na parte de baixo);",
+"6) Retirar a pizza com a espátula e deixar ela descansar por alguns minutos na forma furada. Se a espátula estiver úmida, secar e passar mais trigo;",
+"7) Levar a pizza ao forno na temperatura máxima por mais 2min a 2min30s (forno 400º) ou por mais 4 a 5 minutos (forno convencional);",           
+          "",
+          "<b>Observações gerais:</b>",
+          "1) Untar a pá com farinha e testar se a pizza está deslizando sem grudar na pá antes de ir para o forno;",
+          "2) Se sair fumaça do forno, desligá-lo na hora, tirar a pizza e o que caiu no forno com a vassoura própria e, depois de limpar, religar o forno (não vai sair mais fumaça pq só sai quando tem alguma coisa queimando dentro - depois de removido, não tem pq continuar a fumaça);",
+          "3) Assar a pizza com 375 graus em cima e 350 graus embaixo parece ser a melhor forma que encontrei de assar (achei melhor que assar na potência máxima de 400 graus encima e embaixo - o tempo é o mesmo, ou seja: 45 segundos pra pré-assar a massa e depois 2m30 para terminar de assar;",
+          "4) Depois de tirar do forno a massa pré-assada, sempre colocar na forma furada, para evitar que o calor faça a massa grudar na pá;",
+          "5) Etapas de preparação: são duas: (1) antes dos convidados (1h15 para 3 pizzas) => <b>sovar (15min) e descansar 2h/1 dia + pré-assar (1h)</b>; 2) depois dos convidados chegarem (30min para 3 pizzas) => <b>rechear e assar</b>);"
+          ]
+      },
+
+      SaboresPizza: {
+        titulo: "Sabores de Pizza",
+        ingredientes: [
+          "★ Sabores Salgados",
+"1) Presunto de Parma com Mussarela de Búfala;",
+"2) Portuguesa;",
+"3) Pepperoni;",
+"4) Marguerita (tomate e manjericão);",
+"5) Filé Mignon com Queijo;",
+"6) Carne seca com Banana da Terra;",
+"7) Calabresa;",
+          "★ Sabores Doces",
+          "1) Banana com Canela;",
+          "2) Banana Nevada;",
+          "3) Chocolate com Morango/Coco/MM;",
+          "4) Romeu e Julieta;"
+        ],
+        preparo: [
+          "★ <b>Romeu e Julieta</b>",
+          "-Primeiramente, rechear a pizza com goiabada (sem creme de leite na base e sem queijo). Não precisa espalhar, basta passar na maior parte da massa e depois adicionar queijo ralado por cima",
+          "- Goiabada em listras circulares;",
+          "- OPCIONAL: Ao sair do forno, colocar creme de leite (COM FURO PEQUENO, tipo feito por palito) em cima do recheio em formato de linhas circulares",
+          "- Goiabadas: SóFruta, Fama, Amore, Predilecta, por último VAL",
+          "★ <b>Banana e Canela</b>",
+          "- Base de queijo ralado;",
+          "- Depois de pré assar com queijo, retirar a pizza, colocar as bananas nanicas, adicionar leite condensado, açúcar e canela e assar por mais 2 minutos (totalizando 3min);",
+          "★ <b>Banana Nevada</b>",
+          "- Base de queijo ralado;",
+          "- Depois de pré assar com queijo (45 segundos), colocar as bananas nanicas e assar por mais 1 minuto;",
+          "- Retirar a pizza, colocar chocolate branco forneável harald (fazer um desenho quadriculado). Acrescentar também açúcar e canela;",
+          "- Voltar para o forno por mais 1 minuto, totalizando 3 minutos;",
+          "★ <b>Chocolate com Morangos</b>",
+          "- Base com POUCO queijo OU creme de leite;",
+          "- Assar sem recheio quase pelo tempo integral (2min);",
+          "- Após 2 minutos assando, adicionar o chocolate em moedas ou forneável e voltar para o forno por apenas 30 segundos;",
+          "- Ao retirar a pizza, espalhar o chocolate com um garfo para ele perder o formato de “moeda” (não usar colher, pois o chocolate gruda nela, no garfo não gruda);",
+          "- Adicionar chocolate branco em linhas circulares (opcional) e depois acrescentar morangos em cima do recheio;",
+          "- Chocolates: Harald Cobertura ao leite Top, Harald Forneável ao leite, Harald forneável branco",
+          "★ <b>Pizzas Salgadas</b>",
+          "- Base sempre de molho de tomate;",
+          "- Na de <b>Filé com champignon</b>, fritar a carne em tiras 150g (3 minutos cada lado), temperadas com sal e pimenta do reino e depois adicionar champignon;",
+          "- Nas com <b>mussarela de búfala</b>, fatiar a bolinha cereja em 3, para evitar a dificuldade de colocar a pizza no forno sem deixar ela cair",
+          "- O <b>presunto de parma</b> pode ser lavado com pouca água para diminuir o sal",
+          "- Na <b>Marguerita</b>, fazer a base de molho de tomate ao invés de queijo e colocar Pedaços/Palitos de mussarela de búfala na pizza e manjericão;",
+          "- <b>Carne seca (130g) com Banana da Terra (1)</b>: se a carne seca estiver crua, fritar ela na panela com alho, azeite e orégano até chegar ao ponto (a da Swift vem pronta pra uso, mas a da outra marca não). Fritar a banana da terra frigideira com manteiga. Adicionar média quantidade de açúcar em cima dela e virar para fritas os dois lados. •	Na hora de rechear, após colocar o molho, começar com a banana e preencher depois os espaços vagos com a carne seca. O queijo será adicionado somente ao final, ralado, por cima. •	Colocar orégano e, se for o caso, mussarela de búfala.",
+          "Obs.: na de carne seca, se for média, dá pra utilizar 100g de carne seca (1 pacote de 400g rende 4 pizzas médias. Se forem grandes, renderá 3 pizzas (130g para cada), mas também é possível fazer com 100g na pizza G se a quantidade de banana for grande)."         
+          ]
+      },
+      
+      waffleLiege: {
+        titulo: "Waffle de Liège",
+        ingredientes: [
+          "★ 1 waffle completo ou 2 waffles incompletos",
+          "1 ovo",
+          "1 colher de sopa de margarina/manteiga",
+          "1/5 de xícara de água",
+          "1/2 xícara de farinha de trigo",
+          "4 colheres de açúcar",
+          "1 pitada de sal",
+          "1/2 colher de CHÁ de fermento químico para bolo (por último)",
+          "★ 4 waffles completos",
+          "3 ovos",
+          "3 colheres de sopa de margarina/manteiga",
+          "1/4 de xícara de água",
+          "1 xícara de farinha de trigo",
+          "7 colheres de açúcar",
+          "1 pitada de sal",
+          "1 colher de CHÁ de fermento químico para bolo (por último)"
+           ],
+        preparo: [ 
+          "1) Ligue a máquina de waffle na potência máxima;",
+"2) Utilizando um fuê, misture tudo, colocando a colher de chá de fermento químico para bolo por último;",
+"3) Utilizando uma concha de feijão, pegue um pouco da massa (encha a concha 1 vez) e coloque-a na máquina de waffle;",
+"4) Abra a máquina de Waffle após cerca de 4 minutos e verifique se ele já está firme e bem assado;",
+"5) Cobrir o Waffle com manteiga, margarina, Nutella, Maple Syrup ou Chocolate em gotas e frutas;"
+                  ]
+      },
+
+      waffleBrux: {
+        titulo: "Waffle de Bruxelas",
+        ingredientes: [
+          "★ 2 waffles completos",
+          "1 ovo",
+          "1 colher de sopa de margarina/manteiga",
+          "1/2 xícara de farinha de trigo",
+          "<b>2 colheres de açúcar</b>",
+          "<b>100 ml de leite morno</b>",
+          "<b>1 colher de CHÁ rasa de fermento biológico seco</b>",
+          "★ 4 waffles completos",
+          "2 ovos",
+          "1 colher de sopa cheia de margarina/manteiga",
+          "1 xícara de farinha de trigo",
+          "<b>4 colheres de açúcar</b>",
+          "<b>200 ml de leite morno</b>",
+          "<b>1 colher de SOPA rasa de fermento biológico seco</b>"
+           ],
+        preparo: [ 
+          "1) Misturar fermento com leite morno e 2 colheres de açúcar .Aguardar 8 minutos;",
+"2) Misturar com um fuê os outros ingredientes (farinha, manteiga, ovos). Depois, misturar tudo e bater;",
+"3) Utilizando uma concha de feijão, pegue um pouco da massa e vá colocando-a na máquina de waffle até completar os desenhos dos waffles;",
+"4) Abra a máquina de Waffle após cerca de 2 a 3 minutos e verifique se ele já está firme e bem assado;",
+"5) Cobrir o Waffle com manteiga, margarina, Nutella, Maple Syrup ou Chocolate em gotas e frutas;"
+                  ]
+      },
+      
+      cachorroQuente: {
+        titulo: "Cachorro Quente",
+        ingredientes: [
+          "★ Para 4 pessoas",
+          "1 pacote com 10 salsichas",
+          "Orégano",
+          "Pimenta do reino",
+          "1 ou 2 sachês de molho de tomate (300g a 600g)"
+        ],
+        preparo: [
+          "1) Lavar as salsichas com água (10 salsichas, 1 pacote de salsichas de frango) e fervê-las, mantendo o fogo ligado por 5 minutos após borbulhar;",
+          "2) Em outra panela, ferver o molho de tomate (1 sachê ou 2) com orégano e pimenta do reino. Após ferver, misturar as salsichas fervidas com o molho fervido e servir."
+        ]
+      },
+
+
+      IsaPanqueca: {
+        titulo: "Panqueca de Banana (Isa)",
+        ingredientes: [
+          "★ Para 1 panqueca completa",
+          "1 ovo",
+          "1 banana",
+          "2 colheres de sopa de aveia",
+          "1 colher de tapioca (opcional)"
+        ],
+        preparo: [
+          "1) Untar a frigideira com margarina/manteiga;",
+          "2) Em um recipiente, misturar todos os ingredientes;",
+          "3) Colocar na frigideira quente por cerca de 1 minuto e virar por mais 1 minuto."
+        ]
+      },
+
+      Macarrao: {
+        titulo: "Macarrão",
+        ingredientes: [
+          "★ 2 pessoas",
+          "165g de macarrão (1/3 da embalagem de 500g)",
+          "165g de carne moída (1/3 da emb. de 500g)",
+          "1/4 de colher de sopa com alho picado",
+          "1/2 colher de sopa de Azeite",
+          "Orégano",
+          "Pimenta do reino",
+          "1 sachê de molho de tomate (360g)"
+        ],
+        preparo: [
+          "1) Em uma panela, coloque 1/2 colher de sopa de azeite e 1/4 de colher de sopa de alho picado, fritando-o por 1 a 2 minutos;",
+          "2) Após, acrescente a carne moída com pimenta do reino e frite a carne por cerca de 3 a 5 minutos;",
+          "3) Após, acrescente o molho de tomate com 50ml de água na panela e misture tudo com o fogo ainda ligado;",
+          "4) Em uma outra panela, deixe a água ferver e depois acrescente a massa e deixe por 8 minutos. Após, misture tudo e sirva."  
+        ]
+      },
+
+      paoCaseiro: {
+        titulo: "Pão Caseiro",
+        ingredientes: [
+          "★ 12 pães redondos",
+          "2 ovos",
+          "1/2 xícara de óleo",
+          "2 colheres de sopa de fermento biológico",
+          "1 xícara de açúcar",
+          "1 colher de chá de sal",
+          "Farinha para dar o ponto (cerca de 500g)"
+        ],
+        preparo: [
+          "1) Bata todos os ingredientes no liquidificador, exceto o trigo;",
+          "2) Coloque o líquido em uma bacia e acrescente trigo até dar o ponto de modelar com as mãos;",
+          "3) Cubra a bacia com um pano e deixe crescer por 20min;",
+          "4) Modele os pães e coloque em uma assadeira untada com óleo ou manteiga;",
+          "5) Deixe crescer novamente por mais 1h30;",
+          "6) Coloque para assar."
+        ]
+      },
+
+      Espetinho: {
+        titulo: "Espetinho",
+        ingredientes: [
+          "★ 2 pessoas",
+          "200g (em casa) a 300g (convidados)/pessoa de Filé ou Alcatra",
+          "Sal grosso"
+        ],
+        preparo: [
+          "1) Ligue a churrasqueira elétrica por 5 minutos para aquecer",
+          "2) Corte o pedaço de Alcatra em cubos, coloque no espeto e tempere com sal grosso (não utilize sal em excesso);",
+          "3) Tempo do ponto da carne:",
+          "- 14min, virando na metade: mal passada; (-12)",
+          "- 18min, virando na metade: ao ponto menos (-8); ",
+          "- 22min, virando na metade: ao ponto (-4);",
+          "- 26min, virando na metade: ao ponto mais (0);",
+          "- 30min, virando na metade: bem passada (+4);",
+          "A referência está no ao ponto mais (Kamila). Assim, para fazer metade ao ponto mais e metade ao ponto menos, começar a assar parte dos espetinhos 8 minutos antes;"
+        ]
+      },
+
+      Arroz: {
+        titulo: "Arroz",
+        ingredientes: [
+          "★ 4 pessoas",
+          "3 xícara de arroz",
+          "Alho picado",
+          "Água",
+          "Azeite ou Óleo",
+          "1 pitada de sal"
+        ],
+        preparo: [
+          "1) ligue a panela elétrica de arroz e adicione uma colher de sopa de óleo e o alho picado;",
+          "2) Após fritar por cerca de 1min, adicione 1 xícara de arroz e sal, misturando tudo e fritando por mais 1min;",
+          "3) Depois, coloque água até atingir o nível do arroz e deixe a panela ligada por cerca de 10 a 15min;",
+          "4) Com o auxílio de um garfo, verifique se o arroz já secou (antes mesmo de a panela desligar sozinha). Em caso positivo, está pronto, e a panela pode ser desligada da tomada."
+        ]
+      },
+
+      pinkL: {
+        titulo: "Pink Lemonade",
+        ingredientes: [
+          "★ 1 copo grande",
+          "30ml de Xarope Monin Morango (1 dedo)",
+          "1/2 limão espremido",
+          "Um copo de água sem gás gelada",
+          "Gelo"
+        ],
+        preparo: [
+          "1) Junte todos os ingredientes e mexa bem;",
+          "2)  Opcionalmente, pode ser adicionado xarope de Cranbery, mas a porção deve ser dividida com a de morango"
+        ]
+      },
+     
+     crepe: {
+        titulo: "Crepes",
+        ingredientes: [
+          "★ 4 crepes pequenos da máquina:",
+          "1/2 xícara de trigo",
+          "1 ovo",
+          "125ml de leite",
+          "1 pitada de sal"
+        ],
+        preparo: [
+          "1) Junte tudo e bata no liquidificador até a massa ficar cremosa, mas ainda um pouco líquida;",
+          "2)  Depois, despejar a massa no recipiente da crepeira. Ligue a crepeita e deixe por 2 segundos em contato com a massa. Depois retire e aguarde cerca de 30 segundos até poder virar a massa do crepe na crepeira (utilizar a espátula de plástico incluída no equipamento);",
+          "3) Rechear o crepe ainda na crepeira, para aproveitar o calor da máquina para esquentar o recheio;",
+          "4) Retirar o crepe da crepeira e fechar ele em um prato."
+        ]
+      }
+    }; 
+    
+function toggleSecao(id) {
+  const secao = document.getElementById(id);
+  const botao = document.querySelector(`button[onclick="toggleSecao('${id}')"]`);
+
+  const isOpen = secao.style.display === "block";
+  secao.style.display = isOpen ? "none" : "block";
+
+  if (botao) {
+    botao.classList.toggle("ativo", !isOpen);
+  }
+}
+
+
+
+    
+function mostrarReceita() {
+  const prato = document.getElementById("menu").value;
+  const receita = receitas[prato];
+  const div = document.getElementById("receita");
+
+  if (receita) {
+    // 🔁 Agrupar ingredientes por blocos que começam com ★
+    let blocos = [];
+    let blocoAtual = [];
+
+    receita.ingredientes.forEach(item => {
+      if (item.startsWith("★")) {
+        if (blocoAtual.length > 0) blocos.push(blocoAtual);
+        blocoAtual = [item];
+      } else {
+        blocoAtual.push(item);
+      }
+    });
+    if (blocoAtual.length > 0) blocos.push(blocoAtual);
+
+    const htmlIngredientes = blocos.map((bloco, index) => {
+      const id = `ingredienteBloco${index}`;
+      const titulo = bloco[0];
+      const itens = bloco.slice(1).map(i => `<li>${i}</li>`).join("");
+
+      return `
+        <div class="secao">
+          <button class="toggle" onclick="toggleSecao('${id}')">${titulo}</button>
+          <div id="${id}" class="conteudo">
+            <ul>${itens}</ul>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    // 🔁 Agrupar preparo por blocos que começam com ★
+    let blocosPreparo = [];
+    let blocoAtualPreparo = [];
+
+    receita.preparo.forEach(item => {
+      if (item.startsWith("★")) {
+        if (blocoAtualPreparo.length > 0) blocosPreparo.push(blocoAtualPreparo);
+        blocoAtualPreparo = [item];
+      } else {
+        blocoAtualPreparo.push(item);
+      }
+    });
+    if (blocoAtualPreparo.length > 0) blocosPreparo.push(blocoAtualPreparo);
+
+  let htmlPreparo = "";
+
+// Verifica se há variações com ★
+const temVariacoesPreparo = receita.preparo.some(item => item.startsWith("★"));
+
+if (temVariacoesPreparo) {
+  let blocosPreparo = [];
+  let blocoAtualPreparo = [];
+
+  receita.preparo.forEach(item => {
+    if (item.startsWith("★")) {
+      if (blocoAtualPreparo.length > 0) blocosPreparo.push(blocoAtualPreparo);
+      blocoAtualPreparo = [item];
+    } else {
+      blocoAtualPreparo.push(item);
+    }
+  });
+  if (blocoAtualPreparo.length > 0) blocosPreparo.push(blocoAtualPreparo);
+
+  htmlPreparo = blocosPreparo.map((bloco, index) => {
+    const id = `preparoBloco${index}`;
+    const titulo = bloco[0];
+    const passos = bloco.slice(1).map(p => `<p>${p}</p>`).join("");
+
+    return `
+      <div class="secao">
+        <button class="toggle" onclick="toggleSecao('${id}')">${titulo}</button>
+        <div id="${id}" class="conteudo">
+          ${passos}
+        </div>
+      </div>
+    `;
+  }).join("");
+} else {
+  htmlPreparo = receita.preparo.map(item => `<p>${item}</p>`).join("");
+}
+
+
+    // 🔧 Inserir tudo no HTML
+    div.innerHTML = `
+      <h2>${receita.titulo}</h2>
+
+      <div class="secao">
+        <button class="toggle" onclick="toggleSecao('ingredientes')">🍽️ Ingredientes</button>
+        <div id="ingredientes" class="conteudo">
+          ${htmlIngredientes}
+        </div>
+      </div>
+
+      <div class="secao">
+        <button class="toggle" onclick="toggleSecao('preparo')">🧑‍🍳 Modo de Preparo</button>
+        <div id="preparo" class="conteudo">
+          ${htmlPreparo}
+        </div>
+      </div>
+    `;
+
+    // 🔁 Ativar cliques nos ingredientes especiais
+    document.querySelectorAll(".especial").forEach(span => {
+      span.addEventListener("click", () => {
+        span.classList.toggle("ativo");
+      });
+    });
+  } else {
+    div.innerHTML = "";
+  }
+}
+
+
+
+    
+ </script>
+<div style="text-align:center">
+  <p>V51</p>
+</div>
+</body>
+</html>
