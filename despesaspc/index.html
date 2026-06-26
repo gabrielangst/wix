@@ -1,2 +1,1232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanças Pro - Controle Mensal</title>
+    <style>
+        :root {
+            --bg-primary: #f4f6f9;
+            --sidebar-bg: #1e293b;
+            --sidebar-hover: #334155;
+            --sidebar-active: #2563eb;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --white: #ffffff;
+            --border-color: #e2e8f0;
+            --accent-success: #10b981;
+            --accent-danger: #ef4444;
+        }
 
-hello world
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-primary); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Auth Styles */
+        .auth-wrapper { display: flex; align-items: center; justify-content: center; height: 100vh; width: 100vw; background: var(--bg-primary); z-index: 9999; position: fixed; top: 0; left: 0; }
+        .auth-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .auth-box h2 { text-align: center; margin-bottom: 24px; color: var(--sidebar-active); font-size: 1.8rem; }
+        .auth-error { color: var(--accent-danger); font-size: 0.85rem; margin-top: 15px; text-align: center; min-height: 20px; font-weight: 600; }
+
+        /* Layout Estrutural */
+        .app-container { display: flex; width: 100%; height: 100%; }
+
+        /* Menu Lateral */
+        .sidebar { width: 280px; background-color: var(--sidebar-bg); color: var(--white); display: flex; flex-direction: column; padding: 24px 16px; flex-shrink: 0; }
+        .sidebar .brand { font-size: 1.4rem; font-weight: 700; margin-bottom: 32px; padding-left: 12px; color: #38bdf8; display: flex; align-items: center; gap: 10px; }
+        .sidebar nav { flex: 1; overflow-y: auto; }
+        .sidebar ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .sidebar button { width: 100%; background: none; border: none; color: #94a3b8; text-align: left; padding: 12px 16px; font-size: 0.95rem; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+        .sidebar button:hover { background-color: var(--sidebar-hover); color: var(--white); }
+        .sidebar button.active { background-color: var(--sidebar-active); color: var(--white); font-weight: 600; }
+
+        /* Área de Conteúdo Principal */
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; background-color: var(--bg-primary); }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
+        .view-header h1 { font-size: 1.75rem; font-weight: 700; color: var(--text-main); }
+
+        /* Botões */
+        .btn-primary { background-color: var(--sidebar-active); color: var(--white); border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-primary:hover { background-color: #1d4ed8; }
+        .btn-secondary { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 8px 16px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .btn-secondary:hover { background-color: #e2e8f0; color: var(--text-main); }
+
+        /* Cards */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-top: 20px; }
+        .card { background: var(--white); padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border-color); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .card h3 { margin-bottom: 8px; font-size: 1.2rem; }
+        .year-separator { grid-column: 1 / -1; font-size: 1.4rem; font-weight: 700; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-top: 16px; margin-bottom: 8px; }
+        .card-atual { border: 2px solid var(--sidebar-active) !important; background-color: #f0f9ff; }
+
+        /* Forms */
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
+        .form-control { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.95rem; }
+
+        /* Tabelas */
+        .table-container { background: var(--white); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border-color); overflow: hidden; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #f8fafc; padding: 14px 20px; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); }
+        td { padding: 14px 20px; border-bottom: 1px solid var(--border-color); font-size: 0.95rem; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        .linha-paga { background-color: #e6f4ea !important; }
+        .quota-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; color: white; font-size: 0.8rem; font-weight: 600; }
+        .table-input { width: 100%; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem; }
+        .table-input:focus { outline: none; border-color: var(--sidebar-active); }
+
+        /* Tabs */
+        .tabs-header { display: flex; gap: 16px; border-bottom: 2px solid var(--border-color); margin-bottom: 24px; }
+        .tab-link { background: none; border: none; padding: 12px 8px; font-size: 1rem; font-weight: 600; color: var(--text-muted); cursor: pointer; position: relative; transition: color 0.2s; }
+        .tab-link:hover { color: var(--text-main); }
+        .tab-link.active { color: var(--sidebar-active); }
+        .tab-link.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background-color: var(--sidebar-active); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Modais */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(3px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--bg-primary); width: 90%; max-width: 800px; border-radius: 12px; padding: 32px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; max-height: 85vh; overflow-y: auto; }
+        .caixinha-card { background: var(--white); border-radius: 12px; border: 1px solid var(--border-color); padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .caixinha-balance { font-size: 1.8rem; font-weight: 700; color: var(--accent-success); margin: 12px 0; }
+
+        /* Utilitários */
+        .hidden { display: none !important; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .mt-4 { margin-top: 16px; }
+        .text-danger { color: var(--accent-danger); font-weight: 600; }
+        .text-success { color: var(--accent-success); font-weight: 600; }
+        .text-black { color: #000000; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <!-- AUTHENTICATION UI -->
+    <div id="auth-container" class="auth-wrapper">
+        <div class="auth-box">
+            <h2>Finanças Cloud</h2>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="auth-email" class="form-control" placeholder="seu@email.com">
+            </div>
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" id="auth-password" class="form-control" placeholder="••••••••">
+            </div>
+            <div style="margin-top: 20px;">
+                <button class="btn-primary" style="width: 100%;" onclick="login()">Entrar</button>
+            </div>
+            <div id="auth-error-msg" class="auth-error"></div>
+        </div>
+    </div>
+
+    <!-- MAIN APP UI -->
+    <div id="main-app-container" class="app-container hidden">
+        <aside class="sidebar">
+            <div class="brand">
+                <span>📊</span> Finanças Cloud
+            </div>
+            <nav>
+                <ul id="main-menu">
+                    <li><button data-target="view-despesas" class="active">Despesas Mensais</button></li>
+                    <li><button data-target="view-quotas">Quotas Mensais</button></li>
+                    <li><button data-target="view-pagamentos">Tabela de Pagamentos</button></li>
+                    <li><button type="button" onclick="abrirModalCaixinhas()">Caixinhas (Fundos)</button></li>
+                    <li><button data-target="view-aumentos">Próximos Aumentos</button></li>
+                    <li><button data-target="view-dividas">Quitação de Dívidas</button></li>
+                    <li><button data-target="view-taxas">Taxas Bancárias</button></li>
+                    <li><button data-target="view-financiamento">Novo Financiamento (Casa)</button></li>
+                    <li><button data-target="view-observacoes">Observações Importantes</button></li>
+                    <li><button data-target="view-import-export">Importar/Exportar</button></li>
+                </ul>
+            </nav>
+            <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <button class="btn-secondary" style="width: 100%; border-color: rgba(255,255,255,0.2); color: white;" onclick="logout()">Sair</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- VIEW: DESPESAS MENSAIS -->
+            <section id="view-despesas" class="view-section active">
+                <div id="panel-lista-meses">
+                    <div class="view-header">
+                        <h1>Despesas Mensais</h1>
+                        <button class="btn-primary" onclick="criarNovoMes()">+ Adicionar Novo Mês</button>
+                    </div>
+                    <p class="text-muted">Selecione um mês para gerenciar o controle específico:</p>
+                    <div class="card-grid" id="grid-meses"></div>
+                </div>
+
+                <div id="panel-detalhe-mes" class="hidden">
+                    <div class="view-header">
+                        <div>
+                            <button class="btn-secondary" onclick="fecharDetalheMes()" style="margin-bottom: 8px;">← Voltar aos Meses</button>
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                <h1 id="txt-titulo-mes" style="margin: 0;">Janeiro 2026</h1>
+                                <span id="txt-periodo-mes" style="color: var(--text-muted); font-size: 0.95rem; background: #e2e8f0; padding: 4px 10px; border-radius: 20px;"></span>
+                                <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem; display: flex; align-items: center;" onclick="renomearMesAtual()">✏️ Renomear</button>
+                                <button class="btn-secondary text-danger" style="padding: 4px 8px; font-size: 0.8rem; display: flex; align-items: center;" onclick="excluirMesAtual()">🗑️ Excluir</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tabs-header">
+                        <button class="tab-link active" onclick="switchSubTab(event, 'subtab-quotas')">Quotas do Mês</button>
+                        <button class="tab-link" onclick="switchSubTab(event, 'subtab-pagamentos')">Tabela de Pagamentos</button>
+                    </div>
+
+                    <div id="subtab-quotas" class="tab-content active">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Quota</th>
+                                        <th>Valor Alocado</th>
+                                        <th>Gasto Atual (R$)</th>
+                                        <th>Saldo Restante</th>
+                                        <th>Observações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body-mes-quotas"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="subtab-pagamentos" class="tab-content">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Débito / Obrigação</th>
+                                        <th>Link de Pagamento</th>
+                                        <th>Valor Previsto</th>
+                                        <th>Vencimento</th>
+                                        <th>Data de Pagamento</th>
+                                        <th>Valor Pago (R$)</th>
+                                        <th>Diferença / Saldo</th>
+                                        <th>Observações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body-mes-pagamentos"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: QUOTAS -->
+            <section id="view-quotas" class="view-section">
+                <div class="view-header">
+                    <h1>Configuração de Quotas Globais</h1>
+                </div>
+                <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); max-width: 500px; margin-bottom: 30px;">
+                    <h3>Criar Nova Quota Base</h3>
+                    <form id="form-nova-quota" onsubmit="salvarNovaQuota(event)" class="mt-4">
+                        <div class="form-group">
+                            <label>Nome da Quota</label>
+                            <input type="text" id="quota-nome" class="form-control" placeholder="Ex: Mercado, Viagens, Saídas" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Valor Alocado Padrão (R$)</label>
+                            <input type="number" id="quota-valor" class="form-control" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Cor Identificadora</label>
+                            <input type="color" id="quota-cor" class="form-control" value="#2563eb" style="height: 40px; padding: 2px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Observação Padrão (Opcional)</label>
+                            <input type="text" id="quota-obs" class="form-control" placeholder="Ex: Usar cartão de crédito">
+                        </div>
+                        <button type="submit" class="btn-primary">Salvar Quota</button>
+                    </form>
+                </div>
+
+                <h3>Minhas Quotas Configuradas</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cor</th>
+                                <th>Nome</th>
+                                <th>Valor Base</th>
+                                <th>Observações Padrão</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-quotas-globais"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- VIEW: PAGAMENTOS -->
+            <section id="view-pagamentos" class="view-section">
+                <div class="view-header">
+                    <h1>Cobranças Mensais Recorrentes</h1>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px; margin-bottom: 30px;">
+                    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <h3>Incluir Obrigação Recorrente</h3>
+                        <form id="form-novo-pagamento" onsubmit="salvarNovoPagamento(event)" class="mt-4">
+                            <div class="form-group">
+                                <label>Nome da Cobrança</label>
+                                <input type="text" id="pag-nome" class="form-control" placeholder="Ex: Internet, Academia" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Valor Alocado Fixo (R$)</label>
+                                <input type="number" id="pag-valor" class="form-control" placeholder="0.00" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Dia do Vencimento</label>
+                                <input type="number" id="pag-vencimento" class="form-control" placeholder="Ex: 25" min="1" max="31" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Link para Pagamento/Portal (Opcional)</label>
+                                <input type="url" id="pag-link" class="form-control" placeholder="Ex: https://minhaconta.empresa.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Observações Padrão</label>
+                                <input type="text" id="pag-obs" class="form-control" placeholder="Ex: Pagar pelo site">
+                            </div>
+                            <button type="submit" class="btn-primary">Adicionar Conta</button>
+                        </form>
+                    </div>
+
+                    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <h3>Débitos Automáticos Cadastrados</h3>
+                        <form id="form-novo-debito" onsubmit="salvarNovoDebitoAuto(event)" class="mt-4" style="display: flex; gap: 8px; margin-bottom: 20px;">
+                            <input type="text" id="debito-nome" class="form-control" placeholder="Nome (Ex: Spotify)" required style="flex: 2;">
+                            <input type="number" id="debito-valor" class="form-control" placeholder="Valor (R$)" required style="flex: 1;">
+                            <button type="submit" class="btn-primary" style="background-color: #10b981; padding: 8px 12px;" title="Adicionar">+</button>
+                        </form>
+                        <div style="max-height: 280px; overflow-y: auto; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+                            <table style="width: 100%;">
+                                <tbody id="table-debitos-auto"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Lista de Obrigações Fixas</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Valor Padrão</th>
+                                <th>Dia de Vencimento</th>
+                                <th>Link do Portal</th>
+                                <th>Observações Padrão</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-pagamentos-globais"></tbody>
+                    </table>
+                </div>
+            </section>            
+
+            <!-- OUTRAS VIEWS ESTÁTICAS -->
+            <section id="view-aumentos" class="view-section">
+                <div class="view-header"><h1>Próximos Aumentos</h1></div>
+                <p class="text-muted">Mapeamento e projeção de evolução salarial, receitas extras ou progressões de carreira.</p>
+            </section>
+
+            <section id="view-dividas" class="view-section">
+                <div class="view-header"><h1>Quitação de Dívidas</h1></div>
+                <p class="text-muted">Acompanhamento de amortizações de passivos a longo prazo.</p>
+            </section>
+
+            <section id="view-taxas" class="view-section">
+                <div class="view-header"><h1>Taxas Bancárias</h1></div>
+                <p class="text-muted">Controle de anuidades, tarifas de manutenção de conta e custos operacionais.</p>
+            </section>
+
+            <section id="view-financiamento" class="view-section">
+                <div class="view-header"><h1>Novo Financiamento (Casa)</h1></div>
+                <p class="text-muted">Simulador e consolidador para planejamento imobiliário de longo prazo.</p>
+                <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); max-width: 600px;" class="mt-4">
+                    <h3>Planejamento de Aquisição</h3>
+                    <div class="form-group mt-4">
+                        <label>Regiões Alvo em Brasília</label>
+                        <input type="text" class="form-control" value="Park Sul, Jardins do Lago, Ville de Montagne" disabled style="background:#f1f5f9;">
+                    </div>
+                    <div class="form-group">
+                        <label>Orçamento Estimado para Entrada (R$)</label>
+                        <input type="number" class="form-control" placeholder="Ex: 200000">
+                    </div>
+                    <button class="btn-primary">Salvar Simulação Estratégica</button>
+                </div>
+            </section>
+
+            <section id="view-import-export" class="view-section">
+                <div class="view-header">
+                    <h1>Importar / Exportar Dados</h1>
+                </div>
+                <p class="text-muted">Faça backup ou transfira seus dados (Funciona integrado com o Firebase).</p>
+                <div class="card-grid" style="grid-template-columns: 1fr 1fr; max-width: 800px;">
+                    <div class="card">
+                        <h3>Exportar Dados</h3>
+                        <p class="text-muted" style="margin-bottom: 16px; font-size: 0.9rem;">Baixe um arquivo .json com todos os dados atuais.</p>
+                        <button class="btn-primary" onclick="exportarDados()">⬇ Baixar Backup (JSON)</button>
+                    </div>
+                    <div class="card">
+                        <h3>Importar Dados</h3>
+                        <p class="text-muted" style="margin-bottom: 16px; font-size: 0.9rem;">Restaure de um arquivo .json. <strong>Substituirá tudo na nuvem!</strong></p>
+                        <input type="file" id="input-import-file" accept=".json" class="form-control" style="margin-bottom: 10px;">
+                        <button class="btn-primary" style="background-color: var(--accent-danger);" onclick="importarDados()">⬆ Restaurar Backup</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-observacoes" class="view-section">
+                <div class="view-header">
+                    <h1>Observações Importantes</h1>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button class="btn-secondary" onclick="abrirModalCategoriasObs()">Gerenciar Categorias</button>
+                        <button class="btn-primary" onclick="abrirModalNovaObs()">+ Incluir Observação</button>
+                    </div>
+                </div>
+                
+                <div class="table-container" style="margin-top: 20px;">
+                    <table>
+                        <tbody id="table-observacoes">
+                            </tbody>
+                    </table>
+                </div>
+        </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL CAIXINHAS -->
+    <div id="modal-caixinhas" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h1 style="font-size: 1.5rem;">Minhas Caixinhas (Fundos de Reserva)</h1>
+                <div>
+                    <button class="btn-primary" onclick="criarNovaCaixinha()">+ Nova Caixinha</button>
+                    <button class="btn-secondary" style="border: none; font-size: 1.2rem; margin-left: 12px;" onclick="fecharModalCaixinhas()" title="Fechar">✖</button>
+                </div>
+            </div>
+            <div class="card-grid" id="grid-caixinhas" style="margin-bottom: 24px;"></div>
+            <div style="display: flex; justify-content: flex-end; align-items: center; padding-top: 20px; border-top: 2px solid var(--border-color);">
+                <h3 style="margin-right: 16px; color: var(--text-muted); font-size: 1.1rem;">Saldo Total em Caixinhas:</h3>
+                <h2 id="total-caixinhas" style="color: var(--sidebar-active); font-size: 1.8rem; margin: 0;">R$ 0.00</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HISTÓRICO -->
+    <div id="modal-historico" class="modal-overlay hidden" style="z-index: 1010;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 id="titulo-modal-historico" style="font-size: 1.2rem;">Histórico Completo</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalHistorico()" title="Fechar">✖</button>
+            </div>
+            <div style="max-height: 60vh; overflow-y: auto; padding-right: 8px;">
+                <ul id="lista-historico-completo" style="list-style: none; padding: 0; margin: 0;"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOVO MÊS -->
+    <div id="modal-novo-mes" class="modal-overlay hidden" style="z-index: 1020;">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Adicionar Novo Mês</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalNovoMes()" title="Fechar">✖</button>
+            </div>
+            <div class="form-group">
+                <label>Mês de Referência</label>
+                <select id="select-mes" class="form-control">
+                    <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+                    <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+                    <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+                    <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Ano</label>
+                <select id="select-ano" class="form-control"></select>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button class="btn-secondary" onclick="fecharModalNovoMes()">Cancelar</button>
+                <button class="btn-primary" onclick="confirmarNovoMes()">Criar Mês</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-categorias-obs" class="modal-overlay hidden" style="z-index: 1030;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Gerenciar Categorias</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalCategoriasObs()" title="Fechar">✖</button>
+            </div>
+            <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                <input type="text" id="obs-categoria-nome" class="form-control" placeholder="Nova categoria">
+                <button class="btn-primary" onclick="adicionarCategoriaObs()">Adicionar</button>
+            </div>
+            <ul id="lista-categorias-obs" style="list-style: none; padding: 0; max-height: 40vh; overflow-y: auto;">
+                </ul>
+        </div>
+    </div>
+
+    <div id="modal-nova-obs" class="modal-overlay hidden" style="z-index: 1040;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Nova Observação</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalNovaObs()" title="Fechar">✖</button>
+            </div>
+            <div class="form-group">
+                <label>Categoria</label>
+                <select id="obs-select-categoria" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label>Observação (Texto Livre)</label>
+                <textarea id="obs-texto" class="form-control" rows="6" placeholder="Escreva sua observação aqui. Pressione Enter para pular linhas..." style="resize: vertical; font-family: inherit; line-height: 1.5;"></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button class="btn-secondary" onclick="fecharModalNovaObs()">Cancelar</button>
+                <button class="btn-primary" onclick="adicionarObservacao()">Salvar Anotação</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBA1jRgVh3fab8UVov9IDmcTU3luw733tk",
+            authDomain: "despesaspc-b06b6.firebaseapp.com",
+            projectId: "despesaspc-b06b6",
+            storageBucket: "despesaspc-b06b6.firebasestorage.app",
+            messagingSenderId: "1009344222435",
+            appId: "1:1009344222435:web:5dafe0d0793a881c2521d6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUserUid = null;
+        let mesSelecionadoId = null;
+
+        // AUTHENTICATION LOGIC
+        window.login = async () => {
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-password').value;
+            try { await signInWithEmailAndPassword(auth, email, pass); } 
+            catch (e) { document.getElementById('auth-error-msg').innerText = "Erro ao entrar: " + e.message; }
+        };
+
+        window.register = async () => {
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-password').value;
+            try { await createUserWithEmailAndPassword(auth, email, pass); } 
+            catch (e) { document.getElementById('auth-error-msg').innerText = "Erro ao registrar: " + e.message; }
+        };
+
+        window.logout = async () => { await signOut(auth); };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                document.getElementById('auth-container').classList.add('hidden');
+                document.getElementById('main-app-container').classList.remove('hidden');
+                await inicializarApp();
+            } else {
+                currentUserUid = null;
+                document.getElementById('auth-container').classList.remove('hidden');
+                document.getElementById('main-app-container').classList.add('hidden');
+            }
+        });
+
+        // --- MOTOR DE DADOS FIRESTORE ---
+        const defQuotas = [ { id: '1', nome: 'Mercado', valor: 800, cor: '#3b82f6' }, { id: '2', nome: 'Viagens', valor: 500, cor: '#10b981' } ];
+        const defPagamentos = [ { id: '1', nome: 'Internet', valor: 100, vencimento: 25, obs: 'Pagar pelo site' } ];
+        const defDebitosAuto = [ { id: 'da_1', nome: 'Spotify', valor: 21.90 } ];
+        const defCaixinhas = [ { id: '1', nome: 'Sobra', saldo: 0, historico: [] } ];
+        const defCategoriasObs = [ { id: 'cat_1', nome: 'Geral' }, { id: 'cat_2', nome: 'Lembretes' } ];
+        const defObservacoes = [];
+
+        const DB = {
+            async get(key, defaultData) {
+                if(!currentUserUid) return defaultData;
+                try {
+                    const d = await getDoc(doc(db, `usersData/${currentUserUid}/colecoes/${key}`));
+                    return d.exists() ? d.data().data : defaultData;
+                } catch(e) { console.error("Erro DB Get", e); return defaultData; }
+            },
+            async set(key, data) {
+                if(!currentUserUid) return;
+                try { await setDoc(doc(db, `usersData/${currentUserUid}/colecoes/${key}`), { data }); } 
+                catch(e) { console.error("Erro DB Set", e); }
+            },
+            getQuotas: () => DB.get('fin_quotas', defQuotas),
+            setQuotas: (data) => DB.set('fin_quotas', data),
+            getPagamentos: () => DB.get('fin_pagamentos', defPagamentos),
+            setPagamentos: (data) => DB.set('fin_pagamentos', data),
+            getMeses: () => DB.get('fin_meses', []),
+            setMeses: (data) => DB.set('fin_meses', data),
+            getDebitosAuto: () => DB.get('fin_debitos_auto', defDebitosAuto),
+            setDebitosAuto: (data) => DB.set('fin_debitos_auto', data),
+            getCategoriasObs: () => DB.get('fin_categorias_obs', defCategoriasObs),
+            setCategoriasObs: (data) => DB.set('fin_categorias_obs', data),
+            getObservacoes: () => DB.get('fin_observacoes', defObservacoes),
+            setObservacoes: (data) => DB.set('fin_observacoes', data),
+            getCaixinhas: () => DB.get('fin_caixinhas', defCaixinhas),
+            setCaixinhas: (data) => DB.set('fin_caixinhas', data)
+        };
+
+        // --- SISTEMA DE ROTEAMENTO DAS SEÇÕES ---
+        document.querySelectorAll('#main-menu button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const targetViewId = e.target.getAttribute('data-target');
+                if (!targetViewId) return; 
+                document.querySelectorAll('#main-menu button').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+                e.target.classList.add('active');
+                document.getElementById(targetViewId).classList.add('active');
+                if(targetViewId === 'view-despesas') fecharDetalheMes();
+            });
+        });
+
+        window.switchSubTab = (event, tabId) => {
+            document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        };
+
+        async function inicializarApp() {
+            await renderizarMeses();
+            await renderizarQuotasGlobais();
+            await renderizarPagamentosGlobais();
+            await renderizarCaixinhas();
+            await renderizarDebitosAuto();
+            await renderizarCategoriasObs();
+            await renderizarObservacoes();
+        }
+
+        // --- MESES ---
+        window.renderizarMeses = async () => {
+            const meses = await DB.getMeses();
+            const grid = document.getElementById('grid-meses');
+            grid.innerHTML = '';
+            if (meses.length === 0) {
+                grid.innerHTML = '<p class="text-muted" style="grid-column: 1/-1;">Nenhum mês gerado.</p>';
+                return;
+            }
+
+            const nomesDosMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const dataHoje = new Date();
+            const nomeMesAtualSistema = `${nomesDosMeses[dataHoje.getMonth()]} de ${dataHoje.getFullYear()}`;
+
+            const extrairData = (nome) => {
+                const partes = nome.split(' de ');
+                if (partes.length !== 2) return { mes: -1, ano: 0 };
+                return { mes: nomesDosMeses.indexOf(partes[0]), ano: parseInt(partes[1]) };
+            };
+
+            const mesesOrdenados = [...meses].sort((a, b) => {
+                const dataA = extrairData(a.nome); const dataB = extrairData(b.nome);
+                if (dataA.ano !== dataB.ano) return dataB.ano - dataA.ano; 
+                return dataB.mes - dataA.mes; 
+            });
+
+            let anoSendoDesenhado = null;
+            mesesOrdenados.forEach(mes => {
+                const dataDoMes = extrairData(mes.nome);
+                if (dataDoMes.ano !== anoSendoDesenhado && dataDoMes.ano > 0) {
+                    const separador = document.createElement('div');
+                    separador.className = 'year-separator'; separador.innerText = dataDoMes.ano;
+                    grid.appendChild(separador); anoSendoDesenhado = dataDoMes.ano;
+                }
+
+                const isMesAtual = (mes.nome === nomeMesAtualSistema);
+                const card = document.createElement('div');
+                card.className = `card ${isMesAtual ? 'card-atual' : ''}`;
+                card.onclick = () => abrirDetalheMes(mes.id);
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 38px; height: 38px; border-radius: 8px; background-color: ${isMesAtual ? '#dbeafe' : '#f1f5f9'}; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">📅</div>
+                            <h3 style="margin: 0; font-size: 1.15rem;">${mes.nome}</h3>
+                        </div>
+                        ${isMesAtual ? '<span style="background: var(--sidebar-active); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">Atual</span>' : ''}
+                    </div>
+                    <p class="text-muted" style="font-size: 0.85rem; margin-top: 12px; margin-left: 50px;">${mes.periodo || 'Acompanhamento Ativo'}</p>
+                `;
+                grid.appendChild(card);
+            });
+        };
+
+        window.criarNovoMes = () => {
+            const dataHoje = new Date();
+            const anoAtual = dataHoje.getFullYear();
+            const mesAtual = dataHoje.getMonth();
+            const selectAno = document.getElementById('select-ano');
+            selectAno.innerHTML = '';
+            for (let i = anoAtual - 1; i <= anoAtual + 3; i++) {
+                const option = document.createElement('option'); option.value = i; option.text = i; selectAno.appendChild(option);
+            }
+            document.getElementById('select-mes').value = mesAtual;
+            document.getElementById('select-ano').value = anoAtual;
+            document.getElementById('modal-novo-mes').classList.remove('hidden');
+        };
+
+        window.fecharModalNovoMes = () => document.getElementById('modal-novo-mes').classList.add('hidden');
+
+        window.confirmarNovoMes = async () => {
+            const nomesDosMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const idxMes = parseInt(document.getElementById('select-mes').value);
+            const ano = parseInt(document.getElementById('select-ano').value);
+            let idxSeguinte = idxMes + 1; let anoSeguinte = ano;
+            if (idxSeguinte > 11) { idxSeguinte = 0; anoSeguinte++; }
+
+            const nomeFinal = `${nomesDosMeses[idxMes]} de ${ano}`;
+            const periodo = `22 de ${nomesDosMeses[idxMes]} a 21 de ${nomesDosMeses[idxSeguinte]}`;
+
+            const meses = await DB.getMeses();
+            if (meses.some(m => m.nome === nomeFinal)) { alert(`O mês "${nomeFinal}" já existe!`); return; }
+
+            const baseQuotas = await DB.getQuotas();
+            const basePagamentos = await DB.getPagamentos();
+
+            const quotasMes = baseQuotas.map(q => ({ ...q, gasto: 0, obs: q.obs || '' }));
+            const pagamentosMes = basePagamentos.map(p => ({ ...p, dataPgto: '', valorPago: 0, obs: p.obs || '' }));
+
+            meses.push({ id: 'mes_' + Date.now(), nome: nomeFinal, periodo, quotas: quotasMes, pagamentos: pagamentosMes });
+            await DB.setMeses(meses);
+            await renderizarMeses();
+            fecharModalNovoMes();
+        };
+
+        window.abrirDetalheMes = async (id) => {
+            mesSelecionadoId = id;
+            const meses = await DB.getMeses();
+            const mes = meses.find(m => m.id === id);
+            document.getElementById('txt-titulo-mes').innerText = mes.nome;
+            const elPeriodo = document.getElementById('txt-periodo-mes');
+            if (mes.periodo) { elPeriodo.innerText = mes.periodo; elPeriodo.style.display = 'inline-block'; } 
+            else { elPeriodo.style.display = 'none'; }
+            document.getElementById('panel-lista-meses').classList.add('hidden');
+            document.getElementById('panel-detalhe-mes').classList.remove('hidden');
+            renderizarSubTabelasMes(mes);
+        };
+
+        window.fecharDetalheMes = async () => {
+            mesSelecionadoId = null;
+            document.getElementById('panel-detalhe-mes').classList.add('hidden');
+            document.getElementById('panel-lista-meses').classList.remove('hidden');
+            await renderizarMeses();
+        };
+
+        window.renomearMesAtual = async () => {
+            const meses = await DB.getMeses();
+            const mes = meses.find(m => m.id === mesSelecionadoId);
+            if (!mes) return;
+            const novoNome = prompt("Digite o novo nome para este mês:", mes.nome);
+            if (!novoNome || novoNome.trim() === "") return;
+            mes.nome = novoNome.trim();
+            await DB.setMeses(meses);
+            document.getElementById('txt-titulo-mes').innerText = mes.nome;
+        };
+
+        window.excluirMesAtual = async () => {
+            if (!confirm("Tem a certeza que deseja excluir este mês?")) return;
+            let meses = await DB.getMeses();
+            meses = meses.filter(m => m.id !== mesSelecionadoId);
+            await DB.setMeses(meses);
+            fecharDetalheMes();
+        };
+
+        function renderizarSubTabelasMes(mes) {
+            const tbodyQuotas = document.getElementById('table-body-mes-quotas'); tbodyQuotas.innerHTML = '';
+            mes.quotas.forEach((q, index) => {
+                const historico = q.historico || [];
+                if (!q.historico && q.gasto > 0) historico.push({ valor: q.gasto, desc: 'Gasto anterior', data: '' });
+                let historicoHtml = historico.map((item, i) => `
+                    <li style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 4px; margin-top: 4px; border-radius: 4px;">
+                        <span style="font-size: 0.8rem; flex: 1;">${item.desc} ${item.data ? `(${item.data})` : ''}</span>
+                        <strong style="font-size: 0.85rem; margin-right: 8px;">R$ ${item.valor.toFixed(2)}</strong>
+                        <button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 0.7rem;" onclick="removerItemHistorico(${index}, ${i})">✖</button>
+                    </li>
+                `).join('');
+                // Recalcula o gasto total baseado no histórico para garantir precisão
+                const totalGasto = historico.reduce((acc, curr) => acc + curr.valor, 0);
+                const saldoAtualizado = q.valor - totalGasto;
+
+                // Nova regra de cor: Preto por padrão. Verde ou Vermelho apenas se houver algum lançamento.
+                let classeSaldoQuota = 'text-black';
+                if (historico.length > 0) {
+                    if (saldoAtualizado < 0) {
+                        classeSaldoQuota = 'text-danger';
+                    } else {
+                        classeSaldoQuota = 'text-success';
+                    }
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><span class="quota-badge" style="background-color:${q.cor}">${q.nome}</span></td>
+                    <td>R$ ${q.valor.toFixed(2)}</td>
+                    <td style="min-width: 250px;">
+                        <div style="font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Total: R$ ${totalGasto.toFixed(2)}</div>
+                        <div style="display: flex; gap: 4px; margin-bottom: 8px;">
+                            <input type="text" id="desc-gasto-${index}" class="table-input" style="flex: 1;" placeholder="Descrição">
+                            <input type="number" id="add-gasto-${index}" class="table-input" style="width: 80px;" placeholder="R$">
+                            <button class="btn-primary" style="padding: 4px 10px;" onclick="adicionarGastoQuota(${index})">+</button>
+                        </div>
+                        <ul style="list-style: none; padding: 0;">${historicoHtml}</ul>
+                    </td>
+                    <td class="${classeSaldoQuota}">R$ ${saldoAtualizado.toFixed(2)}</td>
+                    <td><input type="text" class="table-input" value="${q.obs || ''}" onchange="atualizarObsQuota(${index}, this.value)" placeholder="Notas..."></td>
+                `;
+                tbodyQuotas.appendChild(tr);
+            });
+
+            const tbodyPagamentos = document.getElementById('table-body-mes-pagamentos'); tbodyPagamentos.innerHTML = '';
+            mes.pagamentos.forEach((p, index) => {
+                const diferenca = p.valor - p.valorPago; const classeLinha = p.dataPgto ? 'linha-paga' : '';
+                let classeSaldo = 'text-black'; if (diferenca < 0) classeSaldo = 'text-danger'; else if (diferenca > 0) classeSaldo = 'text-success';
+                const botaoLink = p.link ? `<a href="${p.link}" target="_blank" class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem; text-decoration: none; display: inline-block;">🔗 Abrir</a>` : '-';
+                const tr = document.createElement('tr'); tr.className = classeLinha;
+                tr.innerHTML = `
+                    <td><strong>${p.nome}</strong></td>
+                    <td style="text-align: center;">${botaoLink}</td>
+                    <td>R$ ${p.valor.toFixed(2)}</td>
+                    <td>Dia ${p.vencimento}</td>
+                    <td><input type="date" class="table-input" value="${p.dataPgto || ''}" onchange="atualizarDataPagamento(${index}, this.value)"></td>
+                    <td><input type="number" class="table-input" value="${p.valorPago}" onchange="atualizarValorPagamento(${index}, this.value)"></td>
+                    <td class="${classeSaldo}">R$ ${diferenca.toFixed(2)}</td>
+                    <td><input type="text" class="table-input" value="${p.obs || ''}" onchange="atualizarObsPagamento(${index}, this.value)"></td>
+                `;
+                tbodyPagamentos.appendChild(tr);
+            });
+        }
+
+        window.adicionarGastoQuota = async (idx) => {
+            const val = parseFloat(document.getElementById(`add-gasto-${idx}`).value);
+            const desc = document.getElementById(`desc-gasto-${idx}`).value || 'Gasto';
+            if (isNaN(val) || val <= 0) return;
+            const meses = await DB.getMeses(); const mes = meses.find(m => m.id === mesSelecionadoId);
+            if (!mes.quotas[idx].historico) mes.quotas[idx].historico = [];
+            mes.quotas[idx].historico.push({ valor: val, desc, data: new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) });
+            mes.quotas[idx].gasto = mes.quotas[idx].historico.reduce((acc, curr) => acc + curr.valor, 0);
+            await DB.setMeses(meses); renderizarSubTabelasMes(mes);
+        };
+        window.removerItemHistorico = async (idxQuota, idxHist) => {
+            if(!confirm("Remover este item?")) return;
+            const meses = await DB.getMeses(); const mes = meses.find(m => m.id === mesSelecionadoId);
+            mes.quotas[idxQuota].historico.splice(idxHist, 1);
+            mes.quotas[idxQuota].gasto = mes.quotas[idxQuota].historico.reduce((acc, curr) => acc + curr.valor, 0);
+            await DB.setMeses(meses); renderizarSubTabelasMes(mes);
+        };
+        window.atualizarObsQuota = async (idx, val) => { const meses = await DB.getMeses(); meses.find(m => m.id === mesSelecionadoId).quotas[idx].obs = val; await DB.setMeses(meses); };
+        window.atualizarDataPagamento = async (idx, val) => { const meses = await DB.getMeses(); const mes = meses.find(m => m.id === mesSelecionadoId); mes.pagamentos[idx].dataPgto = val; await DB.setMeses(meses); renderizarSubTabelasMes(mes); };
+        window.atualizarValorPagamento = async (idx, val) => { const meses = await DB.getMeses(); const mes = meses.find(m => m.id === mesSelecionadoId); mes.pagamentos[idx].valorPago = parseFloat(val)||0; await DB.setMeses(meses); renderizarSubTabelasMes(mes); };
+        window.atualizarObsPagamento = async (idx, val) => { const meses = await DB.getMeses(); meses.find(m => m.id === mesSelecionadoId).pagamentos[idx].obs = val; await DB.setMeses(meses); };
+
+        // --- QUOTAS GLOBAIS ---
+        window.renderizarQuotasGlobais = async () => {
+            const quotas = await DB.getQuotas(); const tbody = document.getElementById('table-quotas-globais'); tbody.innerHTML = '';
+            quotas.forEach((q, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="color" value="${q.cor}" onchange="atualizarPropriedadeQuotaGlobal('${q.id}', 'cor', this.value)" style="width: 32px; height: 32px; padding: 0; border: none; border-radius: 4px; cursor: pointer; background: transparent;"></td>
+                    <td><input type="text" class="table-input" value="${q.nome}" onchange="atualizarPropriedadeQuotaGlobal('${q.id}', 'nome', this.value)"></td>
+                    <td><input type="number" class="table-input" value="${q.valor}" onchange="atualizarPropriedadeQuotaGlobal('${q.id}', 'valor', this.value)"></td>
+                    <td><input type="text" class="table-input" value="${q.obs || ''}" onchange="atualizarPropriedadeQuotaGlobal('${q.id}', 'obs', this.value)" placeholder="Notas padrão..."></td>
+                    <td style="display: flex; gap: 8px; align-items: center;">
+                        <button onclick="moverQuota(${index}, -1)" title="Mover para cima" style="cursor:pointer; background:none; border:none; font-size:1.2rem;">⬆️</button>
+                        <button onclick="moverQuota(${index}, 1)" title="Mover para baixo" style="cursor:pointer; background:none; border:none; font-size:1.2rem;">⬇️</button>
+                        <button class="text-danger" onclick="removerQuota('${q.id}')" style="background:none; border:none; cursor:pointer; margin-left:10px;">Remover</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+        window.salvarNovaQuota = async (e) => {
+            e.preventDefault();
+            const quotas = await DB.getQuotas();
+            quotas.push({ id: 'q_' + Date.now(), nome: document.getElementById('quota-nome').value, valor: parseFloat(document.getElementById('quota-valor').value)||0, cor: document.getElementById('quota-cor').value, obs: document.getElementById('quota-obs').value });
+            await DB.setQuotas(quotas); await renderizarQuotasGlobais(); document.getElementById('form-nova-quota').reset();
+        };
+        window.atualizarPropriedadeQuotaGlobal = async (id, prop, val) => { const quotas = await DB.getQuotas(); const q = quotas.find(q=>q.id===id); if(q){ q[prop] = prop==='valor'?parseFloat(val)||0:val; await DB.setQuotas(quotas); } };
+        window.moverQuota = async (idx, dir) => { const quotas = await DB.getQuotas(); if (idx+dir<0 || idx+dir>=quotas.length) return; const t = quotas[idx]; quotas[idx] = quotas[idx+dir]; quotas[idx+dir] = t; await DB.setQuotas(quotas); await renderizarQuotasGlobais(); };
+        window.removerQuota = async (id) => { let quotas = await DB.getQuotas(); quotas = quotas.filter(q=>q.id!==id); await DB.setQuotas(quotas); await renderizarQuotasGlobais(); };
+
+        // --- PAGAMENTOS GLOBAIS ---
+        window.renderizarPagamentosGlobais = async () => {
+            const pagamentos = await DB.getPagamentos(); const tbody = document.getElementById('table-pagamentos-globais'); tbody.innerHTML = '';
+            pagamentos.forEach((p, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="text" class="table-input" value="${p.nome}" onchange="atualizarPropriedadePagamentoGlobal('${p.id}', 'nome', this.value)"></td>
+                    <td><input type="number" class="table-input" value="${p.valor}" onchange="atualizarPropriedadePagamentoGlobal('${p.id}', 'valor', this.value)"></td>
+                    <td><input type="number" class="table-input" value="${p.vencimento}" onchange="atualizarPropriedadePagamentoGlobal('${p.id}', 'vencimento', this.value)" style="width: 70px;"></td>
+                    <td><input type="url" class="table-input" value="${p.link || ''}" onchange="atualizarPropriedadePagamentoGlobal('${p.id}', 'link', this.value)" placeholder="https://..."></td>
+                    <td><input type="text" class="table-input" value="${p.obs || ''}" onchange="atualizarPropriedadePagamentoGlobal('${p.id}', 'obs', this.value)" placeholder="Notas..."></td>
+                    <td style="display: flex; gap: 8px; align-items: center;">
+                        <button onclick="moverPagamento(${index}, -1)" title="Mover para cima" style="cursor:pointer; background:none; border:none; font-size:1.2rem;">⬆️</button>
+                        <button onclick="moverPagamento(${index}, 1)" title="Mover para baixo" style="cursor:pointer; background:none; border:none; font-size:1.2rem;">⬇️</button>
+                        <button class="text-danger" onclick="removerPagamento('${p.id}')" style="background:none; border:none; cursor:pointer; margin-left:10px;">Remover</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+        window.salvarNovoPagamento = async (e) => {
+            e.preventDefault(); const pagamentos = await DB.getPagamentos();
+            pagamentos.push({ id: 'p_' + Date.now(), nome: document.getElementById('pag-nome').value, valor: parseFloat(document.getElementById('pag-valor').value)||0, vencimento: parseInt(document.getElementById('pag-vencimento').value), obs: document.getElementById('pag-obs').value, link: document.getElementById('pag-link').value });
+            await DB.setPagamentos(pagamentos); await renderizarPagamentosGlobais(); document.getElementById('form-novo-pagamento').reset();
+        };
+        window.atualizarPropriedadePagamentoGlobal = async (id, prop, val) => { const pags = await DB.getPagamentos(); const p = pags.find(p=>p.id===id); if(p){ p[prop] = (prop==='valor'||prop==='vencimento')?parseFloat(val)||0:val.trim(); await DB.setPagamentos(pags); } };
+        window.moverPagamento = async (idx, dir) => { const pags = await DB.getPagamentos(); if (idx+dir<0 || idx+dir>=pags.length) return; const t = pags[idx]; pags[idx] = pags[idx+dir]; pags[idx+dir] = t; await DB.setPagamentos(pags); await renderizarPagamentosGlobais(); };
+        window.removerPagamento = async (id) => { let pags = await DB.getPagamentos(); pags = pags.filter(p=>p.id!==id); await DB.setPagamentos(pags); await renderizarPagamentosGlobais(); };
+
+        // --- DEBITOS AUTO ---
+        window.renderizarDebitosAuto = async () => {
+            const debitos = await DB.getDebitosAuto(); const tbody = document.getElementById('table-debitos-auto'); tbody.innerHTML = '';
+            if(debitos.length===0){ tbody.innerHTML = '<tr><td class="text-muted" style="text-align:center; padding: 20px;">Nenhum débito cadastrado.</td></tr>'; return; }
+            debitos.forEach(d => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding: 6px 4px;"><input type="text" class="table-input" value="${d.nome}" onchange="atualizarDebitoAuto('${d.id}', 'nome', this.value)"></td>
+                    <td style="padding: 6px 4px; width: 100px;"><input type="number" class="table-input" value="${d.valor}" onchange="atualizarDebitoAuto('${d.id}', 'valor', this.value)"></td>
+                    <td style="padding: 6px 4px; width: 40px; text-align: center;"><button class="text-danger" onclick="removerDebitoAuto('${d.id}')" style="background:none; border:none; cursor:pointer; font-size:1.1rem;">✖</button></td>
+                `; tbody.appendChild(tr);
+            });
+        };
+        window.salvarNovoDebitoAuto = async (e) => { e.preventDefault(); const debitos = await DB.getDebitosAuto(); debitos.push({id:'da_'+Date.now(), nome:document.getElementById('debito-nome').value, valor:parseFloat(document.getElementById('debito-valor').value)||0}); await DB.setDebitosAuto(debitos); await renderizarDebitosAuto(); document.getElementById('form-novo-debito').reset(); };
+        window.atualizarDebitoAuto = async (id, prop, val) => { const debs = await DB.getDebitosAuto(); const d = debs.find(d=>d.id===id); if(d){ d[prop] = prop==='valor'?parseFloat(val)||0:val.trim(); await DB.setDebitosAuto(debs); } };
+        window.removerDebitoAuto = async (id) => { let debs = await DB.getDebitosAuto(); debs = debs.filter(d=>d.id!==id); await DB.setDebitosAuto(debs); await renderizarDebitosAuto(); };
+
+        // --- CAIXINHAS ---
+        window.renderizarCaixinhas = async () => {
+            const caixinhas = await DB.getCaixinhas();
+            const container = document.getElementById('grid-caixinhas');
+            
+            container.innerHTML = '';
+            container.className = ''; 
+
+            let saldoTotalGeral = 0;
+
+            // 1. Agrupa as caixinhas e soma saldos por categoria
+            const caixinhasPorCategoria = {};
+            const saldoPorCategoria = {};
+
+            caixinhas.forEach(c => {
+                const cat = c.categoria || 'Geral';
+                
+                if (!caixinhasPorCategoria[cat]) {
+                    caixinhasPorCategoria[cat] = [];
+                    saldoPorCategoria[cat] = 0; // Inicia o contador desta categoria
+                }
+                
+                caixinhasPorCategoria[cat].push(c);
+                saldoPorCategoria[cat] += (c.saldo || 0); // Soma ao subtotal da categoria
+                saldoTotalGeral += (c.saldo || 0);        // Soma ao total geral
+            });
+
+            // 2. Ordena as categorias para que 'Geral' fique sempre no topo
+            const categorias = Object.keys(caixinhasPorCategoria).sort((a, b) => {
+                if (a === 'Geral') return -1;
+                if (b === 'Geral') return 1;
+                return a.localeCompare(b);
+            });
+
+            // 3. Desenha os blocos de cada categoria na tela
+            categorias.forEach(cat => {
+                
+                // Cabeçalho da Categoria (Agora com o Subtotal alinhado à direita)
+                const catHeader = document.createElement('div');
+                catHeader.style.cssText = "display: flex; justify-content: space-between; align-items: baseline; margin-top: 16px; margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;";
+                
+                const catTitle = document.createElement('h2');
+                catTitle.style.cssText = "font-size: 1.2rem; color: var(--sidebar-active); margin: 0;";
+                catTitle.innerText = cat;
+
+                const catSubtotal = document.createElement('span');
+                catSubtotal.style.cssText = "font-size: 1rem; font-weight: 600; color: var(--text-muted);";
+                catSubtotal.innerText = `Subtotal: R$ ${saldoPorCategoria[cat].toFixed(2)}`;
+
+                catHeader.appendChild(catTitle);
+                catHeader.appendChild(catSubtotal);
+                container.appendChild(catHeader);
+
+                // Sub-grid para os cards desta categoria
+                const grid = document.createElement('div');
+                grid.className = 'card-grid';
+                grid.style.marginTop = '0';
+
+                caixinhasPorCategoria[cat].forEach(c => {
+                    let historicoHtml = ''; let botaoVerMais = '';
+                    
+                    if (c.historico && c.historico.length > 0) {
+                        const ultimos5 = [...c.historico].reverse().slice(0, 5);
+                        historicoHtml = ultimos5.map(h => `<li style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-color); font-size: 0.85rem;"><span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">${h.tipo==='Crédito'?'+':'-'}</strong> ${h.desc} <span style="color: var(--text-muted); font-size: 0.75rem;">(${h.data})</span></span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">R$ ${h.valor.toFixed(2)}</strong></li>`).join('');
+                        if (c.historico.length > 5) botaoVerMais = `<button class="btn-secondary" style="width: 100%; margin-top: 8px; padding: 6px; font-size: 0.8rem; border-color: transparent; color: var(--sidebar-active); font-weight: 600;" onclick="abrirModalHistorico('${c.id}')">Ver histórico completo (${c.historico.length} itens)</button>`;
+                    } else {
+                        historicoHtml = '<li style="font-size: 0.85rem; color: var(--text-muted); padding: 4px 0;">Sem movimentações.</li>';
+                    }
+
+                    const div = document.createElement('div'); 
+                    div.className = 'caixinha-card';
+                    div.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <h3 style="margin: 0;">${c.nome}</h3>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="mudarCategoriaCaixinha('${c.id}')" title="Mudar Categoria" style="background:none; border:none; cursor:pointer; font-size: 1rem;">🏷️</button>
+                                <button onclick="renomearCaixinha('${c.id}')" title="Renomear" style="background:none; border:none; cursor:pointer; font-size: 1rem;">✏️</button>
+                                <button onclick="excluirCaixinha('${c.id}')" title="Excluir" style="background:none; border:none; cursor:pointer; font-size: 1rem;">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="caixinha-balance">R$ ${c.saldo.toFixed(2)}</div>
+                        <div style="display:flex; gap:8px;" class="mt-4">
+                            <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="ajustarCaixinha('${c.id}', 'Crédito')">+ Creditar</button>
+                            <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="ajustarCaixinha('${c.id}', 'Débito')">- Debitar</button>
+                            <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem; margin-left: auto;" onclick="toggleHistoricoCaixinha('${c.id}')">⏳ Histórico</button>
+                        </div>
+                        <div id="historico-${c.id}" class="hidden" style="margin-top: 16px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <h4 style="font-size: 0.9rem; margin-bottom: 8px; color: var(--text-main);">Últimas Movimentações</h4>
+                            <ul style="list-style: none; padding: 0; margin: 0;">${historicoHtml}</ul>
+                            ${botaoVerMais}
+                        </div>
+                    `;
+                    grid.appendChild(div);
+                });
+                
+                container.appendChild(grid);
+            });
+
+            // Atualiza o saldo total geral no rodapé
+            const elTotal = document.getElementById('total-caixinhas'); 
+            if (elTotal) elTotal.innerText = `R$ ${saldoTotalGeral.toFixed(2)}`;
+        };
+        
+        window.abrirModalCaixinhas = async () => { document.getElementById('modal-caixinhas').classList.remove('hidden'); await renderizarCaixinhas(); };
+        window.fecharModalCaixinhas = () => document.getElementById('modal-caixinhas').classList.add('hidden');
+        
+        window.criarNovaCaixinha = async () => {
+            const nome = prompt("Nome da nova caixinha:");
+            if (!nome) return;
+            
+            // Pede a categoria e usa 'Geral' se a pessoa deixar em branco
+            let categoria = prompt("Categoria (ex: Geral, Particular, Carro):", "Geral");
+            if (!categoria || categoria.trim() === "") categoria = "Geral";
+
+            const cx = await DB.getCaixinhas();
+            cx.push({ id: 'c_' + Date.now(), nome: nome.trim(), categoria: categoria.trim(), saldo: 0, historico: [] });
+            await DB.setCaixinhas(cx);
+            await renderizarCaixinhas();
+        };
+
+        window.mudarCategoriaCaixinha = async (id) => {
+            const cx = await DB.getCaixinhas();
+            const c = cx.find(c => c.id === id);
+            if (!c) return;
+
+            const novaCategoria = prompt("Digite a nova categoria para esta caixinha:", c.categoria || "Geral");
+            if (novaCategoria && novaCategoria.trim() !== "") {
+                c.categoria = novaCategoria.trim();
+                await DB.setCaixinhas(cx);
+                await renderizarCaixinhas();
+            }
+        };
+
+        window.renomearCaixinha = async (id) => { const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; const n = prompt("Novo nome:", c.nome); if(n && n.trim()!==""){ c.nome=n.trim(); await DB.setCaixinhas(cx); await renderizarCaixinhas(); } };
+        window.excluirCaixinha = async (id) => { let cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; if(c.saldo>0 && !confirm(`A caixinha tem R$ ${c.saldo.toFixed(2)}!
+Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas(cx); await renderizarCaixinhas(); };
+        window.ajustarCaixinha = async (id, tipo) => { const v = parseFloat(prompt(`Valor para ${tipo}:`)); if(!v||isNaN(v)) return; const d = prompt("Descrição:"); const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(tipo==='Crédito') c.saldo+=v; else c.saldo-=v; c.historico.push({tipo, valor:v, desc:d||'Ajuste', data:new Date().toLocaleDateString()}); await DB.setCaixinhas(cx); await renderizarCaixinhas(); };
+        window.toggleHistoricoCaixinha = (id) => document.getElementById(`historico-${id}`).classList.toggle('hidden');
+        window.abrirModalHistorico = async (id) => { const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; document.getElementById('titulo-modal-historico').innerText = `Histórico - ${c.nome}`; document.getElementById('lista-historico-completo').innerHTML = [...c.historico].reverse().map(h=>`<li style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 0.95rem;"><span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">${h.tipo==='Crédito'?'+':'-'}</strong> ${h.desc} <br><span style="color: var(--text-muted); font-size: 0.8rem;">${h.data}</span></span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">R$ ${h.valor.toFixed(2)}</strong></li>`).join(''); document.getElementById('modal-historico').classList.remove('hidden'); };
+        window.fecharModalHistorico = () => document.getElementById('modal-historico').classList.add('hidden');
+
+        // --- EXPORT/IMPORT ---
+        window.exportarDados = async () => {
+            const backup = { fin_quotas: await DB.getQuotas(), fin_pagamentos: await DB.getPagamentos(), fin_meses: await DB.getMeses(), fin_caixinhas: await DB.getCaixinhas(), fin_debitos_auto: await DB.getDebitosAuto() };
+            const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup)); a.download = `backup_financas_${new Date().toISOString().split('T')[0]}.json`; document.body.appendChild(a); a.click(); a.remove();
+        };
+        window.importarDados = () => {
+            const file = document.getElementById('input-import-file').files[0]; if(!file) { alert("Selecione um arquivo."); return; }
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const obj = JSON.parse(e.target.result);
+                    if(obj.fin_quotas && obj.fin_meses) {
+                        await DB.setQuotas(obj.fin_quotas); await DB.setPagamentos(obj.fin_pagamentos||[]); await DB.setMeses(obj.fin_meses); await DB.setCaixinhas(obj.fin_caixinhas||[]); await DB.setDebitosAuto(obj.fin_debitos_auto||[]);
+                        alert("Sucesso! Recarregando..."); window.location.reload();
+                    } else alert("Arquivo inválido.");
+                } catch(err) { alert("Erro ao ler JSON."); }
+            }; reader.readAsText(file);
+        };
+
+        // --- LÓGICA DE CATEGORIAS DE OBSERVAÇÃO ---
+        window.renderizarCategoriasObs = async () => {
+            const cats = await DB.getCategoriasObs();
+            const ul = document.getElementById('lista-categorias-obs');
+            const sel = document.getElementById('obs-select-categoria');
+            ul.innerHTML = ''; sel.innerHTML = '';
+            
+            cats.forEach(c => {
+                // Renderiza a lista editável
+                const li = document.createElement('li');
+                li.style.cssText = "display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-color); align-items: center;";
+                li.innerHTML = `
+                    <input type="text" class="table-input" value="${c.nome}" onchange="atualizarCategoriaObs('${c.id}', this.value)" style="border:none; background:transparent; padding:0; height:auto; width: 100%;">
+                    <button class="text-danger" onclick="excluirCategoriaObs('${c.id}')" style="background:none; border:none; cursor:pointer; margin-left:10px;" title="Excluir">✖</button>
+                `;
+                ul.appendChild(li);
+                
+                // Alimenta o Select de nova nota
+                const opt = document.createElement('option');
+                opt.value = c.id; opt.text = c.nome;
+                sel.appendChild(opt);
+            });
+        };
+
+        window.adicionarCategoriaObs = async () => {
+            const input = document.getElementById('obs-categoria-nome');
+            if(!input.value.trim()) return;
+            const cats = await DB.getCategoriasObs();
+            cats.push({ id: 'cat_' + Date.now(), nome: input.value.trim() });
+            await DB.setCategoriasObs(cats);
+            input.value = '';
+            await renderizarCategoriasObs();
+            await renderizarObservacoes();
+        };
+
+        window.atualizarCategoriaObs = async (id, novoNome) => {
+            if(!novoNome.trim()) return;
+            const cats = await DB.getCategoriasObs();
+            const c = cats.find(c => c.id === id);
+            if(c) { 
+                c.nome = novoNome.trim(); 
+                await DB.setCategoriasObs(cats); 
+                await renderizarCategoriasObs(); 
+                await renderizarObservacoes(); 
+            }
+        };
+
+        window.excluirCategoriaObs = async (id) => {
+            if(!confirm("Excluir categoria? As notas vinculadas a ela não serão apagadas, mas ficarão sem categoria.")) return;
+            let cats = await DB.getCategoriasObs();
+            cats = cats.filter(c => c.id !== id);
+            await DB.setCategoriasObs(cats);
+            await renderizarCategoriasObs();
+            await renderizarObservacoes();
+        };
+
+        // --- CONTROLE DOS MODAIS DE OBSERVAÇÃO ---
+        window.abrirModalCategoriasObs = async () => {
+            await renderizarCategoriasObs();
+            document.getElementById('modal-categorias-obs').classList.remove('hidden');
+        };
+        window.fecharModalCategoriasObs = () => {
+            document.getElementById('modal-categorias-obs').classList.add('hidden');
+        };
+
+        window.abrirModalNovaObs = async () => {
+            const cats = await DB.getCategoriasObs();
+            const sel = document.getElementById('obs-select-categoria');
+            sel.innerHTML = '';
+            
+            if(cats.length === 0) {
+                alert("Por favor, crie pelo menos uma categoria primeiro!");
+                return;
+            }
+            
+            cats.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id; opt.text = c.nome;
+                sel.appendChild(opt);
+            });
+            
+            document.getElementById('obs-texto').value = ''; // Limpa o campo
+            document.getElementById('modal-nova-obs').classList.remove('hidden');
+        };
+        window.fecharModalNovaObs = () => {
+            document.getElementById('modal-nova-obs').classList.add('hidden');
+        };
+
+        // --- LÓGICA DE RENDERIZAR E ADICIONAR OBSERVAÇÕES ---
+        window.renderizarObservacoes = async () => {
+            const obs = await DB.getObservacoes();
+            const cats = await DB.getCategoriasObs();
+            const tbody = document.getElementById('table-observacoes');
+            tbody.innerHTML = '';
+            
+            if(obs.length === 0) {
+                tbody.innerHTML = '<tr><td class="text-muted" style="text-align:center; padding: 20px;">Nenhuma anotação no mural.</td></tr>';
+                return;
+            }
+
+            obs.forEach((o, index) => {
+                const catNome = cats.find(c => c.id === o.categoriaId)?.nome || 'Sem Categoria';
+                const tr = document.createElement('tr');
+                
+                // Transformamos a célula do texto num textarea sem borda (até receber foco), permitindo expansão
+                tr.innerHTML = `
+                    <td style="width: 150px; padding: 16px; vertical-align: top;">
+                        <span class="quota-badge" style="background-color: var(--sidebar-active); display: inline-block; margin-bottom: 8px;">${catNome}</span>
+                    </td>
+                    <td style="padding: 12px;">
+                        <textarea class="table-input" onchange="atualizarObservacao('${o.id}', this.value)" 
+                            style="border: 1px solid transparent; background: transparent; width: 100%; min-height: 80px; resize: vertical; line-height: 1.5; padding: 8px;" 
+                            onfocus="this.style.border='1px solid var(--sidebar-active)'" 
+                            onblur="this.style.border='1px solid transparent'">${o.texto}</textarea>
+                    </td>
+                    <td style="width: 100px; display: flex; gap: 8px; align-items: flex-start; justify-content: flex-end; padding: 16px;">
+                        <button onclick="moverObservacao(${index}, -1)" title="Subir" style="cursor:pointer; background:none; border:none; font-size:1.2rem;">⬆️</button>
+                        <button onclick="moverObservacao(${index}, 1)" title="Descer" style="cursor:pointer; background:none; border:none; font-size:1.2rem;">⬇️</button>
+                        <button class="text-danger" onclick="excluirObservacao('${o.id}')" style="background:none; border:none; cursor:pointer; margin-left:5px;">✖</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.adicionarObservacao = async () => {
+            const texto = document.getElementById('obs-texto').value;
+            const catId = document.getElementById('obs-select-categoria').value;
+            if(!texto.trim() || !catId) return;
+            
+            const obs = await DB.getObservacoes();
+            obs.push({ id: 'obs_' + Date.now(), texto: texto.trim(), categoriaId: catId });
+            await DB.setObservacoes(obs);
+            
+            fecharModalNovaObs(); // Fecha o modal após salvar
+            await renderizarObservacoes();
+        };
+
+        window.atualizarObservacao = async (id, novoTexto) => {
+            const obs = await DB.getObservacoes();
+            const o = obs.find(o => o.id === id);
+            if(o) { o.texto = novoTexto.trim(); await DB.setObservacoes(obs); }
+        };
+
+        window.excluirObservacao = async (id) => {
+            let obs = await DB.getObservacoes();
+            obs = obs.filter(o => o.id !== id);
+            await DB.setObservacoes(obs);
+            await renderizarObservacoes();
+        };
+
+        window.moverObservacao = async (index, dir) => {
+            const obs = await DB.getObservacoes();
+            if (index + dir < 0 || index + dir >= obs.length) return;
+            const t = obs[index];
+            obs[index] = obs[index + dir];
+            obs[index + dir] = t;
+            await DB.setObservacoes(obs);
+            await renderizarObservacoes();
+        };
+
+    </script>
+</body>
+</html>
