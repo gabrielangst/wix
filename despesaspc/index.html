@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Finanças Pro - Controle Mensal</title>
     <style>
 
@@ -1249,8 +1250,15 @@
 
         // --- QUOTAS GLOBAIS ---
         window.renderizarQuotasGlobais = async () => {
-            const quotas = await DB.getQuotas(); const tbody = document.getElementById('table-quotas-globais'); tbody.innerHTML = '';
+            const quotas = await DB.getQuotas(); 
+            const tbody = document.getElementById('table-quotas-globais'); 
+            tbody.innerHTML = '';
+            
+            let totalBase = 0; // Variável para acumular a soma
+
             quotas.forEach((q, index) => {
+                totalBase += parseFloat(q.valor) || 0; // Soma o valor desta quota
+                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><input type="color" value="${q.cor}" onchange="atualizarPropriedadeQuotaGlobal('${q.id}', 'cor', this.value)" style="width: 32px; height: 32px; padding: 0; border: none; border-radius: 4px; cursor: pointer; background: transparent;"></td>
@@ -1265,7 +1273,18 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            // Adiciona a linha de total no final da tabela
+            const trTotal = document.createElement('tr');
+            trTotal.style.backgroundColor = '#f8fafc';
+            trTotal.style.fontWeight = 'bold';
+            trTotal.innerHTML = `
+                <td colspan="2" style="text-align: right;">Total Base Mensal:</td>
+                <td colspan="3" style="color: var(--sidebar-active);">R$ ${totalBase.toFixed(2)}</td>
+            `;
+            tbody.appendChild(trTotal);
         };
+
         window.salvarNovaQuota = async (e) => {
             e.preventDefault();
             const quotas = await DB.getQuotas();
