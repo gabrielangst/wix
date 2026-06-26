@@ -272,6 +272,26 @@
             width: 100%;
         }
 
+        /* Cor amarela para linhas não pagas */
+        .linha-pendente { 
+            background-color: #fef9c3 !important; 
+        }
+
+        /* Badge discreto de notificação */
+        .badge-pendente {
+            background-color: var(--accent-danger);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
     </style>
 </head>
 <body>
@@ -306,7 +326,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças Pro 1.2
+                <span>📊</span> Finanças Pro 1.3
             </div>
             <nav>
                 <ul id="main-menu">
@@ -825,6 +845,22 @@
         </div>
     </div>
 
+    <div id="modal-obs-caixinha" class="modal-overlay hidden" style="z-index: 1060;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Observações da Caixinha</h2>
+                <input type="hidden" id="caixinha-id-obs" value="">
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalObsCaixinha()" title="Fechar">✖</button>
+            </div>
+            <div class="form-group">
+                <textarea id="caixinha-obs-texto" class="form-control" rows="5" placeholder="Anotações, metas ou regras sobre esta caixinha..." style="resize: vertical; font-family: inherit; line-height: 1.5;"></textarea>
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn-primary" onclick="salvarObsCaixinha()">Salvar Observações</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -1005,6 +1041,18 @@
                 }
 
                 const isMesAtual = (mes.nome === nomeMesAtualSistema);
+                
+                // NOVO: Verifica quantos pagamentos não têm a data preenchida
+                const pendentes = mes.pagamentos ? mes.pagamentos.filter(p => !p.dataPgto).length : 0;
+                const htmlBadge = pendentes > 0 ? 
+                    `<span class="badge-pendente" 
+                        onclick="event.stopPropagation(); abrirDetalheMes('${mes.id}', 'subtab-pagamentos')" 
+                        style="cursor:pointer;" 
+                        title="Ir para pagamentos pendentes">
+                        ${pendentes}
+                    </span>` : '';
+                const htmlAtual = isMesAtual ? '<span style="background: var(--sidebar-active); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">Atual</span>' : '';
+
                 const card = document.createElement('div');
                 card.className = `card ${isMesAtual ? 'card-atual' : ''}`;
                 card.onclick = () => abrirDetalheMes(mes.id);
@@ -1014,7 +1062,10 @@
                             <div style="width: 38px; height: 38px; border-radius: 8px; background-color: ${isMesAtual ? '#dbeafe' : '#f1f5f9'}; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">📅</div>
                             <h3 style="margin: 0; font-size: 1.15rem;">${mes.nome}</h3>
                         </div>
-                        ${isMesAtual ? '<span style="background: var(--sidebar-active); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">Atual</span>' : ''}
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            ${htmlBadge}
+                            ${htmlAtual}
+                        </div>
                     </div>
                     <p class="text-muted" style="font-size: 0.85rem; margin-top: 12px; margin-left: 50px;">${mes.periodo || 'Acompanhamento Ativo'}</p>
                 `;
@@ -1063,17 +1114,24 @@
             fecharModalNovoMes();
         };
 
-        window.abrirDetalheMes = async (id) => {
+        window.abrirDetalheMes = async (id, abaParaAtivar = 'subtab-quotas') => {
             mesSelecionadoId = id;
             const meses = await DB.getMeses();
             const mes = meses.find(m => m.id === id);
+            
             document.getElementById('txt-titulo-mes').innerText = mes.nome;
             const elPeriodo = document.getElementById('txt-periodo-mes');
             if (mes.periodo) { elPeriodo.innerText = mes.periodo; elPeriodo.style.display = 'inline-block'; } 
             else { elPeriodo.style.display = 'none'; }
+            
             document.getElementById('panel-lista-meses').classList.add('hidden');
             document.getElementById('panel-detalhe-mes').classList.remove('hidden');
+            
             renderizarSubTabelasMes(mes);
+
+            // ATALHO: Ativa a aba solicitada (padrão 'subtab-quotas')
+            const btnTab = document.querySelector(`button[onclick="switchSubTab(event, '${abaParaAtivar}')"]`);
+            if(btnTab) btnTab.click();
         };
 
         window.fecharDetalheMes = async () => {
@@ -1149,7 +1207,7 @@
 
             const tbodyPagamentos = document.getElementById('table-body-mes-pagamentos'); tbodyPagamentos.innerHTML = '';
             mes.pagamentos.forEach((p, index) => {
-                const diferenca = p.valor - p.valorPago; const classeLinha = p.dataPgto ? 'linha-paga' : '';
+                const diferenca = p.valor - p.valorPago; const classeLinha = p.dataPgto ? 'linha-paga' : 'linha-pendente';
                 let classeSaldo = 'text-black'; if (diferenca < 0) classeSaldo = 'text-danger'; else if (diferenca > 0) classeSaldo = 'text-success';
                 const botaoLink = p.link ? `<a href="${p.link}" target="_blank" class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem; text-decoration: none; display: inline-block;">🔗 Abrir</a>` : '-';
                 const tr = document.createElement('tr'); tr.className = classeLinha;
@@ -1340,16 +1398,24 @@
                             <h3 style="margin: 0;">${c.nome}</h3>
                             <div style="display: flex; gap: 8px;">
                                 <button onclick="mudarCategoriaCaixinha('${c.id}')" title="Mudar Categoria" style="background:none; border:none; cursor:pointer; font-size: 1rem;">🏷️</button>
+                                <button onclick="abrirModalObsCaixinha('${c.id}')" title="Observações" style="background:none; border:none; cursor:pointer; font-size: 1rem;">💬</button>
                                 <button onclick="renomearCaixinha('${c.id}')" title="Renomear" style="background:none; border:none; cursor:pointer; font-size: 1rem;">✏️</button>
                                 <button onclick="excluirCaixinha('${c.id}')" title="Excluir" style="background:none; border:none; cursor:pointer; font-size: 1rem;">🗑️</button>
                             </div>
                         </div>
-                        <div class="caixinha-balance">R$ ${c.saldo.toFixed(2)}</div>
+                        
+                        <div class="caixinha-balance" style="color: ${c.saldo < 0 ? 'var(--accent-danger)' : 'var(--accent-success)'};">
+                            R$ ${c.saldo.toFixed(2)}
+                        </div>
+                        
+                        ${c.obs ? `<div style="margin-bottom: 12px; font-size: 0.85rem; color: var(--text-muted); font-style: italic; white-space: pre-wrap;">${c.obs}</div>` : ''}
+                        
                         <div style="display:flex; gap:8px;" class="mt-4">
                             <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="ajustarCaixinha('${c.id}', 'Crédito')">+ Creditar</button>
                             <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="ajustarCaixinha('${c.id}', 'Débito')">- Debitar</button>
                             <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem; margin-left: auto;" onclick="toggleHistoricoCaixinha('${c.id}')">⏳ Histórico</button>
                         </div>
+                        
                         <div id="historico-${c.id}" class="hidden" style="margin-top: 16px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                             <h4 style="font-size: 0.9rem; margin-bottom: 8px; color: var(--text-main);">Últimas Movimentações</h4>
                             <ul style="list-style: none; padding: 0; margin: 0;">${historicoHtml}</ul>
@@ -1404,6 +1470,35 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
         window.toggleHistoricoCaixinha = (id) => document.getElementById(`historico-${id}`).classList.toggle('hidden');
         window.abrirModalHistorico = async (id) => { const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; document.getElementById('titulo-modal-historico').innerText = `Histórico - ${c.nome}`; document.getElementById('lista-historico-completo').innerHTML = [...c.historico].reverse().map(h=>`<li style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 0.95rem;"><span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">${h.tipo==='Crédito'?'+':'-'}</strong> ${h.desc} <br><span style="color: var(--text-muted); font-size: 0.8rem;">${h.data}</span></span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">R$ ${h.valor.toFixed(2)}</strong></li>`).join(''); document.getElementById('modal-historico').classList.remove('hidden'); };
         window.fecharModalHistorico = () => document.getElementById('modal-historico').classList.add('hidden');
+
+        // --- OBSERVAÇÕES DAS CAIXINHAS ---
+        window.abrirModalObsCaixinha = async (id) => {
+            document.getElementById('caixinha-id-obs').value = id;
+            const cx = await DB.getCaixinhas();
+            const c = cx.find(x => x.id === id);
+            
+            document.getElementById('caixinha-obs-texto').value = c.obs || '';
+            document.getElementById('modal-obs-caixinha').classList.remove('hidden');
+        };
+
+        window.fecharModalObsCaixinha = () => {
+            document.getElementById('modal-obs-caixinha').classList.add('hidden');
+        };
+
+        window.salvarObsCaixinha = async () => {
+            const id = document.getElementById('caixinha-id-obs').value;
+            const texto = document.getElementById('caixinha-obs-texto').value;
+            
+            const cx = await DB.getCaixinhas();
+            const idx = cx.findIndex(x => x.id === id);
+            
+            if (idx !== -1) {
+                cx[idx].obs = texto;
+                await DB.setCaixinhas(cx);
+                fecharModalObsCaixinha();
+                await renderizarCaixinhas();
+            }
+        };
 
         // --- EXPORT/IMPORT ---
         window.exportarDados = async () => {
