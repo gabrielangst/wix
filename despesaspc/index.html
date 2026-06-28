@@ -2717,11 +2717,11 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
 
             containerConteudo.innerHTML = `
                 <div class="card-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 24px;">
-                    <div class="card" style="border-left: 5px solid var(--accent-success); cursor: default; background: #f0fdf4;">
+                    <div class="card" style="border-left: 5px solid var(--accent-success); cursor: default;">
                         <p class="text-muted" style="font-size: 0.9rem; font-weight: 600;">Total de Créditos</p>
                         <h2 style="color: var(--accent-success); font-size: 1.8rem; margin-top: 4px;">R$ ${totalCreditos.toFixed(2)}</h2>
                     </div>
-                    <div class="card" style="border-left: 5px solid ${corSaldo}; cursor: default;">
+                    <div class="card" style="border-left: 5px solid ${corSaldo}; cursor: default; background: #f0fdf4;">
                         <p class="text-muted" style="font-size: 0.9rem; font-weight: 600;">Saldo Existente</p>
                         <h2 style="color: ${corSaldo}; font-size: 1.8rem; margin-top: 4px;">R$ ${saldo.toFixed(2)}</h2>
                     </div>
