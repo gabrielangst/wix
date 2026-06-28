@@ -332,7 +332,11 @@
             <nav>
                 <ul id="main-menu">
                     <li><button data-target="view-despesas" class="active">🧾 Despesas Mensais</button></li>
-                    <li><button type="button" onclick="abrirModalCaixinhas()">📦 Caixinhas (Fundos)</button></li>
+                    <!-- NOVA OPÇÃO DIVIDIDA DE CAIXINHAS -->
+                    <li style="display: flex; align-items: stretch;">
+                        <button type="button" onclick="abrirModalCaixinhas()" style="flex: 0 0 auto; padding-right: 8px; width: auto;" title="Abrir em Popup Rápido">📦</button>
+                        <button data-target="view-caixinhas" style="flex: 1; padding-left: 0;">Caixinhas (Fundos)</button>
+                    </li>
                     <li><button data-target="view-remuneracoes">💰 Rem. Líquida, 13º, Terços...</button></li>
                     <li class="menu-separator"></li>
                     <li><button data-target="view-quotas">🎯 Quotas Mensais</button></li>
@@ -831,6 +835,20 @@
             </div>
         </section>
 
+        <!-- VIEW: CAIXINHAS (MODO TELA CHEIA) -->
+            <section id="view-caixinhas" class="view-section">
+                <div class="view-header">
+                    <h1>Minhas Caixinhas (Fundos de Reserva)</h1>
+                    <button class="btn-primary" onclick="criarNovaCaixinha()">+ Nova Caixinha</button>
+                </div>
+                <!-- O grid e o total desta view têm IDs específicos para não conflitar com o Modal -->
+                <div id="grid-caixinhas-view" style="margin-bottom: 24px;"></div>
+                <div style="display: flex; justify-content: flex-end; align-items: center; padding-top: 20px; border-top: 2px solid var(--border-color);">
+                    <h3 style="margin-right: 16px; color: var(--text-muted); font-size: 1.1rem;">Saldo Total em Caixinhas:</h3>
+                    <h2 id="total-caixinhas-view" style="color: var(--sidebar-active); font-size: 1.8rem; margin: 0;">R$ 0.00</h2>
+                </div>
+            </section>
+
         </main>
     </div>
 
@@ -844,7 +862,7 @@
                     <button class="btn-secondary" style="border: none; font-size: 1.2rem; margin-left: 12px;" onclick="fecharModalCaixinhas()" title="Fechar">✖</button>
                 </div>
             </div>
-            <div class="card-grid" id="grid-caixinhas" style="margin-bottom: 24px;"></div>
+            <div id="grid-caixinhas" style="margin-bottom: 24px;"></div>
             <div style="display: flex; justify-content: flex-end; align-items: center; padding-top: 20px; border-top: 2px solid var(--border-color);">
                 <h3 style="margin-right: 16px; color: var(--text-muted); font-size: 1.1rem;">Saldo Total em Caixinhas:</h3>
                 <h2 id="total-caixinhas" style="color: var(--sidebar-active); font-size: 1.8rem; margin: 0;">R$ 0.00</h2>
@@ -1591,41 +1609,36 @@
         // --- CAIXINHAS ---
         window.renderizarCaixinhas = async () => {
             const caixinhas = await DB.getCaixinhas();
-            const container = document.getElementById('grid-caixinhas');
             
-            container.innerHTML = '';
-            container.className = ''; 
+            // Pega os containers dos dois lugares (Modal e View Principal)
+            const containerModal = document.getElementById('grid-caixinhas');
+            const containerView = document.getElementById('grid-caixinhas-view');
+            
+            // Cria um container invisível temporário para montar o layout só uma vez
+            const tempContainer = document.createElement('div');
 
             let saldoTotalGeral = 0;
-
-            // 1. Agrupa as caixinhas e soma saldos por categoria
             const caixinhasPorCategoria = {};
             const saldoPorCategoria = {};
 
             caixinhas.forEach(c => {
                 const cat = c.categoria || 'Geral';
-                
                 if (!caixinhasPorCategoria[cat]) {
                     caixinhasPorCategoria[cat] = [];
-                    saldoPorCategoria[cat] = 0; // Inicia o contador desta categoria
+                    saldoPorCategoria[cat] = 0; 
                 }
-                
                 caixinhasPorCategoria[cat].push(c);
-                saldoPorCategoria[cat] += (c.saldo || 0); // Soma ao subtotal da categoria
-                saldoTotalGeral += (c.saldo || 0);        // Soma ao total geral
+                saldoPorCategoria[cat] += (c.saldo || 0); 
+                saldoTotalGeral += (c.saldo || 0);        
             });
 
-            // 2. Ordena as categorias para que 'Geral' fique sempre no topo
             const categorias = Object.keys(caixinhasPorCategoria).sort((a, b) => {
                 if (a === 'Geral') return -1;
                 if (b === 'Geral') return 1;
                 return a.localeCompare(b);
             });
 
-            // 3. Desenha os blocos de cada categoria na tela
             categorias.forEach(cat => {
-                
-                // Cabeçalho da Categoria (Agora com o Subtotal alinhado à direita)
                 const catHeader = document.createElement('div');
                 catHeader.style.cssText = "display: flex; justify-content: space-between; align-items: baseline; margin-top: 16px; margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;";
                 
@@ -1639,9 +1652,8 @@
 
                 catHeader.appendChild(catTitle);
                 catHeader.appendChild(catSubtotal);
-                container.appendChild(catHeader);
+                tempContainer.appendChild(catHeader);
 
-                // Sub-grid para os cards desta categoria
                 const grid = document.createElement('div');
                 grid.className = 'card-grid';
                 grid.style.marginTop = '0';
@@ -1682,7 +1694,8 @@
                             <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem; margin-left: auto;" onclick="toggleHistoricoCaixinha('${c.id}')">⏳ Histórico</button>
                         </div>
                         
-                        <div id="historico-${c.id}" class="hidden" style="margin-top: 16px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <!-- Usamos CLASS em vez de ID aqui para não duplicar IDs nos dois locais -->
+                        <div class="historico-${c.id} hidden" style="margin-top: 16px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                             <h4 style="font-size: 0.9rem; margin-bottom: 8px; color: var(--text-main);">Últimas Movimentações</h4>
                             <ul style="list-style: none; padding: 0; margin: 0;">${historicoHtml}</ul>
                             ${botaoVerMais}
@@ -1691,12 +1704,18 @@
                     grid.appendChild(div);
                 });
                 
-                container.appendChild(grid);
+                tempContainer.appendChild(grid);
             });
 
-            // Atualiza o saldo total geral no rodapé
-            const elTotal = document.getElementById('total-caixinhas'); 
-            if (elTotal) elTotal.innerText = `R$ ${saldoTotalGeral.toFixed(2)}`;
+            // Espelha o layout gerado nos dois containers se eles existirem na tela
+            if (containerModal) containerModal.innerHTML = tempContainer.innerHTML;
+            if (containerView) containerView.innerHTML = tempContainer.innerHTML;
+
+            // Atualiza os Totais
+            const elTotalModal = document.getElementById('total-caixinhas'); 
+            const elTotalView = document.getElementById('total-caixinhas-view'); 
+            if (elTotalModal) elTotalModal.innerText = `R$ ${saldoTotalGeral.toFixed(2)}`;
+            if (elTotalView) elTotalView.innerText = `R$ ${saldoTotalGeral.toFixed(2)}`;
         };
         
         window.abrirModalCaixinhas = async () => { document.getElementById('modal-caixinhas').classList.remove('hidden'); await renderizarCaixinhas(); };
@@ -1733,7 +1752,9 @@
         window.excluirCaixinha = async (id) => { let cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; if(c.saldo>0 && !confirm(`A caixinha tem R$ ${c.saldo.toFixed(2)}!
 Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas(cx); await renderizarCaixinhas(); };
         window.ajustarCaixinha = async (id, tipo) => { const v = parseFloat(prompt(`Valor para ${tipo}:`)); if(!v||isNaN(v)) return; const d = prompt("Descrição:"); const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(tipo==='Crédito') c.saldo+=v; else c.saldo-=v; c.historico.push({tipo, valor:v, desc:d||'Ajuste', data:new Date().toLocaleDateString()}); await DB.setCaixinhas(cx); await renderizarCaixinhas(); };
-        window.toggleHistoricoCaixinha = (id) => document.getElementById(`historico-${id}`).classList.toggle('hidden');
+        window.toggleHistoricoCaixinha = (id) => {
+            document.querySelectorAll(`.historico-${id}`).forEach(el => el.classList.toggle('hidden'));
+        };
         window.abrirModalHistorico = async (id) => { const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; document.getElementById('titulo-modal-historico').innerText = `Histórico - ${c.nome}`; document.getElementById('lista-historico-completo').innerHTML = [...c.historico].reverse().map(h=>`<li style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 0.95rem;"><span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">${h.tipo==='Crédito'?'+':'-'}</strong> ${h.desc} <br><span style="color: var(--text-muted); font-size: 0.8rem;">${h.data}</span></span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">R$ ${h.valor.toFixed(2)}</strong></li>`).join(''); document.getElementById('modal-historico').classList.remove('hidden'); };
         window.fecharModalHistorico = () => document.getElementById('modal-historico').classList.add('hidden');
 
@@ -2474,10 +2495,27 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
             tercos.sort((a, b) => parseInt(b.ano) - parseInt(a.ano));
             if (!anoTercoAtivo || !tercos.find(t => t.ano === anoTercoAtivo)) anoTercoAtivo = tercos[0].ano; 
 
+            // Desenha as Abas dos Terços
             tercos.forEach(t => {
+                // --- NOVO: Cálculo do saldo deste ano específico para exibir a bolinha ---
+                const despesasG = t.gabriel?.despesas ? t.gabriel.despesas.reduce((acc, d) => acc + d.valor, 0) : 0;
+                const saldoG = (t.gabriel?.valor || 0) - despesasG;
+                
+                const despesasK = t.kamila?.despesas ? t.kamila.despesas.reduce((acc, d) => acc + d.valor, 0) : 0;
+                const saldoK = (t.kamila?.valor || 0) - despesasK;
+                
+                const saldoAba = saldoG + saldoK;
+
+                let indicador = '';
+                if (saldoAba < 0) {
+                    indicador = '<span style="display:inline-block; width:10px; height:10px; background-color:var(--accent-danger); border-radius:50%; margin-left:6px; vertical-align:middle;" title="Saldo Negativo"></span>';
+                } else if (saldoAba > 5) { // Ignora diferenças de até R$ 5
+                    indicador = '<span style="display:inline-block; width:10px; height:10px; background-color:var(--accent-success); border-radius:50%; margin-left:6px; vertical-align:middle;" title="Saldo Positivo"></span>';
+                }
+
                 const btnAba = document.createElement('button');
                 btnAba.className = `tab-link ${t.ano === anoTercoAtivo ? 'active' : ''}`;
-                btnAba.innerText = t.ano;
+                btnAba.innerHTML = `${t.ano} ${indicador}`; // Usa innerHTML para processar a bolinha
                 btnAba.onclick = () => { anoTercoAtivo = t.ano; renderizarTercos(); };
                 btnAba.oncontextmenu = (e) => { e.preventDefault(); abrirModalAcoesAba('tercos', t.ano); };
                 btnAba.title = "Clique com o botão direito para opções";
@@ -2660,10 +2698,28 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
             decimos.sort((a, b) => parseInt(b.ano) - parseInt(a.ano));
             if (!anoDecimoAtivo || !decimos.find(d => d.ano === anoDecimoAtivo)) anoDecimoAtivo = decimos[0].ano; 
 
+            // Desenha as Abas do 13º
             decimos.forEach(d => {
+                // --- NOVO: Cálculo do saldo deste ano específico para exibir a bolinha ---
+                const fixoGDez = parseFloat(d.credDezGabriel) || 0;
+                const fixoKDez = parseFloat(d.credDezKamila) || 0;
+                const fixoGJan = parseFloat(d.credJanGabriel) || 0;
+                const fixoKJan = parseFloat(d.credJanKamila) || 0;
+                const totalOutrosCred = d.outrosCreditos ? d.outrosCreditos.reduce((acc, c) => acc + c.valor, 0) : 0;
+                const totalDebitos = d.debitos ? d.debitos.reduce((acc, deb) => acc + deb.valor, 0) : 0;
+                
+                const saldoAba = (fixoGDez + fixoKDez + fixoGJan + fixoKJan + totalOutrosCred) - totalDebitos;
+
+                let indicador = '';
+                if (saldoAba < 0) {
+                    indicador = '<span style="display:inline-block; width:10px; height:10px; background-color:var(--accent-danger); border-radius:50%; margin-left:6px; vertical-align:middle;" title="Saldo Negativo"></span>';
+                } else if (saldoAba > 5) { // Ignora diferenças de até R$ 5
+                    indicador = '<span style="display:inline-block; width:10px; height:10px; background-color:var(--accent-success); border-radius:50%; margin-left:6px; vertical-align:middle;" title="Saldo Positivo"></span>';
+                }
+
                 const btnAba = document.createElement('button');
                 btnAba.className = `tab-link ${d.ano === anoDecimoAtivo ? 'active' : ''}`;
-                btnAba.innerText = `Dez ${d.ano}`;
+                btnAba.innerHTML = `Dez ${d.ano} ${indicador}`; // Usa innerHTML para processar a bolinha
                 btnAba.onclick = () => { anoDecimoAtivo = d.ano; renderizarDecimo(); };
                 btnAba.oncontextmenu = (e) => { e.preventDefault(); abrirModalAcoesAba('decimo', d.ano); };
                 btnAba.title = "Clique com o botão direito para opções";
