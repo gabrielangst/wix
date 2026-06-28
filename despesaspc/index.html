@@ -327,12 +327,13 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças Pro 1.3
+                <span>📊</span> Finanças Pro 1.4
             </div>
             <nav>
                 <ul id="main-menu">
                     <li><button data-target="view-despesas" class="active">🧾 Despesas Mensais</button></li>
                     <li><button type="button" onclick="abrirModalCaixinhas()">📦 Caixinhas (Fundos)</button></li>
+                    <li><button data-target="view-remuneracoes">💰 Rem. Líquida, 13º, Terços...</button></li>
                     <li class="menu-separator"></li>
                     <li><button data-target="view-quotas">🎯 Quotas Mensais</button></li>
                     <li><button data-target="view-pagamentos">💳 Tabela de Pagamentos</button></li>
@@ -697,13 +698,146 @@
             </div>
         </section>
 
+        <!-- ========================================== -->
+        <!-- VIEW: MENU DE REMUNERAÇÕES (PAINEL GERAL) - líquido, terço, 13o -->
+        <!-- ========================================== -->
+        <section id="view-remuneracoes" class="view-section">
+            <div class="view-header">
+                <h1>Remunerações e Adicionais</h1>
+            </div>
+            <p class="text-muted" style="margin-bottom: 20px;">Selecione o painel que deseja acessar:</p>
+            
+            <div class="card-grid">
+                <div class="card" onclick="abrirSubSecaoRemuneracao('view-rem-liquida')">
+                    <h3>💵 Remuneração Líquida</h3>
+                    <p class="text-muted" style="font-size: 0.85rem;">Controle e anotações de recebimentos mensais.</p>
+                </div>
+                <div class="card" onclick="abrirSubSecaoRemuneracao('view-rem-13')">
+                    <h3>🎁 13º Salário</h3>
+                    <p class="text-muted" style="font-size: 0.85rem;">Previsão e planejamento da gratificação natalina.</p>
+                </div>
+                <div class="card" onclick="abrirSubSecaoRemuneracao('view-rem-tercos')">
+                    <h3>🏖️ Terços de Férias</h3>
+                    <p class="text-muted" style="font-size: 0.85rem;">Gestão e acompanhamento dos adicionais de férias.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW SUB-SEÇÃO: REMUNERAÇÃO LÍQUIDA -->
+        <section id="view-rem-liquida" class="view-section">
+            <div class="view-header">
+                <div>
+                    <button class="btn-secondary" onclick="abrirSubSecaoRemuneracao('view-remuneracoes')" style="margin-bottom: 8px;">← Voltar ao Painel</button>
+                    <h1 style="margin: 0;">Remuneração Líquida</h1>
+                </div>
+            </div>
+            
+            <div class="card-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 24px;">
+                <div class="card" style="border-left: 5px solid #2563eb; cursor: default;">
+                    <p class="text-muted" style="font-size: 0.9rem; font-weight: 600;">Línguido Atual Gabriel</p>
+                    <h2 id="txt-atual-gabriel" style="color: #2563eb; font-size: 1.8rem; margin-top: 4px;">R$ 0.00</h2>
+                    <button class="btn-primary" style="margin-top: 12px; font-size: 0.85rem; padding: 6px 12px;" onclick="abrirModalRendimento('gabriel')">+ Novo Rend. Líquido</button>
+                </div>
+                <div class="card" style="border-left: 5px solid #ec4899; cursor: default;">
+                    <p class="text-muted" style="font-size: 0.9rem; font-weight: 600;">Líquido Atual Kamila</p>
+                    <h2 id="txt-atual-kamila" style="color: #ec4899; font-size: 1.8rem; margin-top: 4px;">R$ 0.00</h2>
+                    <button class="btn-primary" style="margin-top: 12px; font-size: 0.85rem; padding: 6px 12px; background-color: #ec4899;" onclick="abrirModalRendimento('kamila')">+ Novo Rend. Líquido</button>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div>
+                    <h3 style="margin-bottom: 12px; color: var(--text-main);">Histórico Gabriel</h3>
+                    <div class="table-container" style="margin-top: 0;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data de Início</th>
+                                    <th>Valor Líquido</th>
+                                    <th style="text-align: right;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-rem-gabriel"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="margin-bottom: 12px; color: var(--text-main);">Histórico Kamila</h3>
+                    <div class="table-container" style="margin-top: 0;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data de Início</th>
+                                    <th>Valor Líquido</th>
+                                    <th style="text-align: right;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-rem-kamila"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW SUB-SEÇÃO: 13º SALÁRIO -->
+        <section id="view-rem-13" class="view-section">
+            <div class="view-header">
+                <div>
+                    <button class="btn-secondary" onclick="abrirSubSecaoRemuneracao('view-remuneracoes')" style="margin-bottom: 8px;">← Voltar ao Painel</button>
+                    <h1 style="margin: 0;">13º Salário</h1>
+                </div>
+            </div>
+
+            <!-- Abas dos Anos (Dinâmicas) -->
+            <div style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; overflow-x: auto;" id="tabs-anos-decimo">
+                <!-- Abas geradas pelo JS entram aqui -->
+            </div>
+
+            <!-- Conteúdo Dinâmico do Ano Selecionado -->
+            <div id="conteudo-decimo" class="hidden">
+                <!-- O JS vai injetar a coluna única aqui -->
+            </div>
+            
+            <div id="msg-vazio-decimo" class="text-muted" style="text-align: center; padding: 40px; background: white; border-radius: 12px; border: 1px solid var(--border-color);">
+                Nenhum ano cadastrado. Clique no "+" acima para adicionar.
+            </div>
+        </section>
+
+        <!-- VIEW SUB-SEÇÃO: TERÇOS DE FÉRIAS -->
+        <section id="view-rem-tercos" class="view-section">
+            <div class="view-header">
+                <div>
+                    <button class="btn-secondary" onclick="abrirSubSecaoRemuneracao('view-remuneracoes')" style="margin-bottom: 8px;">← Voltar ao Painel</button>
+                    <h1 style="margin: 0;">Terços de Férias</h1>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; overflow-x: auto;" id="tabs-anos-tercos">
+                </div>
+
+            <div id="conteudo-tercos" class="hidden">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;" id="grid-colunas-tercos">
+                    </div>
+
+                <div class="card" style="margin-top: 24px; background: #f0f9ff; border: 2px solid var(--sidebar-active); display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; cursor: default;">
+                    <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-main);">Saldo Combinado Total do Ano:</h3>
+                    <h2 id="txt-total-combinado-tercos" style="margin: 0; font-size: 1.8rem; font-weight: 800; color: var(--sidebar-active);">R$ 0.00</h2>
+                </div>
+            </div>
+            
+            <div id="msg-vazio-tercos" class="text-muted" style="text-align: center; padding: 40px; background: white; border-radius: 12px; border: 1px solid var(--border-color);">
+                Nenhum ano cadastrado. Clique no "+" acima para adicionar.
+            </div>
+        </section>
+
         </main>
     </div>
 
     <!-- MODAL CAIXINHAS -->
     <div id="modal-caixinhas" class="modal-overlay hidden">
         <div class="modal-content">
-            <div class="view-header" style="margin-bottom: 20px;">
+            <div class="view-header" style="position: sticky; top: -32px; background-color: var(--bg-primary); z-index: 10; padding-top: 32px; margin-top: -32px; margin-bottom: 20px;">
                 <h1 style="font-size: 1.5rem;">Minhas Caixinhas (Fundos de Reserva)</h1>
                 <div>
                     <button class="btn-primary" onclick="criarNovaCaixinha()">+ Nova Caixinha</button>
@@ -862,6 +996,110 @@
         </div>
     </div>
 
+    <div id="modal-novo-rendimento" class="modal-overlay hidden" style="z-index: 1070;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 id="titulo-modal-rendimento" style="font-size: 1.2rem;">Informar Rendimento Líquido</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalRendimento()" title="Fechar">✖</button>
+            </div>
+            
+            <input type="hidden" id="rend-pessoa" value="">
+            <input type="hidden" id="rend-id-edicao" value="">
+            
+            <div class="form-group">
+                <label>Novo Valor Líquido (R$)</label>
+                <input type="number" id="rend-valor" class="form-control" placeholder="0.00" step="0.01" required oninput="calcularDiferencaRendimento()">
+            </div>
+            <div class="form-group">
+                <label>Data a partir de quando passou a receber</label>
+                <input type="date" id="rend-data" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Diferença do Último Incluído (R$)</label>
+                <input type="number" id="rend-diferenca" class="form-control" placeholder="Calculado automaticamente" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Observações / Motivo do Reajuste</label>
+                <textarea id="rend-obs" class="form-control" rows="3" placeholder="Ex: Dissídio anual, promoção, mudança de cargo..."></textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+                <button id="btn-excluir-rend" class="btn-secondary text-danger hidden" onclick="excluirRendimentoAtual()">Excluir Registro</button>
+                <div style="display: flex; gap: 10px; margin-left: auto;">
+                    <button class="btn-secondary" onclick="fecharModalRendimento()">Cancelar</button>
+                    <button class="btn-primary" onclick="salvarRendimento()">Salvar Registro</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-acoes-aba" class="modal-overlay hidden" style="z-index: 1080;">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Gerenciar Aba</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalAcoesAba()">✖</button>
+            </div>
+            <input type="hidden" id="acao-aba-contexto">
+            <input type="hidden" id="acao-aba-ano-original">
+            <div class="form-group">
+                <label>Renomear Ano/Aba</label>
+                <input type="text" id="acao-aba-novo-nome" class="form-control">
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 24px;">
+                <button class="btn-secondary text-danger" onclick="excluirAbaPeloModal()">🗑️ Excluir Aba</button>
+                <button class="btn-primary" onclick="salvarRenomearAba()">Salvar Alteração</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-importar-debitos" class="modal-overlay hidden" style="z-index: 1085;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Importar Débitos</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalImportar()">✖</button>
+            </div>
+            <p class="text-muted" style="margin-bottom: 16px; font-size: 0.9rem;">Selecione o ano anterior e marque quais despesas deseja copiar para o ano atual (os valores serão mantidos, mas você pode editá-los depois).</p>
+            <div class="form-group">
+                <label>Importar débitos do ano:</label>
+                <select id="import-ano-origem" class="form-control" onchange="carregarDebitosParaImportacao()"></select>
+            </div>
+            <div style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;" id="lista-debitos-import">
+                </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn-secondary" onclick="fecharModalImportar()">Cancelar</button>
+                <button class="btn-primary" onclick="confirmarImportacao()">Importar Selecionados</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-editar-item" class="modal-overlay hidden" style="z-index: 1090;">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Editar Lançamento</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalEditarItem()">✖</button>
+            </div>
+            
+            <input type="hidden" id="edit-item-contexto">
+            <input type="hidden" id="edit-item-ano">
+            <input type="hidden" id="edit-item-tipo">
+            <input type="hidden" id="edit-item-id">
+            
+            <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="edit-item-desc" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="edit-item-valor" class="form-control" step="0.01">
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button class="btn-secondary" onclick="fecharModalEditarItem()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarEdicaoItem()">Salvar Alteração</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -961,7 +1199,13 @@
             getFinanciamento: () => DB.get('fin_financiamento', { texto: '' }),
             setFinanciamento: (data) => DB.set('fin_financiamento', data),         
             getCaixinhas: () => DB.get('fin_caixinhas', defCaixinhas),
-            setCaixinhas: (data) => DB.set('fin_caixinhas', data)
+            setCaixinhas: (data) => DB.set('fin_caixinhas', data),
+            getRemLiquida: () => DB.get('fin_rem_liquida', { gabriel: [], kamila: [] }),
+            setRemLiquida: (data) => DB.set('fin_rem_liquida', data),
+            getTercos: () => DB.get('fin_tercos', []),
+            setTercos: (data) => DB.set('fin_tercos', data),
+            getDecimo: () => DB.get('fin_13', []),
+            setDecimo: (data) => DB.set('fin_13', data)
         };
 
         // --- SISTEMA DE ROTEAMENTO DAS SEÇÕES ---
@@ -1004,6 +1248,9 @@
             await renderizarParticulares();
             await renderizarTextosAcompanhamento();
             await renderizarAumentos();
+            await renderizarRemuneracaoLiquida();
+            await renderizarTercos(); 
+            await renderizarDecimo();
         }
 
         // --- MESES ---
@@ -2036,6 +2283,790 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
             if (saldo > 0) elSaldo.style.color = 'var(--accent-success)';
             else if (saldo < 0) elSaldo.style.color = 'var(--accent-danger)';
             else elSaldo.style.color = 'black';
+        };
+
+        // --- NAVEGAÇÃO INTERNA DE REMUNERAÇÕES - líquido, terço, 13o ---
+        window.abrirSubSecaoRemuneracao = (targetId) => {
+            // Esconde todas as seções
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            // Exibe a seção específica
+            document.getElementById(targetId).classList.add('active');
+        };
+
+        // ==========================================
+        // LÓGICA DE GERENCIAMENTO DE REMUNERAÇÃO LÍQUIDA
+        // ==========================================
+        
+        window.renderizarRemuneracaoLiquida = async () => {
+            const data = await DB.getRemLiquida();
+            
+            // Auxiliar para ordenar por data mais recente
+            const ordenarPorData = (arr) => [...(arr || [])].sort((a, b) => new Date(b.data) - new Date(a.data));
+            
+            const listGabriel = ordenarPorData(data.gabriel);
+            const listKamila = ordenarPorData(data.kamila);
+            
+            // Atualiza Destaques do Topo
+            const atualGabriel = listGabriel.length > 0 ? parseFloat(listGabriel[0].valor) : 0;
+            const atualKamila = listKamila.length > 0 ? parseFloat(listKamila[0].valor) : 0;
+            
+            document.getElementById('txt-atual-gabriel').innerText = `R$ ${atualGabriel.toFixed(2)}`;
+            document.getElementById('txt-atual-kamila').innerText = `R$ ${atualKamila.toFixed(2)}`;
+            
+            // Função interna para construir as tabelas de listagem resumida
+            const construirTabela = (tbodyId, lista, pessoa) => {
+                const tbody = document.getElementById(tbodyId);
+                tbody.innerHTML = '';
+                
+                if (lista.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-muted" style="text-align:center; padding: 16px;">Nenhum rendimento cadastrado.</td></tr>';
+                    return;
+                }
+                
+                lista.forEach(item => {
+                    // Trata a data para evitar fuso horário incorreto na exibição
+                    const dataFormatada = new Date(item.data + 'T00:00:00').toLocaleDateString('pt-BR');
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${dataFormatada}</td>
+                        <td><strong>R$ ${parseFloat(item.valor).toFixed(2)}</strong></td>
+                        <td style="text-align: right;">
+                            <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;" onclick="abrirModalRendimento('${pessoa}', '${item.id}')">✏️ Ver mais / Editar</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            };
+            
+            construirTabela('table-rem-gabriel', listGabriel, 'gabriel');
+            construirTabela('table-rem-kamila', listKamila, 'kamila');
+        };
+
+        // Calcula a diferença comparando automaticamente com o último item cadastrado
+        window.calcularDiferencaRendimento = async () => {
+            const pessoa = document.getElementById('rend-pessoa').value;
+            const idEdicao = document.getElementById('rend-id-edicao').value;
+            const valorInformado = parseFloat(document.getElementById('rend-valor').value) || 0;
+            
+            // Se for edição, desliga o cálculo automático para respeitar o histórico salvo
+            if (idEdicao) return;
+            
+            const data = await DB.getRemLiquida();
+            const lista = data[pessoa] || [];
+            
+            if (lista.length > 0) {
+                const listaOrdenada = [...lista].sort((a, b) => new Date(b.data) - new Date(a.data));
+                const ultimoValor = parseFloat(listaOrdenada[0].valor) || 0;
+                document.getElementById('rend-diferenca').value = (valorInformado - ultimoValor).toFixed(2);
+            } else {
+                document.getElementById('rend-diferenca').value = valorInformado.toFixed(2);
+            }
+        };
+
+        window.abrirModalRendimento = async (pessoa, idEdicao = null) => {
+            document.getElementById('rend-pessoa').value = pessoa;
+            document.getElementById('rend-id-edicao').value = idEdicao || '';
+            document.getElementById('titulo-modal-rendimento').innerText = `Rendimento Líquido - ${pessoa === 'gabriel' ? 'Gabriel' : 'Kamila'}`;
+            
+            const btnExcluir = document.getElementById('btn-excluir-rend');
+            
+            if (idEdicao) {
+                const data = await DB.getRemLiquida();
+                const item = data[pessoa].find(x => String(x.id) === String(idEdicao));
+                
+                document.getElementById('rend-valor').value = item.valor;
+                document.getElementById('rend-data').value = item.data;
+                document.getElementById('rend-diferenca').value = item.diferenca || 0;
+                document.getElementById('rend-obs').value = item.obs || '';
+                btnExcluir.classList.remove('hidden');
+            } else {
+                document.getElementById('rend-valor').value = '';
+                document.getElementById('rend-data').value = new Date().toISOString().split('T')[0];
+                document.getElementById('rend-diferenca').value = '';
+                document.getElementById('rend-obs').value = '';
+                btnExcluir.classList.add('hidden');
+            }
+            
+            document.getElementById('modal-novo-rendimento').classList.remove('hidden');
+        };
+
+        window.fecharModalRendimento = () => {
+            document.getElementById('modal-novo-rendimento').classList.add('hidden');
+        };
+
+        window.salvarRendimento = async () => {
+            const pessoa = document.getElementById('rend-pessoa').value;
+            const idEdicao = document.getElementById('rend-id-edicao').value;
+            const valor = parseFloat(document.getElementById('rend-valor').value);
+            const dataInpc = document.getElementById('rend-data').value;
+            const diferenca = parseFloat(document.getElementById('rend-diferenca').value) || 0;
+            const obs = document.getElementById('rend-obs').value;
+            
+            if (isNaN(valor) || !dataInpc) {
+                alert("Por favor, preencha o valor e a data corretamente!");
+                return;
+            }
+            
+            const data = await DB.getRemLiquida();
+            if (!data[pessoa]) data[pessoa] = [];
+            
+            const itemRend = {
+                id: idEdicao ? idEdicao : 'rend_' + Date.now(),
+                valor,
+                data: dataInpc,
+                diferenca,
+                obs: obs.trim()
+            };
+            
+            if (idEdicao) {
+                const idx = data[pessoa].findIndex(x => String(x.id) === String(idEdicao));
+                if (idx !== -1) data[pessoa][idx] = itemRend;
+            } else {
+                data[pessoa].push(itemRend);
+            }
+            
+            await DB.setRemLiquida(data);
+            fecharModalRendimento();
+            await renderizarRemuneracaoLiquida();
+        };
+
+        window.excluirRendimentoAtual = async () => {
+            if (!confirm("Deseja mesmo excluir permanentemente este registro de rendimento?")) return;
+            
+            const pessoa = document.getElementById('rend-pessoa').value;
+            const idEdicao = document.getElementById('rend-id-edicao').value;
+            
+            const data = await DB.getRemLiquida();
+            data[pessoa] = data[pessoa].filter(x => String(x.id) !== String(idEdicao));
+            
+            await DB.setRemLiquida(data);
+            fecharModalRendimento();
+            await renderizarRemuneracaoLiquida();
+        };
+
+        // ==========================================
+        // LÓGICA DE GERENCIAMENTO DE TERÇOS DE FÉRIAS
+        // ==========================================
+        let anoTercoAtivo = null;
+
+        window.renderizarTercos = async () => {
+            const tercos = await DB.getTercos();
+            const containerAbas = document.getElementById('tabs-anos-tercos');
+            const containerConteudo = document.getElementById('conteudo-tercos');
+            const msgVazio = document.getElementById('msg-vazio-tercos');
+            const gridColunas = document.getElementById('grid-colunas-tercos');
+
+            containerAbas.innerHTML = '';
+            const btnNovo = document.createElement('button');
+            btnNovo.className = 'btn-secondary';
+            btnNovo.style.padding = '6px 12px';
+            btnNovo.style.fontWeight = 'bold';
+            btnNovo.innerText = '+ Novo Ano';
+            btnNovo.onclick = adicionarAnoTerco;
+
+            if (tercos.length === 0) {
+                containerAbas.appendChild(btnNovo);
+                containerConteudo.classList.add('hidden');
+                msgVazio.classList.remove('hidden');
+                return;
+            }
+
+            tercos.sort((a, b) => parseInt(b.ano) - parseInt(a.ano));
+            if (!anoTercoAtivo || !tercos.find(t => t.ano === anoTercoAtivo)) anoTercoAtivo = tercos[0].ano; 
+
+            tercos.forEach(t => {
+                const btnAba = document.createElement('button');
+                btnAba.className = `tab-link ${t.ano === anoTercoAtivo ? 'active' : ''}`;
+                btnAba.innerText = t.ano;
+                btnAba.onclick = () => { anoTercoAtivo = t.ano; renderizarTercos(); };
+                btnAba.oncontextmenu = (e) => { e.preventDefault(); abrirModalAcoesAba('tercos', t.ano); };
+                btnAba.title = "Clique com o botão direito para opções";
+                containerAbas.appendChild(btnAba);
+            });
+            containerAbas.appendChild(btnNovo);
+
+            msgVazio.classList.add('hidden');
+            containerConteudo.classList.remove('hidden');
+
+            const dadosAno = tercos.find(t => t.ano === anoTercoAtivo);
+            
+            const despesasG = dadosAno.gabriel.despesas ? dadosAno.gabriel.despesas.reduce((acc, d) => acc + d.valor, 0) : 0;
+            const saldoG = (dadosAno.gabriel.valor || 0) - despesasG;
+            const despesasK = dadosAno.kamila.despesas ? dadosAno.kamila.despesas.reduce((acc, d) => acc + d.valor, 0) : 0;
+            const saldoK = (dadosAno.kamila.valor || 0) - despesasK;
+            const saldoTotalAno = saldoG + saldoK;
+            const corSaldoTotal = saldoTotalAno >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)';
+
+            const construirColuna = (pessoa, nome, corBorda) => {
+                const pData = dadosAno[pessoa];
+                let totalDespesas = 0;
+                
+                // --- AQUI ESTÁ O BOTÃO DE EDITAR ADICIONADO ---
+                const htmlDespesas = (pData.despesas && pData.despesas.length > 0) ? pData.despesas.map(d => {
+                    totalDespesas += d.valor;
+                    return `<li style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 0.9rem;">
+                                <span>${d.desc}</span>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <strong class="text-danger" style="margin-right: 8px;">R$ ${d.valor.toFixed(2)}</strong>
+                                    <button class="text-muted" style="background: none; border: none; cursor: pointer;" onclick="abrirModalEditarItem('tercos', '${dadosAno.ano}', '${pessoa}', '${d.id}')" title="Editar">✏️</button>
+                                    <button class="text-danger" style="background: none; border: none; cursor: pointer;" onclick="excluirDespesaTerco('${dadosAno.ano}', '${pessoa}', '${d.id}')" title="Excluir">✖</button>
+                                </div>
+                            </li>`;
+                }).join('') : '<li class="text-muted" style="font-size: 0.85rem; padding: 4px 0;">Nenhuma despesa registrada.</li>';
+
+                const saldo = (pData.valor || 0) - totalDespesas;
+                const corSaldo = saldo >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)';
+
+                return `
+                    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); border-top: 5px solid ${corBorda};">
+                        <h2 style="color: var(--text-main); font-size: 1.3rem; margin-bottom: 20px;">${nome}</h2>
+                        <div style="display: flex; gap: 12px; margin-bottom: 24px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <div class="form-group" style="flex: 1; margin: 0;">
+                                <label style="font-size: 0.8rem; margin-bottom: 4px;">Crédito Recebido (R$)</label>
+                                <input type="number" class="form-control" value="${pData.valor || 0}" onchange="salvarValorTerco('${dadosAno.ano}', '${pessoa}', 'valor', this.value)" style="font-size: 1.1rem; font-weight: bold; color: var(--accent-success); padding: 8px;">
+                            </div>
+                            <div class="form-group" style="flex: 1; margin: 0;">
+                                <label style="font-size: 0.8rem; margin-bottom: 4px;">Data de Recebimento</label>
+                                <input type="date" class="form-control" value="${pData.data || ''}" onchange="salvarValorTerco('${dadosAno.ano}', '${pessoa}', 'data', this.value)" style="padding: 8px;">
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="font-size: 1rem; color: var(--text-muted); margin: 0;">Despesas Alocadas</h3>
+                            <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; font-weight: 600;" onclick="adicionarDespesaTerco('${dadosAno.ano}', '${pessoa}')">+ Incluir Despesa</button>
+                        </div>
+                        <div style="min-height: 120px; max-height: 250px; overflow-y: auto; margin-bottom: 20px;">
+                            <ul style="list-style: none; padding: 0; margin: 0;">${htmlDespesas}</ul>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 2px solid var(--border-color); padding-top: 16px;">
+                            <span style="font-weight: 700; color: var(--text-main); font-size: 1.1rem;">Saldo Atual:</span>
+                            <span style="font-size: 1.5rem; font-weight: 900; color: ${corSaldo};">R$ ${saldo.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            };
+
+            gridColunas.innerHTML = construirColuna('gabriel', '🙋🏻‍♂️ Terço - Gabriel', '#2563eb') + construirColuna('kamila', '🙋🏻‍♀️ Terço - Kamila', '#ec4899');
+            const elTotalCombinado = document.getElementById('txt-total-combinado-tercos');
+            elTotalCombinado.innerText = `R$ ${saldoTotalAno.toFixed(2)}`;
+            elTotalCombinado.style.color = corSaldoTotal;
+        };
+
+        window.adicionarAnoTerco = async () => {
+            const anoStr = prompt("Digite o ano para a nova aba de férias (ex: 2024):");
+            if (!anoStr || isNaN(anoStr) || anoStr.trim().length !== 4) return;
+            
+            const tercos = await DB.getTercos();
+            if (tercos.find(t => t.ano === anoStr)) {
+                alert("Este ano já existe!");
+                return;
+            }
+
+            // Inicializa a estrutura do banco zerada para as duas pessoas
+            tercos.push({
+                ano: anoStr,
+                gabriel: { valor: 0, data: '', despesas: [] },
+                kamila: { valor: 0, data: '', despesas: [] }
+            });
+
+            await DB.setTercos(tercos);
+            anoTercoAtivo = anoStr;
+            await renderizarTercos();
+        };
+
+        window.excluirAnoTerco = async (ano) => {
+            if (!confirm(`CUIDADO: Deseja realmente apagar a aba do ano ${ano} e todas as despesas vinculadas a ela? Esta ação não pode ser desfeita.`)) return;
+            
+            let tercos = await DB.getTercos();
+            tercos = tercos.filter(t => t.ano !== ano);
+            await DB.setTercos(tercos);
+            
+            if (anoTercoAtivo === ano) anoTercoAtivo = null;
+            await renderizarTercos();
+        };
+
+        window.salvarValorTerco = async (ano, pessoa, campo, valor) => {
+            const tercos = await DB.getTercos();
+            const t = tercos.find(x => x.ano === ano);
+            if (t) {
+                // Se for o campo 'valor', transforma em número, se for 'data', mantém texto
+                t[pessoa][campo] = (campo === 'valor') ? parseFloat(valor) || 0 : valor;
+                await DB.setTercos(tercos);
+                await renderizarTercos(); // Renderiza de novo para atualizar o cálculo do saldo final
+            }
+        };
+
+        window.adicionarDespesaTerco = async (ano, pessoa) => {
+            const desc = prompt("Descreva a despesa (ex: Passagens, Hotel, Reserva):");
+            if (!desc) return;
+            
+            const valorStr = prompt("Qual o valor da despesa em R$?");
+            const valor = parseFloat(valorStr);
+            if (!valor || isNaN(valor)) return;
+
+            const tercos = await DB.getTercos();
+            const t = tercos.find(x => x.ano === ano);
+            
+            if (t) {
+                if (!t[pessoa].despesas) t[pessoa].despesas = [];
+                t[pessoa].despesas.push({
+                    id: 'desp_' + Date.now(),
+                    desc: desc.trim(),
+                    valor: valor
+                });
+                await DB.setTercos(tercos);
+                await renderizarTercos();
+            }
+        };
+
+        window.excluirDespesaTerco = async (ano, pessoa, idDespesa) => {
+            if(!confirm("Remover esta despesa da lista? O saldo será recalculado automaticamente.")) return;
+            
+            const tercos = await DB.getTercos();
+            const t = tercos.find(x => x.ano === ano);
+            
+            if (t) {
+                t[pessoa].despesas = t[pessoa].despesas.filter(d => d.id !== idDespesa);
+                await DB.setTercos(tercos);
+                await renderizarTercos();
+            }
+        };
+
+        // ==========================================
+        // LÓGICA DE GERENCIAMENTO DE 13º SALÁRIO
+        // ==========================================
+        let anoDecimoAtivo = null;
+
+        window.renderizarDecimo = async () => {
+            const decimos = await DB.getDecimo();
+            const containerAbas = document.getElementById('tabs-anos-decimo');
+            const containerConteudo = document.getElementById('conteudo-decimo');
+            const msgVazio = document.getElementById('msg-vazio-decimo');
+
+            containerAbas.innerHTML = '';
+            const btnNovo = document.createElement('button');
+            btnNovo.className = 'btn-secondary';
+            btnNovo.style.padding = '6px 12px';
+            btnNovo.style.fontWeight = 'bold';
+            btnNovo.innerText = '+ Novo Ano';
+            btnNovo.onclick = adicionarAnoDecimo;
+
+            if (decimos.length === 0) {
+                containerAbas.appendChild(btnNovo);
+                containerConteudo.classList.add('hidden');
+                msgVazio.classList.remove('hidden');
+                return;
+            }
+
+            decimos.sort((a, b) => parseInt(b.ano) - parseInt(a.ano));
+            if (!anoDecimoAtivo || !decimos.find(d => d.ano === anoDecimoAtivo)) anoDecimoAtivo = decimos[0].ano; 
+
+            decimos.forEach(d => {
+                const btnAba = document.createElement('button');
+                btnAba.className = `tab-link ${d.ano === anoDecimoAtivo ? 'active' : ''}`;
+                btnAba.innerText = `Dez ${d.ano}`;
+                btnAba.onclick = () => { anoDecimoAtivo = d.ano; renderizarDecimo(); };
+                btnAba.oncontextmenu = (e) => { e.preventDefault(); abrirModalAcoesAba('decimo', d.ano); };
+                btnAba.title = "Clique com o botão direito para opções";
+                containerAbas.appendChild(btnAba);
+            });
+            containerAbas.appendChild(btnNovo);
+
+            msgVazio.classList.add('hidden');
+            containerConteudo.classList.remove('hidden');
+
+            const d = decimos.find(x => x.ano === anoDecimoAtivo);
+            
+            const fixoGDez = parseFloat(d.credDezGabriel) || 0;
+            const fixoKDez = parseFloat(d.credDezKamila) || 0;
+            const fixoGJan = parseFloat(d.credJanGabriel) || 0;
+            const fixoKJan = parseFloat(d.credJanKamila) || 0;
+            
+            let totalOutrosCred = 0;
+            
+            // --- AQUI ESTÃO OS BOTÕES DE EDITAR ADICIONADOS (Créditos) ---
+            const htmlOutrosCred = (d.outrosCreditos && d.outrosCreditos.length > 0) ? d.outrosCreditos.map(c => {
+                totalOutrosCred += c.valor;
+                return `<li style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 0.95rem;">
+                            <span>${c.desc}</span>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <strong class="text-success" style="margin-right: 8px;">R$ ${c.valor.toFixed(2)}</strong> 
+                                <button class="text-muted" style="background: none; border: none; cursor: pointer;" onclick="abrirModalEditarItem('decimo', '${d.ano}', 'credito', '${c.id}')" title="Editar">✏️</button>
+                                <button class="text-danger" style="background: none; border: none; cursor: pointer;" onclick="excluirItemDecimo('${d.ano}', 'credito', '${c.id}')" title="Excluir">✖</button>
+                            </div>
+                        </li>`;
+            }).join('') : '<li class="text-muted" style="font-size: 0.85rem; padding: 4px 0;">Nenhum outro crédito registrado.</li>';
+
+            let totalDebitos = 0;
+            
+            // --- AQUI ESTÃO OS BOTÕES DE EDITAR ADICIONADOS (Débitos) ---
+            const htmlDebitos = (d.debitos && d.debitos.length > 0) ? d.debitos.map(deb => {
+                totalDebitos += deb.valor;
+                return `<li style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 0.95rem;">
+                            <span>${deb.desc}</span>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <strong class="text-danger" style="margin-right: 8px;">R$ ${deb.valor.toFixed(2)}</strong> 
+                                <button class="text-muted" style="background: none; border: none; cursor: pointer;" onclick="abrirModalEditarItem('decimo', '${d.ano}', 'debito', '${deb.id}')" title="Editar">✏️</button>
+                                <button class="text-danger" style="background: none; border: none; cursor: pointer;" onclick="excluirItemDecimo('${d.ano}', 'debito', '${deb.id}')" title="Excluir">✖</button>
+                            </div>
+                        </li>`;
+            }).join('') : '<li class="text-muted" style="font-size: 0.85rem; padding: 4px 0;">Nenhum débito registrado.</li>';
+
+            const totalCreditos = fixoGDez + fixoKDez + fixoGJan + fixoKJan + totalOutrosCred;
+            const saldo = totalCreditos - totalDebitos;
+            const corSaldo = saldo >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)';
+
+            containerConteudo.innerHTML = `
+                <div class="card-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 24px;">
+                    <div class="card" style="border-left: 5px solid var(--accent-success); cursor: default; background: #f0fdf4;">
+                        <p class="text-muted" style="font-size: 0.9rem; font-weight: 600;">Total de Créditos</p>
+                        <h2 style="color: var(--accent-success); font-size: 1.8rem; margin-top: 4px;">R$ ${totalCreditos.toFixed(2)}</h2>
+                    </div>
+                    <div class="card" style="border-left: 5px solid ${corSaldo}; cursor: default;">
+                        <p class="text-muted" style="font-size: 0.9rem; font-weight: 600;">Saldo Existente</p>
+                        <h2 style="color: ${corSaldo}; font-size: 1.8rem; margin-top: 4px;">R$ ${saldo.toFixed(2)}</h2>
+                    </div>
+                </div>
+                <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <h3 style="margin-bottom: 16px; color: var(--text-main); font-size: 1.2rem;">Créditos Fixos</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div class="form-group" style="margin: 0;">
+                            <label>Crédito em Dezembro (Gabriel)</label>
+                            <input type="number" class="form-control" value="${d.credDezGabriel || 0}" onchange="salvarCampoDecimo('${d.ano}', 'credDezGabriel', this.value)">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label>Crédito em Dezembro (Kamila)</label>
+                            <input type="number" class="form-control" value="${d.credDezKamila || 0}" onchange="salvarCampoDecimo('${d.ano}', 'credDezKamila', this.value)">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label>Crédito em Janeiro (Gabriel)</label>
+                            <input type="number" class="form-control" value="${d.credJanGabriel || 0}" onchange="salvarCampoDecimo('${d.ano}', 'credJanGabriel', this.value)">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label>Crédito em Janeiro (Kamila)</label>
+                            <input type="number" class="form-control" value="${d.credJanKamila || 0}" onchange="salvarCampoDecimo('${d.ano}', 'credJanKamila', this.value)">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 style="margin: 0; color: var(--text-main); font-size: 1.2rem;">Outros Créditos</h3>
+                        <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="adicionarItemDecimo('${d.ano}', 'credito')">+ Incluir Crédito</button>
+                    </div>
+                    <ul style="list-style: none; padding: 0; margin-bottom: 32px; border-top: 1px solid var(--border-color);">${htmlOutrosCred}</ul>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 style="margin: 0; color: var(--text-main); font-size: 1.2rem;">Débitos</h3>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; background-color: #f1f5f9;" onclick="abrirModalImportarDebitos('${d.ano}')">📥 Importar do Ano Anterior</button>
+                            <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="adicionarItemDecimo('${d.ano}', 'debito')">+ Incluir Débito</button>
+                        </div>
+                    </div>
+                    <ul style="list-style: none; padding: 0; margin-bottom: 24px; border-top: 1px solid var(--border-color);">${htmlDebitos}</ul>
+                    <div style="background: #fef2f2; padding: 16px; border-radius: 8px; border: 1px solid #fecaca; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0; color: var(--accent-danger);">Débito Total:</h3>
+                        <h2 style="margin: 0; color: var(--accent-danger);">R$ ${totalDebitos.toFixed(2)}</h2>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.adicionarAnoDecimo = async () => {
+            const anoStr = prompt("Digite o ano do 13º (ex: 2024):");
+            if (!anoStr || isNaN(anoStr) || anoStr.trim().length !== 4) return;
+            
+            const decimos = await DB.getDecimo();
+            if (decimos.find(d => d.ano === anoStr)) {
+                alert("Este ano já existe!");
+                return;
+            }
+
+            decimos.push({
+                ano: anoStr,
+                credDezGabriel: 0, credDezKamila: 0,
+                credJanGabriel: 0, credJanKamila: 0,
+                outrosCreditos: [], debitos: []
+            });
+
+            await DB.setDecimo(decimos);
+            anoDecimoAtivo = anoStr;
+            await renderizarDecimo();
+        };
+
+        window.excluirAnoDecimo = async (ano) => {
+            if (!confirm(`CUIDADO: Deseja realmente apagar a aba de Dez ${ano} e todos os registros vinculados a ela?`)) return;
+            let decimos = await DB.getDecimo();
+            decimos = decimos.filter(d => d.ano !== ano);
+            await DB.setDecimo(decimos);
+            if (anoDecimoAtivo === ano) anoDecimoAtivo = null;
+            await renderizarDecimo();
+        };
+
+        window.salvarCampoDecimo = async (ano, campo, valor) => {
+            const decimos = await DB.getDecimo();
+            const d = decimos.find(x => x.ano === ano);
+            if (d) {
+                d[campo] = parseFloat(valor) || 0;
+                await DB.setDecimo(decimos);
+                await renderizarDecimo(); 
+            }
+        };
+
+        window.adicionarItemDecimo = async (ano, tipo) => {
+            const desc = prompt(`Descreva o novo ${tipo === 'credito' ? 'crédito' : 'débito'}:`);
+            if (!desc) return;
+            const valorStr = prompt(`Qual o valor em R$?`);
+            const valor = parseFloat(valorStr);
+            if (!valor || isNaN(valor)) return;
+
+            const decimos = await DB.getDecimo();
+            const d = decimos.find(x => x.ano === ano);
+            
+            if (d) {
+                const arrDestino = tipo === 'credito' ? 'outrosCreditos' : 'debitos';
+                if (!d[arrDestino]) d[arrDestino] = [];
+                d[arrDestino].push({ id: 'item_' + Date.now(), desc: desc.trim(), valor: valor });
+                await DB.setDecimo(decimos);
+                await renderizarDecimo();
+            }
+        };
+
+        window.excluirItemDecimo = async (ano, tipo, idItem) => {
+            if(!confirm("Remover este item? Os totais serão recalculados automaticamente.")) return;
+            
+            const decimos = await DB.getDecimo();
+            const d = decimos.find(x => x.ano === ano);
+            
+            if (d) {
+                const arrDestino = tipo === 'credito' ? 'outrosCreditos' : 'debitos';
+                d[arrDestino] = d[arrDestino].filter(item => item.id !== idItem);
+                await DB.setDecimo(decimos);
+                await renderizarDecimo();
+            }
+        };
+
+        // ==========================================
+        // LÓGICA DE GERENCIAR ABAS (RENOMEAR E EXCLUIR)
+        // ==========================================
+        window.abrirModalAcoesAba = (contexto, anoAtual) => {
+            document.getElementById('acao-aba-contexto').value = contexto;
+            document.getElementById('acao-aba-ano-original').value = anoAtual;
+            document.getElementById('acao-aba-novo-nome').value = anoAtual;
+            document.getElementById('modal-acoes-aba').classList.remove('hidden');
+        };
+
+        window.fecharModalAcoesAba = () => {
+            document.getElementById('modal-acoes-aba').classList.add('hidden');
+        };
+
+        window.salvarRenomearAba = async () => {
+            const contexto = document.getElementById('acao-aba-contexto').value;
+            const anoOriginal = document.getElementById('acao-aba-ano-original').value;
+            const novoAno = document.getElementById('acao-aba-novo-nome').value.trim();
+
+            if (!novoAno || novoAno === anoOriginal) {
+                fecharModalAcoesAba();
+                return;
+            }
+
+            if (contexto === 'tercos') {
+                const tercos = await DB.getTercos();
+                if (tercos.find(t => t.ano === novoAno)) { alert("Esse ano/nome já existe!"); return; }
+                const t = tercos.find(x => x.ano === anoOriginal);
+                if (t) t.ano = novoAno;
+                if (anoTercoAtivo === anoOriginal) anoTercoAtivo = novoAno;
+                await DB.setTercos(tercos);
+                await renderizarTercos();
+            } else if (contexto === 'decimo') {
+                const decimos = await DB.getDecimo();
+                if (decimos.find(d => d.ano === novoAno)) { alert("Esse ano/nome já existe!"); return; }
+                const d = decimos.find(x => x.ano === anoOriginal);
+                if (d) d.ano = novoAno;
+                if (anoDecimoAtivo === anoOriginal) anoDecimoAtivo = novoAno;
+                await DB.setDecimo(decimos);
+                await renderizarDecimo();
+            }
+            
+            fecharModalAcoesAba();
+        };
+
+        window.excluirAbaPeloModal = async () => {
+            const contexto = document.getElementById('acao-aba-contexto').value;
+            const anoOriginal = document.getElementById('acao-aba-ano-original').value;
+            fecharModalAcoesAba();
+            
+            if (contexto === 'tercos') {
+                await excluirAnoTerco(anoOriginal);
+            } else if (contexto === 'decimo') {
+                await excluirAnoDecimo(anoOriginal);
+            }
+        };
+
+        // ==========================================
+        // LÓGICA DE IMPORTAÇÃO DE DÉBITOS DO 13º
+        // ==========================================
+        let anoDestinoImportacao = null;
+
+        window.abrirModalImportarDebitos = async (anoAtual) => {
+            anoDestinoImportacao = anoAtual;
+            const decimos = await DB.getDecimo();
+            const selectAno = document.getElementById('import-ano-origem');
+            selectAno.innerHTML = '';
+
+            // Pega todos os anos, exceto o ano atual, ordenados do mais novo pro mais velho
+            const outrosAnos = decimos.filter(d => d.ano !== anoAtual).sort((a, b) => parseInt(b.ano) - parseInt(a.ano));
+            
+            if (outrosAnos.length === 0) {
+                alert("Não há outros anos cadastrados para importar.");
+                return;
+            }
+
+            outrosAnos.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.ano;
+                opt.text = `Dez ${d.ano}`;
+                selectAno.appendChild(opt);
+            });
+
+            await carregarDebitosParaImportacao();
+            document.getElementById('modal-importar-debitos').classList.remove('hidden');
+        };
+
+        window.carregarDebitosParaImportacao = async () => {
+            const anoOrigem = document.getElementById('import-ano-origem').value;
+            const decimos = await DB.getDecimo();
+            const d = decimos.find(x => x.ano === anoOrigem);
+            const container = document.getElementById('lista-debitos-import');
+            container.innerHTML = '';
+
+            if (!d || !d.debitos || d.debitos.length === 0) {
+                container.innerHTML = '<p class="text-muted" style="text-align: center; margin-top: 20px;">Nenhum débito encontrado neste ano.</p>';
+                return;
+            }
+
+            d.debitos.forEach(deb => {
+                const div = document.createElement('div');
+                div.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--border-color); cursor: pointer;";
+                // Usa um truque simples com Math.random para garantir que cada item importado ganhe um ID único no novo array
+                div.innerHTML = `
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; width: 100%; margin: 0;">
+                        <input type="checkbox" class="import-checkbox" value='${JSON.stringify({desc: deb.desc, valor: deb.valor})}' checked style="width: 18px; height: 18px;">
+                        <span style="font-size: 0.95rem; font-weight: 500;">${deb.desc}</span>
+                    </label>
+                    <strong class="text-danger" style="white-space: nowrap;">R$ ${deb.valor.toFixed(2)}</strong>
+                `;
+                container.appendChild(div);
+            });
+        };
+
+        window.fecharModalImportar = () => {
+            document.getElementById('modal-importar-debitos').classList.add('hidden');
+            anoDestinoImportacao = null;
+        };
+
+        window.confirmarImportacao = async () => {
+            const checkboxes = document.querySelectorAll('.import-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert("Selecione pelo menos um débito para importar.");
+                return;
+            }
+
+            const decimos = await DB.getDecimo();
+            const d = decimos.find(x => x.ano === anoDestinoImportacao);
+            
+            if (d) {
+                if (!d.debitos) d.debitos = [];
+                checkboxes.forEach(cb => {
+                    const item = JSON.parse(cb.value);
+                    // Adiciona o item com um ID novo para não gerar conflitos de exclusão depois
+                    d.debitos.push({
+                        id: 'item_' + Date.now() + Math.random().toString(36).substring(2, 6),
+                        desc: item.desc,
+                        valor: item.valor
+                    });
+                });
+                await DB.setDecimo(decimos);
+                await renderizarDecimo();
+            }
+            fecharModalImportar();
+        };
+
+        // ==========================================
+        // LÓGICA DO MODAL UNIVERSAL DE EDIÇÃO DE ITENS (Terços e 13º)
+        // ==========================================
+        window.abrirModalEditarItem = async (contexto, ano, tipo, id) => {
+            document.getElementById('edit-item-contexto').value = contexto;
+            document.getElementById('edit-item-ano').value = ano;
+            document.getElementById('edit-item-tipo').value = tipo;
+            document.getElementById('edit-item-id').value = id;
+
+            let desc = '';
+            let valor = 0;
+
+            if (contexto === 'tercos') {
+                const tercos = await DB.getTercos();
+                const t = tercos.find(x => x.ano === ano);
+                if (t) {
+                    const item = t[tipo].despesas.find(d => d.id === id); // Aqui, 'tipo' equivale à pessoa (gabriel/kamila)
+                    if (item) { desc = item.desc; valor = item.valor; }
+                }
+            } else if (contexto === 'decimo') {
+                const decimos = await DB.getDecimo();
+                const d = decimos.find(x => x.ano === ano);
+                if (d) {
+                    const arrDestino = tipo === 'credito' ? 'outrosCreditos' : 'debitos';
+                    const item = d[arrDestino].find(i => i.id === id);
+                    if (item) { desc = item.desc; valor = item.valor; }
+                }
+            }
+
+            document.getElementById('edit-item-desc').value = desc;
+            document.getElementById('edit-item-valor').value = valor;
+            document.getElementById('modal-editar-item').classList.remove('hidden');
+        };
+        
+        window.fecharModalEditarItem = () => {
+            document.getElementById('modal-editar-item').classList.add('hidden');
+        };
+
+        window.salvarEdicaoItem = async () => {
+            const contexto = document.getElementById('edit-item-contexto').value;
+            const ano = document.getElementById('edit-item-ano').value;
+            const tipo = document.getElementById('edit-item-tipo').value;
+            const id = document.getElementById('edit-item-id').value;
+            
+            const novaDesc = document.getElementById('edit-item-desc').value.trim();
+            const novoValor = parseFloat(document.getElementById('edit-item-valor').value) || 0;
+
+            if (!novaDesc) {
+                alert('A descrição não pode ficar vazia.');
+                return;
+            }
+
+            if (contexto === 'tercos') {
+                const tercos = await DB.getTercos();
+                const t = tercos.find(x => x.ano === ano);
+                if (t) {
+                    const idx = t[tipo].despesas.findIndex(d => d.id === id);
+                    if (idx !== -1) {
+                        t[tipo].despesas[idx].desc = novaDesc;
+                        t[tipo].despesas[idx].valor = novoValor;
+                        await DB.setTercos(tercos);
+                        await renderizarTercos();
+                    }
+                }
+            } else if (contexto === 'decimo') {
+                const decimos = await DB.getDecimo();
+                const d = decimos.find(x => x.ano === ano);
+                if (d) {
+                    const arrDestino = tipo === 'credito' ? 'outrosCreditos' : 'debitos';
+                    const idx = d[arrDestino].findIndex(i => i.id === id);
+                    if (idx !== -1) {
+                        d[arrDestino][idx].desc = novaDesc;
+                        d[arrDestino][idx].valor = novoValor;
+                        await DB.setDecimo(decimos);
+                        await renderizarDecimo();
+                    }
+                }
+            }
+            
+            fecharModalEditarItem();
         };
 
     </script>
