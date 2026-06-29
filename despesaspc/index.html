@@ -327,20 +327,31 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças Pro 1.4
+                <span>📊</span> Finanças Pro 1.5
             </div>
             <nav>
                 <ul id="main-menu">
                     <li><button data-target="view-despesas" class="active">🧾 Despesas Mensais</button></li>
+                    <li><button data-target="view-remuneracoes">💰 Rem. Líquida, 13º, Terços...</button></li>
                     <!-- NOVA OPÇÃO DIVIDIDA DE CAIXINHAS -->
                     <li style="display: flex; align-items: stretch;">
                         <button type="button" onclick="abrirModalCaixinhas()" style="flex: 0 0 auto; padding-right: 8px; width: auto;" title="Abrir em Popup Rápido">📦</button>
                         <button data-target="view-caixinhas" style="flex: 1; padding-left: 0;">Caixinhas (Fundos)</button>
-                    </li>
-                    <li><button data-target="view-remuneracoes">💰 Rem. Líquida, 13º, Terços...</button></li>
+                    </li>                    
                     <li class="menu-separator"></li>
-                    <li><button data-target="view-quotas">🎯 Quotas Mensais</button></li>
-                    <li><button data-target="view-pagamentos">💳 Tabela de Pagamentos</button></li>
+                    
+                    <li>
+                        <button type="button" onclick="toggleSubMenu('submenu-config')" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>⚙️ Configurar Quotas e Pagamentos</span>
+                            <span id="icon-submenu-config" style="font-size: 0.8rem; transition: transform 0.2s;">▼</span>
+                        </button>
+                        
+                        <ul id="submenu-config" class="hidden" style="list-style: none; padding-left: 16px; margin-top: 4px; display: flex; flex-direction: column; gap: 4px; border-left: 2px solid rgba(255,255,255,0.1); margin-left: 12px;">
+                            <li><button data-target="view-quotas" style="font-size: 0.9rem; padding: 8px 12px;">🎯 Quotas Mensais</button></li>
+                            <li><button data-target="view-pagamentos" style="font-size: 0.9rem; padding: 8px 12px;">💳 Tabela de Pagamentos</button></li>
+                        </ul>
+                    </li>
+
                     <li class="menu-separator"></li>                    
                     <li><button data-target="view-aumentos">📈 Próximos Aumentos</button></li>
                     <li><button data-target="view-dividas">📉 Quitação de Dívidas</button></li>
@@ -408,6 +419,11 @@
                     </div>
 
                     <div id="subtab-pagamentos" class="tab-content">
+
+                        <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+                            <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem; font-weight: 600;" onclick="adicionarPagamentoMes()">+ Incluir Pagamento Avulso</button>
+                        </div>
+
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -545,7 +561,7 @@
                     <h1>Próximos Aumentos</h1>
                     <button class="btn-primary" onclick="abrirModalAumento()">+ Novo Aumento</button>
                 </div>
-                <div id="grid-aumentos" class="card-grid"></div>
+                <div id="grid-aumentos" class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 24px;"></div>
             </section>
 
             <!-- OUTRAS VIEWS ESTÁTICAS -->          
@@ -738,7 +754,7 @@
             
             <div class="card-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 24px;">
                 <div class="card" style="border-left: 5px solid #2563eb; cursor: default;">
-                    <p class="text-muted" style="font-size: 0.9rem; font-weight: 600;">Línguido Atual Gabriel</p>
+                    <p class="text-muted" style="font-size: 0.9rem; font-weight: 600;">Líquido Atual Gabriel</p>
                     <h2 id="txt-atual-gabriel" style="color: #2563eb; font-size: 1.8rem; margin-top: 4px;">R$ 0.00</h2>
                     <button class="btn-primary" style="margin-top: 12px; font-size: 0.85rem; padding: 6px 12px;" onclick="abrirModalRendimento('gabriel')">+ Novo Rend. Líquido</button>
                 </div>
@@ -746,7 +762,12 @@
                     <p class="text-muted" style="font-size: 0.9rem; font-weight: 600;">Líquido Atual Kamila</p>
                     <h2 id="txt-atual-kamila" style="color: #ec4899; font-size: 1.8rem; margin-top: 4px;">R$ 0.00</h2>
                     <button class="btn-primary" style="margin-top: 12px; font-size: 0.85rem; padding: 6px 12px; background-color: #ec4899;" onclick="abrirModalRendimento('kamila')">+ Novo Rend. Líquido</button>
-                </div>
+                </div>                
+            </div>
+
+            <div class="card" style="margin-bottom: 24px; background: #f8fafc; border: 2px solid var(--sidebar-active); display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; cursor: default;">
+                <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-main);">Renda Líquida Total (Família):</h3>
+                <h2 id="txt-atual-geral" style="margin: 0; font-size: 1.8rem; font-weight: 800; color: var(--sidebar-active);">R$ 0.00</h2>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
@@ -1118,6 +1139,22 @@
         </div>
     </div>
 
+    <div id="modal-detalhes-aumento" class="modal-overlay hidden" style="z-index: 1055;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Detalhes do Planejamento</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalDetalhesAumento()" title="Fechar">✖</button>
+            </div>
+            
+            <div id="conteudo-detalhes-aumento" style="line-height: 1.6;">
+                </div>
+            
+            <div style="display: flex; justify-content: flex-end; margin-top: 24px;">
+                <button class="btn-primary" onclick="fecharModalDetalhesAumento()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -1426,21 +1463,64 @@
             fecharDetalheMes();
         };
 
+        window.adicionarPagamentoMes = async () => {
+            const nome = prompt("Nome da despesa/pagamento avulso:");
+            if (!nome) return;
+            
+            const valorStr = prompt("Valor previsto (R$):");
+            const valor = parseFloat(valorStr) || 0;
+            
+            const vencimentoStr = prompt("Dia do vencimento (ex: 15):");
+            const vencimento = parseInt(vencimentoStr) || 1;
+            
+            const meses = await DB.getMeses();
+            const mes = meses.find(m => m.id === mesSelecionadoId);
+            
+            if (mes) {
+                if (!mes.pagamentos) mes.pagamentos = [];
+                mes.pagamentos.push({
+                    nome: nome.trim(),
+                    valor: valor,
+                    vencimento: vencimento,
+                    dataPgto: '',
+                    valorPago: 0,
+                    obs: 'Lançamento avulso',
+                    link: ''
+                });
+                
+                await DB.setMeses(meses);
+                renderizarSubTabelasMes(mes);
+            }
+        };
+
         function renderizarSubTabelasMes(mes) {
-            const tbodyQuotas = document.getElementById('table-body-mes-quotas'); tbodyQuotas.innerHTML = '';
+            const tbodyQuotas = document.getElementById('table-body-mes-quotas'); 
+            tbodyQuotas.innerHTML = '';
+            
+            // --- VARIÁVEIS PARA SOMA TOTAL DAS QUOTAS ---
+            let totalGeralAlocado = 0;
+            let totalGeralGasto = 0;
+            let totalGeralSaldo = 0;
+
             mes.quotas.forEach((q, index) => {
                 const historico = q.historico || [];
                 if (!q.historico && q.gasto > 0) historico.push({ valor: q.gasto, desc: 'Gasto anterior', data: '' });
                 let historicoHtml = historico.map((item, i) => `
                     <li style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 4px; margin-top: 4px; border-radius: 4px;">
                         <span style="font-size: 0.8rem; flex: 1;">${item.desc} ${item.data ? `(${item.data})` : ''}</span>
-                        <strong style="font-size: 0.85rem; margin-right: 8px;">R$ ${item.valor.toFixed(2)}</strong>
+                        <strong style="font-size: 0.85rem; margin-right: 8px;">R$ ${formatarReal(item.valor)}</strong>
                         <button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 0.7rem;" onclick="removerItemHistorico(${index}, ${i})">✖</button>
                     </li>
                 `).join('');
+                
                 // Recalcula o gasto total baseado no histórico para garantir precisão
                 const totalGasto = historico.reduce((acc, curr) => acc + curr.valor, 0);
                 const saldoAtualizado = q.valor - totalGasto;
+
+                // --- SOMA PARA O TOTAL GERAL ---
+                totalGeralAlocado += parseFloat(q.valor) || 0;
+                totalGeralGasto += totalGasto;
+                totalGeralSaldo += saldoAtualizado;
 
                 // Nova regra de cor: Preto por padrão. Verde ou Vermelho apenas se houver algum lançamento.
                 let classeSaldoQuota = 'text-black';
@@ -1455,9 +1535,9 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><span class="quota-badge" style="background-color:${q.cor}">${q.nome}</span></td>
-                    <td>R$ ${q.valor.toFixed(2)}</td>
+                    <td>R$ ${formatarReal(q.valor)}</td>
                     <td style="min-width: 250px;">
-                        <div style="font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Total: R$ ${totalGasto.toFixed(2)}</div>
+                        <div style="font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Total: R$ ${formatarReal(totalGasto)}</div>
                         <div style="display: flex; gap: 4px; margin-bottom: 8px;">
                             <input type="text" id="desc-gasto-${index}" class="table-input" style="flex: 1;" placeholder="Descrição">
                             <input type="number" id="add-gasto-${index}" class="table-input" style="width: 80px;" placeholder="R$">
@@ -1465,26 +1545,52 @@
                         </div>
                         <ul style="list-style: none; padding: 0;">${historicoHtml}</ul>
                     </td>
-                    <td class="${classeSaldoQuota}">R$ ${saldoAtualizado.toFixed(2)}</td>
+                    <td class="${classeSaldoQuota}">R$ ${formatarReal(saldoAtualizado)}</td>
                     <td><input type="text" class="table-input" value="${q.obs || ''}" onchange="atualizarObsQuota(${index}, this.value)" placeholder="Notas..."></td>
                 `;
                 tbodyQuotas.appendChild(tr);
             });
 
-            const tbodyPagamentos = document.getElementById('table-body-mes-pagamentos'); tbodyPagamentos.innerHTML = '';
+            // --- CRIAÇÃO DA LINHA DE TOTAL GERAL DAS QUOTAS ---
+            const corTotalSaldo = totalGeralSaldo < 0 ? 'var(--accent-danger)' : (totalGeralSaldo > 0 ? 'var(--accent-success)' : 'inherit');
+            const trTotal = document.createElement('tr');
+            trTotal.style.backgroundColor = '#f0f9ff'; // Fundo azulzinho claro para destacar
+            trTotal.style.borderTop = '2px solid var(--sidebar-active)';
+            trTotal.innerHTML = `
+                <td style="text-align: right; font-weight: 800; color: var(--sidebar-active); text-transform: uppercase;">Total do Mês:</td>
+                <td style="font-weight: 800;">R$ ${formatarReal(totalGeralAlocado)}</td>
+                <td style="font-weight: 800;">R$ ${formatarReal(totalGeralGasto)}</td>
+                <td style="font-weight: 900; color: ${corTotalSaldo}; font-size: 1.1rem;">R$ ${formatarReal(totalGeralSaldo)}</td>
+                <td></td>
+            `;
+            tbodyQuotas.appendChild(trTotal);
+
+            // ==========================================
+            // ABAIXO CONTINUA A PARTE DOS PAGAMENTOS (Intacta)
+            // ==========================================
+            const tbodyPagamentos = document.getElementById('table-body-mes-pagamentos'); 
+            tbodyPagamentos.innerHTML = '';
+            
             mes.pagamentos.forEach((p, index) => {
-                const diferenca = p.valor - p.valorPago; const classeLinha = p.dataPgto ? 'linha-paga' : 'linha-pendente';
-                let classeSaldo = 'text-black'; if (diferenca < 0) classeSaldo = 'text-danger'; else if (diferenca > 0) classeSaldo = 'text-success';
+                const diferenca = p.valor - p.valorPago; 
+                const classeLinha = p.dataPgto ? 'linha-paga' : 'linha-pendente';
+                
+                let classeSaldo = 'text-black'; 
+                if (diferenca < 0) classeSaldo = 'text-danger'; 
+                else if (diferenca > 0) classeSaldo = 'text-success';
+                
                 const botaoLink = p.link ? `<a href="${p.link}" target="_blank" class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem; text-decoration: none; display: inline-block;">🔗 Abrir</a>` : '-';
-                const tr = document.createElement('tr'); tr.className = classeLinha;
+                
+                const tr = document.createElement('tr'); 
+                tr.className = classeLinha;
                 tr.innerHTML = `
                     <td><strong>${p.nome}</strong></td>
                     <td style="text-align: center;">${botaoLink}</td>
-                    <td>R$ ${p.valor.toFixed(2)}</td>
+                    <td>R$ ${formatarReal(p.valor)}</td>
                     <td>Dia ${p.vencimento}</td>
                     <td><input type="date" class="table-input" value="${p.dataPgto || ''}" onchange="atualizarDataPagamento(${index}, this.value)"></td>
                     <td><input type="number" class="table-input" value="${p.valorPago}" onchange="atualizarValorPagamento(${index}, this.value)"></td>
-                    <td class="${classeSaldo}">R$ ${diferenca.toFixed(2)}</td>
+                    <td class="${classeSaldo}">R$ ${formatarReal(diferenca)}</td>
                     <td><input type="text" class="table-input" value="${p.obs || ''}" onchange="atualizarObsPagamento(${index}, this.value)"></td>
                 `;
                 tbodyPagamentos.appendChild(tr);
@@ -1545,7 +1651,7 @@
             trTotal.style.fontWeight = 'bold';
             trTotal.innerHTML = `
                 <td colspan="2" style="text-align: right;">Total Base Mensal:</td>
-                <td colspan="3" style="color: var(--sidebar-active);">R$ ${totalBase.toFixed(2)}</td>
+                <td colspan="3" style="color: var(--sidebar-active);">R$ ${formatarReal(totalBase)}</td>
             `;
             tbody.appendChild(trTotal);
         };
@@ -1648,7 +1754,7 @@
 
                 const catSubtotal = document.createElement('span');
                 catSubtotal.style.cssText = "font-size: 1rem; font-weight: 600; color: var(--text-muted);";
-                catSubtotal.innerText = `Subtotal: R$ ${saldoPorCategoria[cat].toFixed(2)}`;
+                catSubtotal.innerText = `Subtotal: R$ ${formatarReal(saldoPorCategoria[cat])}`;
 
                 catHeader.appendChild(catTitle);
                 catHeader.appendChild(catSubtotal);
@@ -1663,7 +1769,7 @@
                     
                     if (c.historico && c.historico.length > 0) {
                         const ultimos5 = [...c.historico].reverse().slice(0, 5);
-                        historicoHtml = ultimos5.map(h => `<li style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-color); font-size: 0.85rem;"><span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">${h.tipo==='Crédito'?'+':'-'}</strong> ${h.desc} <span style="color: var(--text-muted); font-size: 0.75rem;">(${h.data})</span></span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">R$ ${h.valor.toFixed(2)}</strong></li>`).join('');
+                        historicoHtml = ultimos5.map(h => `<li style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-color); font-size: 0.85rem;"><span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">${h.tipo==='Crédito'?'+':'-'}</strong> ${h.desc} <span style="color: var(--text-muted); font-size: 0.75rem;">(${h.data})</span></span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">R$ ${formatarReal(h.valor)}</strong></li>`).join('');
                         if (c.historico.length > 5) botaoVerMais = `<button class="btn-secondary" style="width: 100%; margin-top: 8px; padding: 6px; font-size: 0.8rem; border-color: transparent; color: var(--sidebar-active); font-weight: 600;" onclick="abrirModalHistorico('${c.id}')">Ver histórico completo (${c.historico.length} itens)</button>`;
                     } else {
                         historicoHtml = '<li style="font-size: 0.85rem; color: var(--text-muted); padding: 4px 0;">Sem movimentações.</li>';
@@ -1683,7 +1789,7 @@
                         </div>
                         
                         <div class="caixinha-balance" style="color: ${c.saldo < 0 ? 'var(--accent-danger)' : 'var(--accent-success)'};">
-                            R$ ${c.saldo.toFixed(2)}
+                           R$ ${formatarReal(c.saldo)}
                         </div>
                         
                         ${c.obs ? `<div style="margin-bottom: 12px; font-size: 0.85rem; color: var(--text-muted); font-style: italic; white-space: pre-wrap;">${c.obs}</div>` : ''}
@@ -1714,8 +1820,8 @@
             // Atualiza os Totais
             const elTotalModal = document.getElementById('total-caixinhas'); 
             const elTotalView = document.getElementById('total-caixinhas-view'); 
-            if (elTotalModal) elTotalModal.innerText = `R$ ${saldoTotalGeral.toFixed(2)}`;
-            if (elTotalView) elTotalView.innerText = `R$ ${saldoTotalGeral.toFixed(2)}`;
+            if (elTotalModal) elTotalModal.innerText = `R$ ${formatarReal(saldoTotalGeral.toFixed)}`;
+            if (elTotalView) elTotalView.innerText = `R$ ${formatarReal(saldoTotalGeral)}`;
         };
         
         window.abrirModalCaixinhas = async () => { document.getElementById('modal-caixinhas').classList.remove('hidden'); await renderizarCaixinhas(); };
@@ -1749,13 +1855,13 @@
         };
 
         window.renomearCaixinha = async (id) => { const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; const n = prompt("Novo nome:", c.nome); if(n && n.trim()!==""){ c.nome=n.trim(); await DB.setCaixinhas(cx); await renderizarCaixinhas(); } };
-        window.excluirCaixinha = async (id) => { let cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; if(c.saldo>0 && !confirm(`A caixinha tem R$ ${c.saldo.toFixed(2)}!
+        window.excluirCaixinha = async (id) => { let cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; if(c.saldo>0 && !confirm(`A caixinha tem R$ ${formatarReal(c.saldo)}!
 Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas(cx); await renderizarCaixinhas(); };
         window.ajustarCaixinha = async (id, tipo) => { const v = parseFloat(prompt(`Valor para ${tipo}:`)); if(!v||isNaN(v)) return; const d = prompt("Descrição:"); const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(tipo==='Crédito') c.saldo+=v; else c.saldo-=v; c.historico.push({tipo, valor:v, desc:d||'Ajuste', data:new Date().toLocaleDateString()}); await DB.setCaixinhas(cx); await renderizarCaixinhas(); };
         window.toggleHistoricoCaixinha = (id) => {
             document.querySelectorAll(`.historico-${id}`).forEach(el => el.classList.toggle('hidden'));
         };
-        window.abrirModalHistorico = async (id) => { const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; document.getElementById('titulo-modal-historico').innerText = `Histórico - ${c.nome}`; document.getElementById('lista-historico-completo').innerHTML = [...c.historico].reverse().map(h=>`<li style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 0.95rem;"><span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">${h.tipo==='Crédito'?'+':'-'}</strong> ${h.desc} <br><span style="color: var(--text-muted); font-size: 0.8rem;">${h.data}</span></span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">R$ ${h.valor.toFixed(2)}</strong></li>`).join(''); document.getElementById('modal-historico').classList.remove('hidden'); };
+        window.abrirModalHistorico = async (id) => { const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; document.getElementById('titulo-modal-historico').innerText = `Histórico - ${c.nome}`; document.getElementById('lista-historico-completo').innerHTML = [...c.historico].reverse().map(h=>`<li style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 0.95rem;"><span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">${h.tipo==='Crédito'?'+':'-'}</strong> ${h.desc} <br><span style="color: var(--text-muted); font-size: 0.8rem;">${h.data}</span></span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">R$ ${formatarReal(h.valor)}</strong></li>`).join(''); document.getElementById('modal-historico').classList.remove('hidden'); };
         window.fecharModalHistorico = () => document.getElementById('modal-historico').classList.add('hidden');
 
         // --- OBSERVAÇÕES DAS CAIXINHAS ---
@@ -2214,40 +2320,50 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
                 const totalAlocado = a.alocacoes.reduce((acc, curr) => acc + parseFloat(curr.diff || 0), 0);
                 const saldo = a.valorTotal - totalAlocado;
                 
-                // Define a cor do saldo
-                let corSaldo = 'inherit'; 
-                if (saldo > 0) corSaldo = 'var(--accent-success)'; // Verde
-                else if (saldo < 0) corSaldo = 'var(--accent-danger)'; // Vermelho
+                let corSaldo = saldo > 0 ? 'var(--accent-success)' : (saldo < 0 ? 'var(--accent-danger)' : 'inherit');
+
+                // Formatar Data para Mês/Ano (ex: Agosto/2026)
+                let tituloData = a.data;
+                if (a.data) {
+                    const partes = a.data.split('-');
+                    if (partes.length === 3) {
+                        const mesesNome = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                        tituloData = `${mesesNome[parseInt(partes[1]) - 1]}/${partes[0]}`;
+                    }
+                }
 
                 card.className = 'card';
-                card.style.padding = '16px';
+                card.style.padding = '24px';
                 
                 card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <h3 style="margin: 0; font-size: 1.15rem;">
-                            ${a.data} - 
-                            <span onclick="toggleSituacao('${a.id}')" style="cursor:pointer; color: ${a.situacao === 'Efetivado' ? 'var(--accent-success)' : '#f59e0b'};">${a.situacao}</span>
-                        </h3>
-                        <div style="display: flex; gap: 4px;">
-                            <button onclick="abrirEdicaoAumento('${a.id}')" title="Editar" style="background:none; border:none; cursor:pointer; font-size: 1.1rem;">✏️</button>
-                            <button onclick="excluirAumento('${a.id}')" title="Excluir" style="background:none; border:none; cursor:pointer; font-size: 1.1rem;">🗑️</button>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <h3 style="margin: 0; font-size: 1.3rem; color: var(--text-main); font-weight: 800;">${tituloData}</h3>
+                            <button onclick="toggleSituacao('${a.id}')" title="Clique para alterar o status" style="cursor:pointer; background-color: ${a.situacao === 'Efetivado' ? '#dcfce7' : '#fef3c7'}; color: ${a.situacao === 'Efetivado' ? '#166534' : '#b45309'}; border: 1px solid ${a.situacao === 'Efetivado' ? '#bbf7d0' : '#fde68a'}; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; transition: all 0.2s; align-self: flex-start;">
+                                ${a.situacao}
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 8px; background: #f8fafc; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <button onclick="abrirModalDetalhesAumento('${a.id}')" title="Ver Detalhes" style="background:none; border:none; cursor:pointer; font-size: 1.2rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">👁️</button>
+                            <div style="width: 1px; background: var(--border-color); height: 24px; align-self: center; margin: 0 4px;"></div>
+                            <button onclick="abrirEdicaoAumento('${a.id}')" title="Editar" style="background:none; border:none; cursor:pointer; font-size: 1.2rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">✏️</button>
+                            <button onclick="excluirAumento('${a.id}')" title="Excluir" style="background:none; border:none; cursor:pointer; font-size: 1.2rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">🗑️</button>
                         </div>
                     </div>
                     
-                    <p style="margin: 6px 0 10px 0; font-size: 0.9rem; color: var(--text-muted);">
-                        Origem: <strong>${a.origem || 'Não informada'}</strong>
+                    <p style="margin: 0 0 16px 0; font-size: 0.95rem; color: var(--text-muted);">
+                        Origem: <strong style="color: var(--text-main); font-size: 1rem;">${a.origem || 'Não informada'}</strong>
                     </p>
                     
-                    <p style="margin: 0 0 8px 0; font-size: 0.95rem;">
-                        Valor Total: R$ ${parseFloat(a.valorTotal).toFixed(2)} | 
-                        <strong>Saldo: <span style="color: ${corSaldo}">R$ ${saldo.toFixed(2)}</span></strong>
-                    </p>
-                    
-                    <ul style="font-size: 0.85rem; padding-left: 20px; color: var(--text-main);">
-                        ${a.alocacoes.map(al => `<li>${al.quota}: <strong>R$ ${parseFloat(al.diff || 0).toFixed(2)}</strong></li>`).join('')}
+                    <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; margin-bottom: 0; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 1rem; color: var(--text-muted);">Total: <strong style="color: var(--text-main); font-size: 1.1rem;">R$ ${formatarReal(parseFloat(a.valorTotal))}</strong></span>
+                        <span style="font-size: 1rem; color: var(--text-muted);">Saldo: <strong style="color: ${corSaldo}; font-size: 1.1rem;">R$ ${formatarReal(saldo)}</strong></span>
+                    </div>
+                    <br>
+                    <ul style="font-size: 0.95rem; padding-left: 20px; color: var(--text-main); margin-bottom: 0; line-height: 1.6;">
+                        ${a.alocacoes.map(al => `<li style="margin-bottom: 6px;">${al.quota}: <strong>R$ ${formatarReal(parseFloat(al.diff || 0))}</strong></li>`).join('')}
                     </ul>
-                    
-                    ${a.obsGeral ? `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-muted); font-style: italic; white-space: pre-wrap;">${a.obsGeral}</div>` : ''}
+
                 `;
                 return card;
             };
@@ -2298,7 +2414,7 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
 
             const saldo = totalAumento - totalAlocado;
             const elSaldo = document.getElementById('txt-saldo-alocacao');
-            elSaldo.innerText = `Distribuição (Alocações) - Saldo: R$ ${saldo.toFixed(2)}`;
+            elSaldo.innerText = `Distribuição (Alocações) - Saldo: R$ ${formatarReal(saldo)}`;
             
             // Regra de cores do saldo
             if (saldo > 0) elSaldo.style.color = 'var(--accent-success)';
@@ -2331,8 +2447,11 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
             const atualGabriel = listGabriel.length > 0 ? parseFloat(listGabriel[0].valor) : 0;
             const atualKamila = listKamila.length > 0 ? parseFloat(listKamila[0].valor) : 0;
             
-            document.getElementById('txt-atual-gabriel').innerText = `R$ ${atualGabriel.toFixed(2)}`;
-            document.getElementById('txt-atual-kamila').innerText = `R$ ${atualKamila.toFixed(2)}`;
+            document.getElementById('txt-atual-gabriel').innerText = `R$ ${formatarReal(atualGabriel)}`;
+            document.getElementById('txt-atual-kamila').innerText = `R$ ${formatarReal(atualKamila)}`;
+            const atualGeral = atualGabriel + atualKamila;
+            const elAtualGeral = document.getElementById('txt-atual-geral');
+            if(elAtualGeral) elAtualGeral.innerText = `R$ ${formatarReal(atualGeral)}`;
             
             // Função interna para construir as tabelas de listagem resumida
             const construirTabela = (tbodyId, lista, pessoa) => {
@@ -2350,7 +2469,7 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${dataFormatada}</td>
-                        <td><strong>R$ ${parseFloat(item.valor).toFixed(2)}</strong></td>
+                        <td><strong>R$ ${formatarReal(parseFloat(item.valor))}</strong></td>
                         <td style="text-align: right;">
                             <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;" onclick="abrirModalRendimento('${pessoa}', '${item.id}')">✏️ Ver mais / Editar</button>
                         </td>
@@ -2545,7 +2664,7 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
                     return `<li style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 0.9rem;">
                                 <span>${d.desc}</span>
                                 <div style="display: flex; align-items: center; gap: 4px;">
-                                    <strong class="text-danger" style="margin-right: 8px;">R$ ${d.valor.toFixed(2)}</strong>
+                                    <strong class="text-danger" style="margin-right: 8px;">R$ ${formatarReal(d.valor)}</strong>
                                     <button class="text-muted" style="background: none; border: none; cursor: pointer;" onclick="abrirModalEditarItem('tercos', '${dadosAno.ano}', '${pessoa}', '${d.id}')" title="Editar">✏️</button>
                                     <button class="text-danger" style="background: none; border: none; cursor: pointer;" onclick="excluirDespesaTerco('${dadosAno.ano}', '${pessoa}', '${d.id}')" title="Excluir">✖</button>
                                 </div>
@@ -2577,7 +2696,7 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; border-top: 2px solid var(--border-color); padding-top: 16px;">
                             <span style="font-weight: 700; color: var(--text-main); font-size: 1.1rem;">Saldo Atual:</span>
-                            <span style="font-size: 1.5rem; font-weight: 900; color: ${corSaldo};">R$ ${saldo.toFixed(2)}</span>
+                            <span style="font-size: 1.5rem; font-weight: 900; color: ${corSaldo};">R$ ${formatarReal(saldo)}</span>
                         </div>
                     </div>
                 `;
@@ -2585,7 +2704,7 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
 
             gridColunas.innerHTML = construirColuna('gabriel', '🙋🏻‍♂️ Terço - Gabriel', '#2563eb') + construirColuna('kamila', '🙋🏻‍♀️ Terço - Kamila', '#ec4899');
             const elTotalCombinado = document.getElementById('txt-total-combinado-tercos');
-            elTotalCombinado.innerText = `R$ ${saldoTotalAno.toFixed(2)}`;
+            elTotalCombinado.innerText = `R$ ${formatarReal(saldoTotalAno)}`;
             elTotalCombinado.style.color = corSaldoTotal;
         };
 
@@ -2745,7 +2864,7 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
                 return `<li style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 0.95rem;">
                             <span>${c.desc}</span>
                             <div style="display: flex; align-items: center; gap: 4px;">
-                                <strong class="text-success" style="margin-right: 8px;">R$ ${c.valor.toFixed(2)}</strong> 
+                                <strong class="text-success" style="margin-right: 8px;">R$ ${formatarReal(c.valor)}</strong> 
                                 <button class="text-muted" style="background: none; border: none; cursor: pointer;" onclick="abrirModalEditarItem('decimo', '${d.ano}', 'credito', '${c.id}')" title="Editar">✏️</button>
                                 <button class="text-danger" style="background: none; border: none; cursor: pointer;" onclick="excluirItemDecimo('${d.ano}', 'credito', '${c.id}')" title="Excluir">✖</button>
                             </div>
@@ -2760,7 +2879,7 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
                 return `<li style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 0.95rem;">
                             <span>${deb.desc}</span>
                             <div style="display: flex; align-items: center; gap: 4px;">
-                                <strong class="text-danger" style="margin-right: 8px;">R$ ${deb.valor.toFixed(2)}</strong> 
+                                <strong class="text-danger" style="margin-right: 8px;">R$ ${formatarReal(deb.valor)}</strong> 
                                 <button class="text-muted" style="background: none; border: none; cursor: pointer;" onclick="abrirModalEditarItem('decimo', '${d.ano}', 'debito', '${deb.id}')" title="Editar">✏️</button>
                                 <button class="text-danger" style="background: none; border: none; cursor: pointer;" onclick="excluirItemDecimo('${d.ano}', 'debito', '${deb.id}')" title="Excluir">✖</button>
                             </div>
@@ -2775,11 +2894,11 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
                 <div class="card-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 24px;">
                     <div class="card" style="border-left: 5px solid var(--accent-success); cursor: default;">
                         <p class="text-muted" style="font-size: 0.9rem; font-weight: 600;">Total de Créditos</p>
-                        <h2 style="color: var(--accent-success); font-size: 1.8rem; margin-top: 4px;">R$ ${totalCreditos.toFixed(2)}</h2>
+                        <h2 style="color: var(--accent-success); font-size: 1.8rem; margin-top: 4px;">R$ ${formatarReal(totalCreditos)}</h2>
                     </div>
                     <div class="card" style="border-left: 5px solid ${corSaldo}; cursor: default; background: #f0fdf4;">
                         <p class="text-muted" style="font-size: 0.9rem; font-weight: 600;">Saldo Existente</p>
-                        <h2 style="color: ${corSaldo}; font-size: 1.8rem; margin-top: 4px;">R$ ${saldo.toFixed(2)}</h2>
+                        <h2 style="color: ${corSaldo}; font-size: 1.8rem; margin-top: 4px;">R$ ${formatarReal(saldo)}</h2>
                     </div>
                 </div>
                 <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color);">
@@ -2817,7 +2936,7 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
                     <ul style="list-style: none; padding: 0; margin-bottom: 24px; border-top: 1px solid var(--border-color);">${htmlDebitos}</ul>
                     <div style="background: #fef2f2; padding: 16px; border-radius: 8px; border: 1px solid #fecaca; display: flex; justify-content: space-between; align-items: center;">
                         <h3 style="margin: 0; color: var(--accent-danger);">Débito Total:</h3>
-                        <h2 style="margin: 0; color: var(--accent-danger);">R$ ${totalDebitos.toFixed(2)}</h2>
+                        <h2 style="margin: 0; color: var(--accent-danger);">R$ ${formatarReal(totalDebitos)}</h2>
                     </div>
                 </div>
             `;
@@ -3005,7 +3124,7 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
                         <input type="checkbox" class="import-checkbox" value='${JSON.stringify({desc: deb.desc, valor: deb.valor})}' checked style="width: 18px; height: 18px;">
                         <span style="font-size: 0.95rem; font-weight: 500;">${deb.desc}</span>
                     </label>
-                    <strong class="text-danger" style="white-space: nowrap;">R$ ${deb.valor.toFixed(2)}</strong>
+                    <strong class="text-danger" style="white-space: nowrap;">R$ ${formatarReal(deb.valor)}</strong>
                 `;
                 container.appendChild(div);
             });
@@ -3123,6 +3242,92 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
             }
             
             fecharModalEditarItem();
+        };
+
+        window.toggleSubMenu = (id) => {
+            const submenu = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            
+            if (submenu.classList.contains('hidden')) {
+                submenu.classList.remove('hidden');
+                if (icon) icon.style.transform = 'rotate(180deg)'; // Vira a setinha para cima
+            } else {
+                submenu.classList.add('hidden');
+                if (icon) icon.style.transform = 'rotate(0deg)'; // Volta a setinha para baixo
+            }
+        };
+
+        // ==========================================
+        // LÓGICA DE DETALHES DE AUMENTO (Modo Leitura)
+        // ==========================================
+        window.abrirModalDetalhesAumento = async (id) => {
+            const aumentos = await DB.get('fin_aumentos', []);
+            const a = aumentos.find(x => String(x.id) === String(id));
+            if(!a) return;
+
+            const totalAlocado = a.alocacoes.reduce((acc, curr) => acc + parseFloat(curr.diff || 0), 0);
+            const saldo = a.valorTotal - totalAlocado;
+            let corSaldo = saldo > 0 ? 'var(--accent-success)' : (saldo < 0 ? 'var(--accent-danger)' : 'inherit');
+
+            // --- LÓGICA DE CONVERSÃO MÊS/ANO ADICIONADA AQUI ---
+            let tituloData = a.data;
+            if (a.data) {
+                const partes = a.data.split('-');
+                if (partes.length === 3) {
+                    const mesesNome = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                    tituloData = `${mesesNome[parseInt(partes[1]) - 1]}/${partes[0]}`;
+                }
+            }
+
+            // Gera a lista de alocações formatada
+            const htmlAlocacoes = a.alocacoes.map(al => `
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding: 10px 0;">
+                    <div>
+                        <div style="font-size: 0.95rem; font-weight: 600;">${al.quota}</div>
+                        <div class="text-muted" style="font-size: 0.8rem;">Atual: R$ ${al.atual} ➔ Meta: R$ ${al.meta}</div>
+                        ${al.obs ? `<div style="font-size: 0.8rem; color: #8b5cf6; margin-top: 2px;">💬 ${al.obs}</div>` : ''}
+                    </div>
+                    <strong style="color: var(--sidebar-active); font-size: 1.1rem;">+ R$ ${formatarReal(parseFloat(al.diff || 0))}</strong>
+                </div>
+            `).join('');
+
+            // Preenche o conteúdo interno do modal (agora usa o tituloData)
+            document.getElementById('conteudo-detalhes-aumento').innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <span style="font-size: 1.1rem; font-weight: 600;">📅 ${tituloData}</span>
+                    <span style="background-color: ${a.situacao === 'Efetivado' ? '#dcfce7' : '#fef3c7'}; color: ${a.situacao === 'Efetivado' ? '#166534' : '#b45309'}; border: 1px solid ${a.situacao === 'Efetivado' ? '#bbf7d0' : '#fde68a'}; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700;">${a.situacao}</span>
+                </div>
+                
+                <div style="margin-bottom: 24px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <p style="margin: 0 0 8px 0; font-size: 1rem;"><strong>Origem:</strong> ${a.origem || 'Não informada'}</p>
+                    <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                        <span style="font-size: 1.1rem;">Valor Total: <strong>R$ ${formatarReal(parseFloat(a.valorTotal))}</strong></span>
+                        <span style="font-size: 1.1rem;">Saldo: <strong style="color: ${corSaldo}">R$ ${formatarReal(saldo)}</strong></span>
+                    </div>
+                </div>
+                
+                <h3 style="font-size: 1.1rem; margin-bottom: 8px; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 4px;">Distribuição (Alocações)</h3>
+                <div style="margin-bottom: 24px;">
+                    ${htmlAlocacoes || '<p class="text-muted" style="margin-top: 8px;">Nenhuma alocação registrada.</p>'}
+                </div>
+
+                ${a.obsGeral ? `
+                    <h3 style="font-size: 1.1rem; margin-bottom: 8px; color: var(--text-main);">Observações Gerais</h3>
+                    <div style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 4px; white-space: pre-wrap; font-size: 0.95rem; color: #78350f;">${a.obsGeral}</div>
+                ` : ''}
+            `;
+
+            document.getElementById('modal-detalhes-aumento').classList.remove('hidden');
+        };
+
+        window.fecharModalDetalhesAumento = () => {
+            document.getElementById('modal-detalhes-aumento').classList.add('hidden');
+        };
+
+        // --- FUNÇÃO PARA FORMATAR VALORES (ex: 1.000,00) ---
+        window.formatarReal = (valor) => {
+            const numero = parseFloat(valor) || 0;
+            return numero.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         };
 
     </script>
