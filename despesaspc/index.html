@@ -44,20 +44,22 @@
     /* Regras aplicadas APENAS em telas menores (até 768px) */
     @media (max-width: 768px) {
         body {
-            overflow: hidden; /* Evita rolagem dupla no iOS/Android */
+            overflow: hidden; 
         }
         
         .app-container {
-            flex-direction: column; /* Empilha o layout */
+            flex-direction: column; 
+            width: 100vw;
+            max-width: 100vw; /* Impede o site inteiro de "vazar" para os lados */
         }
         
         .mobile-header {
-            display: flex; /* Mostra a barra superior no mobile */
+            display: flex; 
         }
         
         .sidebar {
             position: fixed;
-            left: -300px; /* Esconde o menu fora da tela */
+            left: -300px; 
             top: 0;
             height: 100vh;
             z-index: 2000;
@@ -66,23 +68,94 @@
         }
         
         .sidebar.open {
-            left: 0; /* Desliza o menu para dentro */
+            left: 0; 
         }
         
         .main-content {
-            padding: 20px 16px; /* Reduz as bordas laterais */
-            height: calc(100vh - 64px); /* Desconta o tamanho do mobile-header */
+            padding: 16px 12px; 
+            height: calc(100vh - 64px); 
+            width: 100vw; /* Crucial para as tabelas criarem barra de rolagem */
+            max-width: 100vw;
+            overflow-x: hidden; /* Corta vazamentos laterais */
+            overflow-y: auto;
         }
 
-        /* Permite que as tabelas rolem para o lado sem quebrar */
+        /* --- CORREÇÃO DAS TABELAS (Permitir rolagem lateral) --- */
         .table-container {
-            overflow-x: auto;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch; /* Deixa o deslizar macio no iPhone/Android */
+            margin-bottom: 20px;
+            border-radius: 8px;
         }
+        
         table {
-            min-width: 700px; /* Impede as colunas de ficarem esmagadas */
+            min-width: 700px; /* Mantém os dados legíveis */
         }
 
-        /* Ajusta cabeçalhos com botões que ficam lado a lado */
+        /* Adiciona um textinho para o usuário saber que pode deslizar a tabela */
+        .table-container::after {
+            content: "Deslize para ver mais ➔";
+            display: block;
+            text-align: right;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            padding: 8px 12px;
+            font-style: italic;
+            background: #f8fafc;
+        }
+
+        /* --- CORREÇÃO DOS GRIDS (Remuneração, Terços, Aumentos, Pagamentos) --- */
+        .card-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        /* Esse "truque" pega as colunas criadas no JS e empilha forçadamente no celular */
+        div[style*="grid-template-columns: 1fr 1fr"],
+        div[style*="minmax(350px"],
+        div[style*="minmax(380px"] {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+        }
+
+        /* --- CORREÇÃO DE FORMULÁRIOS, INPUTS E CARDS --- */
+        /* Transforma as caixas do 13º e Terços em blocos empilhados */
+        div[style*="display: flex"][style*="gap: 12px"],
+        div[style*="display: flex"][style*="gap: 16px"] {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        
+        div[style*="display: flex"][style*="gap: 12px"] > .form-group {
+            width: 100% !important;
+            margin: 0 !important;
+        }
+
+        /* Cards de Totalizadores que usam Flex (ex: Saldo total da família) */
+        .card[style*="display: flex"] {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px;
+        }
+
+        /* Modais */
+        .modal-content {
+            width: 95%;
+            padding: 20px 16px;
+            max-height: 85vh;
+        }
+
+        /* O formulário de débito automático */
+        #form-novo-debito {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        #form-novo-debito button {
+            width: 100%;
+        }
+
+        /* --- CABEÇALHOS E ABAS --- */
         .view-header {
             flex-direction: column;
             align-items: flex-start;
@@ -97,16 +170,19 @@
         .view-header button {
             width: 100%;
         }
-
-        /* Ajusta modais e grids */
-        .modal-content {
-            width: 95%;
-            padding: 20px;
+        
+        .tabs-header {
+            flex-wrap: wrap;
+            gap: 8px;
         }
-        .card-grid {
-            grid-template-columns: 1fr; /* 1 card por linha no mobile */
+        .tab-link {
+            flex: 1;
+            text-align: center;
+            font-size: 0.9rem;
+            padding: 10px 4px;
         }
     }
+
         :root {
             --bg-primary: #f4f6f9;
             --sidebar-bg: #1e293b;
@@ -321,7 +397,7 @@
 
         <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
         <div class="mobile-header">
-            <div style="font-weight: 700; font-size: 1.3rem; color: #38bdf8;"><span>📊</span> Finanças Cloud</div>
+            <div style="font-weight: 700; font-size: 1.3rem; color: #38bdf8;"><span>📊</span> Finanças PRO</div>
             <button class="hamburger-btn" onclick="toggleMobileMenu()">☰</button>
         </div>
 
