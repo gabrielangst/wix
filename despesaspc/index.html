@@ -217,6 +217,24 @@
         .sidebar button:hover { background-color: var(--sidebar-hover); color: var(--white); }
         .sidebar button.active { background-color: var(--sidebar-active); color: var(--white); font-weight: 600; }
 
+        /* --- SCROLLBAR CUSTOMIZADA PARA O MENU LATERAL --- */
+        .sidebar nav::-webkit-scrollbar {
+            width: 6px; /* Barra mais fina e discreta */
+        }
+
+        .sidebar nav::-webkit-scrollbar-track {
+            background: var(--sidebar-bg); /* Mesma cor de fundo do menu */
+        }
+
+        .sidebar nav::-webkit-scrollbar-thumb {
+            background: #475569; /* Tom de cinza azulado que combina com o tema */
+            border-radius: 10px; /* Bordas arredondadas */
+        }
+
+        .sidebar nav::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* Fica um pouco mais claro ao passar o mouse */
+        }
+
         /* Área de Conteúdo Principal */
         .main-content { flex: 1; padding: 40px; overflow-y: auto; background-color: var(--bg-primary); }
         .view-section { display: none; }
@@ -403,7 +421,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças Pro 1.5
+                <span>📊</span> Finanças Pro 1.6
             </div>
             <nav>
                 <ul id="main-menu">
