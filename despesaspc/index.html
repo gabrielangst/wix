@@ -1631,13 +1631,16 @@
                     <td><span class="quota-badge" style="background-color:${q.cor}">${q.nome}</span></td>
                     <td>R$ ${formatarReal(q.valor)}</td>
                     <td style="min-width: 250px;">
-                        <div style="font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Total: R$ ${formatarReal(totalGasto)}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div style="font-weight: 700; color: var(--text-main);">Total: R$ ${formatarReal(totalGasto)}</div>
+                            ${historico.length > 0 ? `<button onclick="toggleHistoricoQuota(${index})" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Mostrar/Ocultar Histórico">👁️</button>` : ''}
+                        </div>
                         <div style="display: flex; gap: 4px; margin-bottom: 8px;">
                             <input type="text" id="desc-gasto-${index}" class="table-input" style="flex: 1;" placeholder="Descrição">
                             <input type="number" id="add-gasto-${index}" class="table-input" style="width: 80px;" placeholder="R$">
                             <button class="btn-primary" style="padding: 4px 10px;" onclick="adicionarGastoQuota(${index})">+</button>
                         </div>
-                        <ul style="list-style: none; padding: 0;">${historicoHtml}</ul>
+                        <ul id="lista-historico-quota-${index}" class="hidden" style="list-style: none; padding: 0; margin-top: 8px;">${historicoHtml}</ul>
                     </td>
                     <td class="${classeSaldoQuota}">R$ ${formatarReal(saldoAtualizado)}</td>
                     <td><input type="text" class="table-input" value="${q.obs || ''}" onchange="atualizarObsQuota(${index}, this.value)" placeholder="Notas..."></td>
@@ -1950,7 +1953,7 @@
 
         window.renomearCaixinha = async (id) => { const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; const n = prompt("Novo nome:", c.nome); if(n && n.trim()!==""){ c.nome=n.trim(); await DB.setCaixinhas(cx); await renderizarCaixinhas(); } };
         window.excluirCaixinha = async (id) => { let cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; if(c.saldo>0 && !confirm(`A caixinha tem R$ ${formatarReal(c.saldo)}!
-Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas(cx); await renderizarCaixinhas(); };
+Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas(cx); await renderizarCaixinhas(); };
         window.ajustarCaixinha = async (id, tipo) => { const v = parseFloat(prompt(`Valor para ${tipo}:`)); if(!v||isNaN(v)) return; const d = prompt("Descrição:"); const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(tipo==='Crédito') c.saldo+=v; else c.saldo-=v; c.historico.push({tipo, valor:v, desc:d||'Ajuste', data:new Date().toLocaleDateString()}); await DB.setCaixinhas(cx); await renderizarCaixinhas(); };
         window.toggleHistoricoCaixinha = (id) => {
             document.querySelectorAll(`.historico-${id}`).forEach(el => el.classList.toggle('hidden'));
@@ -3422,6 +3425,13 @@ Certeza absoluta?`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas
         window.formatarReal = (valor) => {
             const numero = parseFloat(valor) || 0;
             return numero.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+
+        window.toggleHistoricoQuota = (idx) => {
+            const lista = document.getElementById(`lista-historico-quota-${idx}`);
+            if(lista) {
+                lista.classList.toggle('hidden');
+            }
         };
 
     </script>
