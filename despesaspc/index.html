@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="favicon.png">
-    <title>Finanças Pro - Controle Mensal</title>
+    <title>Finanças - Controle Mensal</title>
     <style>
 
     /* --- RESPONSIVIDADE PARA MOBILE --- */
@@ -394,7 +394,7 @@
     <!-- AUTHENTICATION UI -->
     <div id="auth-container" class="auth-wrapper">
         <div class="auth-box">
-            <h2>Finanças PRO</h2>
+            <h2>Finanças</h2>
             <div class="form-group">
                 <label>Email</label>
                 <input type="email" id="auth-email" class="form-control" placeholder="seu@email.com">
@@ -415,13 +415,13 @@
 
         <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
         <div class="mobile-header">
-            <div style="font-weight: 700; font-size: 1.3rem; color: #38bdf8;"><span>📊</span> Finanças PRO</div>
+            <div style="font-weight: 700; font-size: 1.3rem; color: #38bdf8;"><span>📊</span> Finanças</div>
             <button class="hamburger-btn" onclick="toggleMobileMenu()">☰</button>
         </div>
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças Pro 1.6
+                <span>📊</span> Finanças 1.6.1
             </div>
             <nav>
                 <ul id="main-menu">
@@ -454,8 +454,8 @@
                     <li class="menu-separator"></li>                    
                     <li><button data-target="view-observacoes">📌 Observações Importantes</button></li>
                     <li class="menu-separator"></li>
-                    <li><button data-target="view-particular-gabriel">👨🏻‍💻 Particular Gabriel</button></li>
-                    <li><button data-target="view-particular-kamila">👩🏻‍💻 Particular Kamila</button></li>
+                    <li><button data-target="view-particular-gabriel">👨🏻‍💻 Parcelamentos Gabriel</button></li>
+                    <li><button data-target="view-particular-kamila">👩🏻‍💻 Parcelamentos Kamila</button></li>
                     <li class="menu-separator"></li>
                     <li><button data-target="view-import-export">🔄 Importar / Exportar</button></li>
                 </ul>
@@ -768,47 +768,33 @@
 
         <section id="view-particular-gabriel" class="view-section">
             <div class="view-header">
-                <h1>Particular Gabriel</h1>
+                <h1>Parcelamentos Gabriel</h1>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="btn-secondary" onclick="abrirModalAntigas('gabriel')">🏛️ Visualizar Antigas</button>
+                    <button class="btn-secondary" onclick="abrirModalListaParcelamentos('gabriel')">Editar Despesas Recorrentes</button>
+                    <button class="btn-primary" onclick="abrirModalNovoParcelamento('gabriel')">+ Novo Parcelamento</button>
+                </div>
             </div>
-            <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); height: calc(100vh - 200px); display: flex; flex-direction: column;">
-                <p class="text-muted" style="margin-bottom: 16px;">Gabriel, após alterar, no botão Salvar</p>
-                
-                <div class="editor-toolbar">
-                    <button type="button" onclick="formatarTexto('bold')" title="Negrito">B</button>
-                    <button type="button" onclick="formatarTexto('italic')" title="Itálico" style="font-style: italic;">I</button>
-                    <button type="button" onclick="formatarTexto('underline')" title="Sublinhado" style="text-decoration: underline;">U</button>
-                    <div style="width: 1px; background: var(--border-color); height: 20px; margin: 0 4px;"></div>
-                    <input type="color" onchange="formatarTexto('foreColor', this.value)" title="Cor do Texto">
-                </div>
-                
-                <div id="texto-particular-gabriel" class="editor-content" contenteditable="true" spellcheck="false" placeholder="Comece a digitar aqui..."></div>
-                
-                <div style="display: flex; justify-content: flex-end;">
-                    <button class="btn-primary" onclick="salvarParticularGabriel(this)">Salvar Anotações</button>
-                </div>
+            <div id="grid-parcelamentos-gabriel" class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));"></div>
+            
+            <div style="text-align: center; margin-top: 32px; margin-bottom: 16px;">
+                <button class="btn-secondary" style="padding: 12px 24px; font-weight: 600;" onclick="carregarMaisMeses('gabriel')">🔄 Exibir mais 12 meses</button>
             </div>
         </section>
 
         <section id="view-particular-kamila" class="view-section">
             <div class="view-header">
-                <h1>Particular Kamila</h1>
+                <h1>Parcelamentos Kamila</h1>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="btn-secondary" onclick="abrirModalAntigas('kamila')">🏛️ Visualizar Antigas</button>
+                    <button class="btn-secondary" onclick="abrirModalListaParcelamentos('kamila')">Editar Despesas Recorrentes</button>
+                    <button class="btn-primary" onclick="abrirModalNovoParcelamento('kamila')">+ Novo Parcelamento</button>
+                </div>
             </div>
-            <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); height: calc(100vh - 200px); display: flex; flex-direction: column;">
-                <p class="text-muted" style="margin-bottom: 16px;">Kamila, após alterar, no botão Salvar</p>
-                
-                <div class="editor-toolbar">
-                    <button type="button" onclick="formatarTexto('bold')" title="Negrito">B</button>
-                    <button type="button" onclick="formatarTexto('italic')" title="Itálico" style="font-style: italic;">I</button>
-                    <button type="button" onclick="formatarTexto('underline')" title="Sublinhado" style="text-decoration: underline;">U</button>
-                    <div style="width: 1px; background: var(--border-color); height: 20px; margin: 0 4px;"></div>
-                    <input type="color" onchange="formatarTexto('foreColor', this.value)" title="Cor do Texto">
-                </div>
-                
-                <div id="texto-particular-kamila" class="editor-content" contenteditable="true" spellcheck="false" placeholder="Comece a digitar aqui..."></div>
-                
-                <div style="display: flex; justify-content: flex-end;">
-                    <button class="btn-primary" onclick="salvarParticularKamila(this)">Salvar Anotações</button>
-                </div>
+            <div id="grid-parcelamentos-kamila" class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));"></div>
+            
+            <div style="text-align: center; margin-top: 32px; margin-bottom: 16px;">
+                <button class="btn-secondary" style="padding: 12px 24px; font-weight: 600;" onclick="carregarMaisMeses('kamila')">🔄 Exibir mais 12 meses</button>
             </div>
         </section>
 
@@ -1249,6 +1235,129 @@
         </div>
     </div>
 
+    <div id="modal-novo-parcelamento" class="modal-overlay hidden" style="z-index: 1100;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 id="titulo-modal-parcelamento" style="font-size: 1.2rem;">Novo Parcelamento</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalNovoParcelamento()">✖</button>
+            </div>
+            <input type="hidden" id="parc-pessoa">
+            <input type="hidden" id="parc-id">
+            
+            <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="parc-desc" class="form-control" placeholder="Ex: Celular, Roupas...">
+            </div>
+            <div class="form-group">
+                <label>Valor da Parcela (R$)</label>
+                <input type="number" id="parc-valor" class="form-control" step="0.01">
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Mês de Início</label>
+                    <select id="parc-mes" class="form-control">
+                        <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+                        <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+                        <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+                        <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Ano de Início</label>
+                    <input type="number" id="parc-ano" class="form-control" value="2026">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Duração do Pagamento</label>
+                <select id="parc-tipo" class="form-control" onchange="toggleParcelasCustom(this.value)">
+                    <option value="0">Indefinido (Recorrente mensal)</option>
+                    <option value="1">Número de Parcelas</option>
+                </select>
+            </div>
+            <div class="form-group hidden" id="div-parc-qtd-custom">
+                <label>Quantidade Total de Parcelas</label>
+                <input type="number" id="parc-qtd-custom" class="form-control" min="1" placeholder="Ex: 12, 15, 18...">
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button class="btn-secondary" onclick="fecharModalNovoParcelamento()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarParcelamento()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-lista-parcelamentos" class="modal-overlay hidden" style="z-index: 1090;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 id="titulo-modal-lista-parc" style="font-size: 1.2rem;">Editar Despesas Recorrentes</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalListaParcelamentos()">✖</button>
+            </div>
+            <input type="hidden" id="lista-parc-pessoa">
+            
+            <div class="table-container" style="margin-top: 0; max-height: 50vh; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Valor</th>
+                            <th>Início</th>
+                            <th>Parcelas</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-lista-parcelamentos"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-parcelamentos-antigas" class="modal-overlay hidden" style="z-index: 1095;">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 id="titulo-modal-antigas" style="font-size: 1.2rem;">Visualizar Parcelamentos Antigos</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalAntigas()">✖</button>
+            </div>
+            <input type="hidden" id="antigas-pessoa">
+            
+            <div style="display: flex; gap: 12px; margin-bottom: 20px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); align-items: flex-end;">
+                <div class="form-group" style="flex: 1; margin: 0;">
+                    <label>Mês</label>
+                    <select id="antigas-mes" class="form-control">
+                        <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+                        <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+                        <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+                        <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1; margin: 0;">
+                    <label>Ano</label>
+                    <input type="number" id="antigas-ano" class="form-control" value="2026">
+                </div>
+                <button class="btn-primary" onclick="consultarParcelamentosAntigos()" style="height: 40px;">Consultar</button>
+            </div>
+
+            <div class="table-container" style="margin-top: 0; max-height: 40vh; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Parcela</th>
+                            <th style="text-align: right;">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-parcelamentos-antigas">
+                        <tr><td colspan="3" style="text-align: center;" class="text-muted">Selecione o mês/ano e clique em Consultar.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="background: #fef2f2; padding: 12px; border-radius: 8px; margin-top: 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #fecaca;">
+                <strong style="color: var(--accent-danger); font-size: 0.9rem;">Total do Mês Consultado:</strong>
+                <strong id="total-antigas-consultado" style="color: var(--accent-danger); font-size: 1.2rem;">R$ 0,00</strong>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -1337,9 +1446,9 @@
             setCategoriasObs: (data) => DB.set('fin_categorias_obs', data),
             getObservacoes: () => DB.get('fin_observacoes', defObservacoes),
             setObservacoes: (data) => DB.set('fin_observacoes', data),
-            getParticularGabriel: () => DB.get('fin_particular_gabriel', { texto: '' }),
+            getParticularGabriel: async () => { const res = await DB.get('fin_particular_gabriel', []); return Array.isArray(res) ? res : []; },
             setParticularGabriel: (data) => DB.set('fin_particular_gabriel', data),
-            getParticularKamila: () => DB.get('fin_particular_kamila', { texto: '' }),
+            getParticularKamila: async () => { const res = await DB.get('fin_particular_kamila', []); return Array.isArray(res) ? res : []; },
             setParticularKamila: (data) => DB.set('fin_particular_kamila', data),   
             getDividas: () => DB.get('fin_dividas', { texto: '' }),
             setDividas: (data) => DB.set('fin_dividas', data),
@@ -1394,7 +1503,7 @@
             await renderizarDebitosAuto();
             await renderizarCategoriasObs();
             await renderizarObservacoes();
-            await renderizarParticulares();
+            await renderizarCardsParcelamentos();
             await renderizarTextosAcompanhamento();
             await renderizarAumentos();
             await renderizarRemuneracaoLiquida();
@@ -3433,6 +3542,331 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 lista.classList.toggle('hidden');
             }
         };
+
+    // ==========================================
+        // LÓGICA CORRIGIDA: PARCELAMENTOS INDIVIDUAIS (GABRIEL & KAMILA)
+        // ==========================================
+        const mesesNomeArray = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        
+        window.limiteMesesGabriel = 13;
+        window.limiteMesesKamila = 13;
+
+        window.carregarMaisMeses = async (pessoa) => {
+            if (pessoa === 'gabriel') window.limiteMesesGabriel += 12;
+            else window.limiteMesesKamila += 12;
+            await renderizarCardsParcelamentos();
+        };
+
+        window.toggleParcelasCustom = (valor) => {
+            const div = document.getElementById('div-parc-qtd-custom');
+            if (valor === '1') div.classList.remove('hidden');
+            else div.classList.add('hidden');
+        };
+
+        window.abrirModalNovoParcelamento = async (pessoa, idEdicao = null) => {
+            document.getElementById('parc-pessoa').value = pessoa;
+            document.getElementById('parc-id').value = idEdicao || '';
+            const tituloPessoa = pessoa === 'gabriel' ? 'Gabriel' : 'Kamila';
+            document.getElementById('titulo-modal-parcelamento').innerText = idEdicao ? `Editar Parcelamento - ${tituloPessoa}` : `Novo Parcelamento - ${tituloPessoa}`;
+
+            if (idEdicao) {
+                const arr = pessoa === 'gabriel' ? await DB.getParticularGabriel() : await DB.getParticularKamila();
+                const p = arr.find(x => x.id === idEdicao);
+                document.getElementById('parc-desc').value = p.desc;
+                document.getElementById('parc-valor').value = p.valor;
+                document.getElementById('parc-mes').value = p.mesInicio;
+                document.getElementById('parc-ano').value = p.anoInicio;
+                
+                // Lógica para preencher os novos campos de parcelas
+                if (p.parcelas === 0) {
+                    document.getElementById('parc-tipo').value = '0';
+                    document.getElementById('div-parc-qtd-custom').classList.add('hidden');
+                    document.getElementById('parc-qtd-custom').value = '';
+                } else {
+                    document.getElementById('parc-tipo').value = '1';
+                    document.getElementById('div-parc-qtd-custom').classList.remove('hidden');
+                    document.getElementById('parc-qtd-custom').value = p.parcelas;
+                }
+            } else {
+                const hoje = new Date();
+                document.getElementById('parc-desc').value = '';
+                document.getElementById('parc-valor').value = '';
+                document.getElementById('parc-mes').value = hoje.getMonth();
+                document.getElementById('parc-ano').value = hoje.getFullYear();
+                
+                // Resetando os campos de parcelas para o padrão
+                document.getElementById('parc-tipo').value = '0';
+                document.getElementById('div-parc-qtd-custom').classList.add('hidden');
+                document.getElementById('parc-qtd-custom').value = '';
+            }
+
+            fecharModalListaParcelamentos();
+            document.getElementById('modal-novo-parcelamento').classList.remove('hidden');
+        };
+
+        window.fecharModalNovoParcelamento = () => document.getElementById('modal-novo-parcelamento').classList.add('hidden');
+
+        window.salvarParcelamento = async () => {
+            const pessoa = document.getElementById('parc-pessoa').value;
+            const id = document.getElementById('parc-id').value;
+
+            // Captura inteligente das parcelas baseado no select de tipo
+            const tipoParc = document.getElementById('parc-tipo').value;
+            let qtdParcelas = 0;
+            if (tipoParc === '1') {
+                qtdParcelas = parseInt(document.getElementById('parc-qtd-custom').value) || 1;
+            }
+
+            const novoObj = {
+                id: id ? id : 'parc_' + Date.now(),
+                desc: document.getElementById('parc-desc').value.trim(),
+                valor: parseFloat(document.getElementById('parc-valor').value) || 0,
+                mesInicio: parseInt(document.getElementById('parc-mes').value),
+                anoInicio: parseInt(document.getElementById('parc-ano').value),
+                parcelas: qtdParcelas
+            };
+
+            if(!novoObj.desc || novoObj.valor <= 0) { alert("Preencha descrição e valor."); return; }
+
+            const arr = pessoa === 'gabriel' ? await DB.getParticularGabriel() : await DB.getParticularKamila();
+
+            if (id) {
+                const idx = arr.findIndex(x => x.id === id);
+                if (idx !== -1) arr[idx] = novoObj;
+            } else {
+                arr.push(novoObj);
+            }
+
+            if (pessoa === 'gabriel') await DB.setParticularGabriel(arr);
+            else await DB.setParticularKamila(arr);
+
+            fecharModalNovoParcelamento();
+            await renderizarCardsParcelamentos();
+        };
+
+        window.abrirModalListaParcelamentos = async (pessoa) => {
+            document.getElementById('lista-parc-pessoa').value = pessoa;
+            const arr = pessoa === 'gabriel' ? await DB.getParticularGabriel() : await DB.getParticularKamila();
+            const tbody = document.getElementById('tbody-lista-parcelamentos');
+            tbody.innerHTML = '';
+
+            // --- NOVO: Lógica para filtrar parcelamentos finalizados ---
+            const hoje = new Date();
+            const absMonthAtual = (hoje.getFullYear() * 12) + hoje.getMonth();
+
+            const arrAtivas = arr.filter(p => {
+                if (p.parcelas === 0) return true; // Indefinidas nunca expiram
+                const absEnd = (p.anoInicio * 12) + p.mesInicio + p.parcelas - 1;
+                return absEnd >= absMonthAtual; // Só mantém se o mês final for maior ou igual ao mês atual
+            });
+
+            // Separa e ordena usando apenas as despesas que ainda estão ativas
+            const indefinidas = arrAtivas.filter(x => x.parcelas === 0).sort((a, b) => a.id.localeCompare(b.id));
+            const definidas = arrAtivas.filter(x => x.parcelas > 0).sort((a, b) => a.id.localeCompare(b.id));
+            const arrOrdenado = [...indefinidas, ...definidas];
+
+            if (arrOrdenado.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;" class="text-muted">Nenhum registro ativo encontrado.</td></tr>';
+            } else {
+                arrOrdenado.forEach(p => {
+                    const prazo = p.parcelas === 0 ? 'Indefinido' : `${p.parcelas}x`;
+                    const inicio = `${mesesNomeArray[p.mesInicio].substring(0,3)}/${p.anoInicio}`;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${p.desc}</td>
+                        <td class="text-danger">R$ ${formatarReal(p.valor)}</td>
+                        <td>${inicio}</td>
+                        <td><span class="quota-badge" style="background-color: var(--sidebar-bg);">${prazo}</span></td>
+                        <td>
+                            <button class="text-muted" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; margin-right: 8px;" onclick="abrirModalNovoParcelamento('${pessoa}', '${p.id}')">✏️</button>
+                            <button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 1.1rem;" onclick="excluirParcelamento('${pessoa}', '${p.id}')">✖</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+            document.getElementById('modal-lista-parcelamentos').classList.remove('hidden');
+        };
+
+        window.fecharModalListaParcelamentos = () => document.getElementById('modal-lista-parcelamentos').classList.add('hidden');
+
+        window.excluirParcelamento = async (pessoa, id) => {
+            if (!confirm("Tem certeza que deseja excluir esta despesa recorrente?")) return;
+            let arr = pessoa === 'gabriel' ? await DB.getParticularGabriel() : await DB.getParticularKamila();
+            arr = arr.filter(x => x.id !== id);
+            
+            if (pessoa === 'gabriel') await DB.setParticularGabriel(arr);
+            else await DB.setParticularKamila(arr);
+            
+            abrirModalListaParcelamentos(pessoa);
+            await renderizarCardsParcelamentos();
+        };
+
+        window.renderizarCardsParcelamentos = async () => {
+            const arrG = await DB.getParticularGabriel();
+            const arrK = await DB.getParticularKamila();
+            
+            gerarCardsParaPessoa('grid-parcelamentos-gabriel', arrG, 'gabriel');
+            gerarCardsParaPessoa('grid-parcelamentos-kamila', arrK, 'kamila');
+        };
+
+        function gerarCardsParaPessoa(containerId, despesas, pessoa) {
+            const container = document.getElementById(containerId);
+            if(!container) return;
+            container.innerHTML = '';
+
+            const hoje = new Date();
+            const mesAtual = hoje.getMonth();
+            const anoAtual = hoje.getFullYear();
+
+            let anoUltimoDesenhado = null; // Variável para controlar a quebra de ano
+            
+            const limite = pessoa === 'gabriel' ? window.limiteMesesGabriel : window.limiteMesesKamila;
+
+            for (let offset = -1; offset < limite - 1; offset++) {
+                let mesCard = mesAtual + offset;
+                let anoCard = anoAtual;
+                
+                if (mesCard < 0) {
+                    mesCard = 12 + mesCard;
+                    anoCard--;
+                } else if (mesCard > 11) {
+                    anoCard += Math.floor(mesCard / 12);
+                    mesCard = mesCard % 12;
+                }
+
+                // --- NOVO: Lógica de Separador de Ano ---
+                if (anoCard !== anoUltimoDesenhado) {
+                    const separador = document.createElement('div');
+                    separador.className = 'year-separator';
+                    separador.style.width = '100%';
+                    separador.style.marginBottom = '20px';
+                    separador.innerText = anoCard;
+                    container.appendChild(separador);
+                    anoUltimoDesenhado = anoCard;
+                }
+
+                const absMonthCard = anoCard * 12 + mesCard;
+                
+                let htmlItens = '';
+                let totalMes = 0;
+
+                despesas.forEach(d => {
+                    const absStart = d.anoInicio * 12 + d.mesInicio;
+                    const absEnd = d.parcelas === 0 ? Infinity : absStart + d.parcelas - 1;
+
+                    if (absMonthCard >= absStart && absMonthCard <= absEnd) {
+                        totalMes += d.valor;
+                        const numParcela = d.parcelas === 0 ? 'Fixa' : `${absMonthCard - absStart + 1}/${d.parcelas}`;
+                        htmlItens += `
+                            <li style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding: 8px 0; font-size: 0.9rem;">
+                                <span>${d.desc} <small class="text-muted">(${numParcela})</small></span>
+                                <strong>R$ ${formatarReal(d.valor)}</strong>
+                            </li>
+                        `;
+                    }
+                });
+
+                const card = document.createElement('div');
+                const isMesAtualReal = (mesCard === mesAtual && anoCard === anoAtual);
+                card.className = `card ${isMesAtualReal ? 'card-atual' : ''}`;
+                card.style.display = 'flex';
+                card.style.flexDirection = 'column';
+
+                // --- NOVO: Lógica de cor do rodapé ---
+                const isMesAnterior = (mesCard === (mesAtual === 0 ? 11 : mesAtual - 1) && 
+                                      anoCard === (mesAtual === 0 ? anoAtual - 1 : anoAtual));
+                
+                const estiloFooter = isMesAnterior 
+                    ? 'background: #dcfce7; border: 1px solid #bbf7d0;' // Verde pago
+                    : 'background: #fef2f2; border: 1px solid #fecaca;'; // Vermelho padrão
+                
+                const corTextoFooter = isMesAnterior ? 'var(--accent-success)' : 'var(--accent-danger)';
+
+                // --- FIM DA LÓGICA ---
+
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                            ${isMesAtualReal ? '📅' : '🗓️'} ${mesesNomeArray[mesCard]} de ${anoCard}
+                        </h3>
+                        <span style="font-size: 0.8rem; background: var(--border-color); padding: 2px 8px; border-radius: 12px; font-weight: 600;">Dia 22</span>
+                    </div>
+
+                    <ul style="list-style: none; padding: 0; margin: 0; flex-grow: 1; min-height: 80px;">
+                        ${htmlItens || '<li class="text-muted" style="font-size: 0.85rem; padding: 8px 0;">Nenhuma parcela para este mês.</li>'}
+                    </ul>
+
+                    <div style="${estiloFooter} padding: 12px; border-radius: 8px; margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: ${corTextoFooter}; font-size: 0.9rem;">Total:</strong>
+                        <strong style="color: ${corTextoFooter}; font-size: 1.2rem;">R$ ${formatarReal(totalMes)}</strong>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        window.abrirModalAntigas = (pessoa) => {
+            document.getElementById('antigas-pessoa').value = pessoa;
+            const tituloPessoa = pessoa === 'gabriel' ? 'Gabriel' : 'Kamila';
+            document.getElementById('titulo-modal-antigas').innerText = `Visualizar Antigas - ${tituloPessoa}`;
+            
+            const hoje = new Date();
+            let m = hoje.getMonth() - 1;
+            let a = hoje.getFullYear();
+            if (m < 0) { m = 11; a--; }
+            
+            document.getElementById('antigas-mes').value = m;
+            document.getElementById('antigas-ano').value = a;
+            
+            document.getElementById('tbody-parcelamentos-antigas').innerHTML = `<tr><td colspan="3" style="text-align: center;" class="text-muted">Selecione o mês/ano e clique em Consultar.</td></tr>`;
+            document.getElementById('total-antigas-consultado').innerText = 'R$ 0,00';
+            
+            document.getElementById('modal-parcelamentos-antigas').classList.remove('hidden');
+        };
+
+        window.fecharModalAntigas = () => document.getElementById('modal-parcelamentos-antigas').classList.add('hidden');
+
+        window.consultarParcelamentosAntigos = async () => {
+            const pessoa = document.getElementById('antigas-pessoa').value;
+            const mesSel = parseInt(document.getElementById('antigas-mes').value);
+            const anoSel = parseInt(document.getElementById('antigas-ano').value);
+
+            // A LINHA CORRIGIDA SEM O "append =>"
+            const arr = pessoa === 'gabriel' ? await DB.getParticularGabriel() : await DB.getParticularKamila();
+
+            const tbody = document.getElementById('tbody-parcelamentos-antigas');
+            tbody.innerHTML = '';
+
+            const absMonthSelected = anoSel * 12 + mesSel;
+            let totalConsultado = 0;
+            let encontrou = false;
+
+            arr.forEach(d => {
+                const absStart = d.anoInicio * 12 + d.mesInicio;
+                const absEnd = d.parcelas === 0 ? Infinity : absStart + d.parcelas - 1;
+
+                if (absMonthSelected >= absStart && absMonthSelected <= absEnd) {
+                    encontrou = true;
+                    totalConsultado += d.valor;
+                    const numParcela = d.parcelas === 0 ? 'Fixa' : `${absMonthSelected - absStart + 1}/${d.parcelas}`;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${d.desc}</strong></td>
+                        <td><span class="quota-badge" style="background-color: var(--sidebar-bg);">${numParcela}</span></td>
+                        <td style="text-align: right; font-weight: bold;" class="text-danger">R$ ${formatarReal(d.valor)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (!encontrou) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;" class="text-muted">Nenhum parcelamento ativo neste período.</td></tr>';
+            }
+
+            document.getElementById('total-antigas-consultado').innerText = `R$ ${formatarReal(totalConsultado)}`;
+        };   
 
     </script>
 </body>
