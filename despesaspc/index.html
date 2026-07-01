@@ -421,7 +421,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças 1.6.2
+                <span>📊</span> Finanças 1.6.3
             </div>
             <nav>
                 <ul id="main-menu">
@@ -445,18 +445,24 @@
                             <li><button data-target="view-pagamentos" style="font-size: 0.9rem; padding: 8px 12px;">💳 Tabela de Pagamentos</button></li>
                         </ul>
                     </li>
-
-                    <li class="menu-separator"></li>                    
+                    
+                    <li class="menu-separator"></li> 
+                    
+                    <li><button data-target="view-descontos-fc">💼 Descontos FC/CJ</button></li>
+                    <li><button data-target="view-particular-gabriel">👨🏻‍💻 Parcelamentos Gabriel</button></li>
+                    <li><button data-target="view-particular-kamila">👩🏻‍💻 Parcelamentos Kamila</button></li>
+                    
+                    <li class="menu-separator"></li>
+                   
                     <li><button data-target="view-aumentos">📈 Próximos Aumentos</button></li>
                     <li><button data-target="view-dividas">📉 Quitação de Dívidas</button></li>
                     <li><button data-target="view-taxas">🏦 Taxas Bancárias</button></li>
                     <li><button data-target="view-financiamento">🏠 Novo Financiamento (Casa)</button></li>
+
                     <li class="menu-separator"></li>                    
                     <li><button data-target="view-observacoes">📌 Observações Importantes</button></li>
                     <li class="menu-separator"></li>
-                    <li><button data-target="view-particular-gabriel">👨🏻‍💻 Parcelamentos Gabriel</button></li>
-                    <li><button data-target="view-particular-kamila">👩🏻‍💻 Parcelamentos Kamila</button></li>
-                    <li class="menu-separator"></li>
+
                     <li><button data-target="view-import-export">🔄 Importar / Exportar</button></li>
                 </ul>
             </nav>
@@ -661,24 +667,45 @@
             <!-- OUTRAS VIEWS ESTÁTICAS -->          
 
             <section id="view-dividas" class="view-section">
-                <div class="view-header">
-                    <h1>Quitação de Dívidas</h1>
+                <!-- PAINEL LISTA DE DÍVIDAS -->
+                <div id="panel-lista-dividas">
+                    <div class="view-header">
+                        <h1>Quitação de Dívidas</h1>
+                        <button class="btn-primary" onclick="adicionarNovaDivida()">+ Nova Dívida</button>
+                    </div>
+                    <p class="text-muted" style="margin-bottom: 20px;">Acompanhamento de amortizações de passivos a longo prazo.</p>
+                    <div id="grid-dividas" class="card-grid"></div>
                 </div>
-                <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); height: calc(100vh - 200px); display: flex; flex-direction: column;">
-                    <p class="text-muted" style="margin-bottom: 16px;">Acompanhamento de amortizações de passivos a longo prazo.</p>
-                    
-                    <div class="editor-toolbar">
-                        <button type="button" onclick="formatarTexto('bold')" title="Negrito">B</button>
-                        <button type="button" onclick="formatarTexto('italic')" title="Itálico" style="font-style: italic;">I</button>
-                        <button type="button" onclick="formatarTexto('underline')" title="Sublinhado" style="text-decoration: underline;">U</button>
-                        <div style="width: 1px; background: var(--border-color); height: 20px; margin: 0 4px;"></div>
-                        <input type="color" onchange="formatarTexto('foreColor', this.value)" title="Cor do Texto">
+
+                <!-- PAINEL DETALHE DA DÍVIDA (EDITOR) -->
+                <div id="panel-detalhe-divida" class="hidden">
+                    <div class="view-header">
+                        <div>
+                            <button class="btn-secondary" onclick="fecharDetalheDivida()" style="margin-bottom: 8px;">← Voltar às Dívidas</button>
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                <h1 id="txt-titulo-divida" style="margin: 0;">Nome da Dívida</h1>
+                                <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem; display: flex; align-items: center;" onclick="renomearDividaAtual()">✏️ Renomear</button>
+                            </div>
+                        </div>
+                        <button class="btn-secondary text-danger" onclick="excluirDividaAtual()">🗑️ Excluir Dívida</button>
                     </div>
                     
-                    <div id="texto-dividas" class="editor-content" contenteditable="true" spellcheck="false" placeholder="Anote aqui as dívidas e planos de amortização..."></div>
-                    
-                    <div style="display: flex; justify-content: flex-end;">
-                        <button class="btn-primary" onclick="salvarDividas(this)">Salvar Anotações</button>
+                    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); height: calc(100vh - 220px); display: flex; flex-direction: column;">
+                        <input type="hidden" id="divida-id-atual">
+                        
+                        <div class="editor-toolbar">
+                            <button type="button" onclick="formatarTexto('bold')" title="Negrito">B</button>
+                            <button type="button" onclick="formatarTexto('italic')" title="Itálico" style="font-style: italic;">I</button>
+                            <button type="button" onclick="formatarTexto('underline')" title="Sublinhado" style="text-decoration: underline;">U</button>
+                            <div style="width: 1px; background: var(--border-color); height: 20px; margin: 0 4px;"></div>
+                            <input type="color" onchange="formatarTexto('foreColor', this.value)" title="Cor do Texto">
+                        </div>
+                        
+                        <div id="texto-dividas" class="editor-content" contenteditable="true" spellcheck="false" placeholder="Anote aqui os detalhes e planos de amortização desta dívida..."></div>
+                        
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button class="btn-primary" onclick="salvarDividaAtual(this)">Salvar Anotações</button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -949,6 +976,22 @@
                     <h2 id="total-caixinhas-view" style="color: var(--sidebar-active); font-size: 1.8rem; margin: 0;">R$ 0.00</h2>
                 </div>
             </section>
+
+            <!-- descontos FC CJ -->
+            <section id="view-descontos-fc" class="view-section">
+            <div class="view-header">
+                <h1>Descontos FC/CJ</h1>
+                <button class="btn-secondary" onclick="abrirModalConfigFC()">⚙️ Configurar Quota</button>
+            </div>
+            
+            <p class="text-muted" style="margin-bottom: 24px;">Controle de despesas abatidas diretamente de uma quota base. O saldo mensal é calculado deduzindo as despesas do mês no valor total da quota. ATENÇÃO: ao alterar a quota de FC/CJ, o novo valor valerá apenas para o mês atual e seguintes. Nos meses anteriores, o valor antigo será mantido. ATUALIZAR o site (F5) após atualizar o valor da quota de FC. O saldo é o que vai para a caixinha de Investimentos (incluir manualmente lá).</p>
+
+            <div id="grid-descontos-fc" class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));"></div>
+            
+            <div style="text-align: center; margin-top: 32px; margin-bottom: 16px;">
+                <button class="btn-secondary" style="padding: 12px 24px; font-weight: 600;" onclick="carregarMaisMesesFC()">🔄 Exibir mais 12 meses</button>
+            </div>
+        </section>
 
         </main>
     </div>
@@ -1401,6 +1444,48 @@
         </div>
     </div>
 
+    <div id="modal-config-fc" class="modal-overlay hidden" style="z-index: 1110;">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Configurar Quota FC/CJ</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalConfigFC()">✖</button>
+            </div>
+            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 16px;">Selecione qual quota das Configurações Globais será usada como base de cálculo mensal para esta seção.</p>
+            <div class="form-group">
+                <label>Selecione a Quota</label>
+                <select id="fc-select-quota" class="form-control"></select>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button class="btn-secondary" onclick="fecharModalConfigFC()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarConfigFC()">Salvar Configuração</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-despesa-fc" class="modal-overlay hidden" style="z-index: 1120;">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 id="titulo-modal-despesa-fc" style="font-size: 1.2rem;">Nova Despesa</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalDespesaFC()">✖</button>
+            </div>
+            <input type="hidden" id="fc-desp-id">
+            <input type="hidden" id="fc-desp-mes">
+            <input type="hidden" id="fc-desp-ano">
+            <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="fc-desp-desc" class="form-control" placeholder="Ex: Doação, Lanche...">
+            </div>
+            <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="fc-desp-valor" class="form-control" step="0.01">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button class="btn-secondary" onclick="fecharModalDespesaFC()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarDespesaFC()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -1489,11 +1574,17 @@
             setCategoriasObs: (data) => DB.set('fin_categorias_obs', data),
             getObservacoes: () => DB.get('fin_observacoes', defObservacoes),
             setObservacoes: (data) => DB.set('fin_observacoes', data),
+            getDescontosFC: () => DB.get('fin_descontos_fc', { quotaId: '', despesas: [] }),
+            setDescontosFC: (data) => DB.set('fin_descontos_fc', data),
             getParticularGabriel: async () => { const res = await DB.get('fin_particular_gabriel', []); return Array.isArray(res) ? res : []; },
             setParticularGabriel: (data) => DB.set('fin_particular_gabriel', data),
             getParticularKamila: async () => { const res = await DB.get('fin_particular_kamila', []); return Array.isArray(res) ? res : []; },
             setParticularKamila: (data) => DB.set('fin_particular_kamila', data),   
-            getDividas: () => DB.get('fin_dividas', { texto: '' }),
+            getDividas: async () => { 
+                const res = await DB.get('fin_dividas', []); 
+                // Se ainda for o formato antigo (texto livre), migra para um card
+                return Array.isArray(res) ? res : (res && res.texto ? [{ id: 'div_antiga', titulo: 'Dívida Migrada', texto: res.texto }] : []);
+            },
             setDividas: (data) => DB.set('fin_dividas', data),
             getTaxas: () => DB.get('fin_taxas', { texto: '' }),
             setTaxas: (data) => DB.set('fin_taxas', data),
@@ -1546,7 +1637,9 @@
             await renderizarDebitosAuto();
             await renderizarCategoriasObs();
             await renderizarObservacoes();
+            await renderizarDescontosFC();
             await renderizarCardsParcelamentos();
+            await renderizarDividas();
             await renderizarTextosAcompanhamento();
             await renderizarAumentos();
             await renderizarRemuneracaoLiquida();
@@ -2394,11 +2487,11 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
             }, 2000);
         };
 
-        // Renderiza (carrega) os textos adicionais ao iniciar o app
+        // ==========================================
+        // LÓGICA DE ACOMPANHAMENTO E DÍVIDAS
+        // ==========================================
         window.renderizarTextosAcompanhamento = async () => {
-            const dividas = await DB.getDividas();
-            document.getElementById('texto-dividas').innerHTML = dividas.texto || '';
-
+            // Removemos a dívida daqui, agora ela é renderizada de forma independente
             const taxas = await DB.getTaxas();
             document.getElementById('texto-taxas').innerHTML = taxas.texto || '';
 
@@ -2406,10 +2499,102 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
             document.getElementById('texto-financiamento').innerHTML = financiamento.texto || '';
         };
 
-        window.salvarDividas = async (btnElement) => {
+        window.renderizarDividas = async () => {
+            const dividas = await DB.getDividas();
+            const grid = document.getElementById('grid-dividas');
+            grid.innerHTML = '';
+            
+            if (dividas.length === 0) {
+                grid.innerHTML = '<p class="text-muted" style="grid-column: 1/-1;">Nenhuma dívida cadastrada. Clique em "+ Nova Dívida" para começar.</p>';
+                return;
+            }
+            
+            dividas.forEach(d => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => abrirDetalheDivida(d.id);
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <div style="width: 38px; height: 38px; border-radius: 8px; background-color: #fee2e2; display: flex; justify-content: center; align-items: center; font-size: 1.2rem;">📉</div>
+                        <h3 style="margin: 0; font-size: 1.15rem;">${d.titulo}</h3>
+                    </div>
+                    <p class="text-muted" style="font-size: 0.85rem; margin-top: 12px;">Clique para gerenciar anotações e amortizações.</p>
+                `;
+                grid.appendChild(card);
+            });
+        };
+
+        window.adicionarNovaDivida = async () => {
+            const titulo = prompt("Digite o nome da dívida (ex: Financiamento Carro, Empréstimo BB):");
+            if (!titulo || titulo.trim() === "") return;
+            
+            const dividas = await DB.getDividas();
+            dividas.push({ id: 'div_' + Date.now(), titulo: titulo.trim(), texto: '' });
+            await DB.setDividas(dividas);
+            await renderizarDividas();
+        };
+
+        window.abrirDetalheDivida = async (id) => {
+            const dividas = await DB.getDividas();
+            const d = dividas.find(x => x.id === id);
+            if (!d) return;
+            
+            document.getElementById('txt-titulo-divida').innerText = d.titulo;
+            document.getElementById('divida-id-atual').value = d.id;
+            document.getElementById('texto-dividas').innerHTML = d.texto || '';
+            
+            document.getElementById('panel-lista-dividas').classList.add('hidden');
+            document.getElementById('panel-detalhe-divida').classList.remove('hidden');
+        };
+
+        window.fecharDetalheDivida = () => {
+            document.getElementById('panel-detalhe-divida').classList.add('hidden');
+            document.getElementById('panel-lista-dividas').classList.remove('hidden');
+        };
+
+        window.renomearDividaAtual = async () => {
+            const id = document.getElementById('divida-id-atual').value;
+            const dividas = await DB.getDividas();
+            const d = dividas.find(x => x.id === id);
+            
+            if (!d) return;
+
+            const novoNome = prompt("Digite o novo nome para esta dívida:", d.titulo);
+            if (novoNome && novoNome.trim() !== "") {
+                d.titulo = novoNome.trim();
+                await DB.setDividas(dividas);
+                
+                // Atualiza o título aberto na tela
+                document.getElementById('txt-titulo-divida').innerText = d.titulo;
+                
+                // Atualiza os cards no fundo silenciosamente para quando o usuário voltar
+                await renderizarDividas();
+            }
+        };
+
+        window.salvarDividaAtual = async (btnElement) => {
+            const id = document.getElementById('divida-id-atual').value;
             const texto = document.getElementById('texto-dividas').innerHTML;
-            await DB.setDividas({ texto });
-            animarBotaoSucesso(btnElement);
+            
+            const dividas = await DB.getDividas();
+            const idx = dividas.findIndex(x => x.id === id);
+            if (idx !== -1) {
+                dividas[idx].texto = texto;
+                await DB.setDividas(dividas);
+                animarBotaoSucesso(btnElement);
+            }
+        };
+
+        window.excluirDividaAtual = async () => {
+            if (!confirm("Tem certeza que deseja apagar esta dívida e todas as suas anotações?")) return;
+            
+            const id = document.getElementById('divida-id-atual').value;
+            let dividas = await DB.getDividas();
+            dividas = dividas.filter(x => x.id !== id);
+            
+            await DB.setDividas(dividas);
+            fecharDetalheDivida();
+            await renderizarDividas();
         };
 
         window.salvarTaxas = async (btnElement) => {
@@ -3989,6 +4174,243 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
 
             document.getElementById('total-antigas-consultado').innerText = `R$ ${formatarReal(totalConsultado)}`;
         };   
+
+        // ==========================================
+        // LÓGICA COMPLETA: DESCONTOS FC / CJ
+        // ==========================================
+        window.limiteMesesFC = 12;
+
+        window.carregarMaisMesesFC = async () => {
+            window.limiteMesesFC += 12;
+            await renderizarDescontosFC();
+        };
+
+        window.renderizarDescontosFC = async () => {
+            const dataFC = await DB.getDescontosFC();
+            const quotasGlobais = await DB.getQuotas();
+            const container = document.getElementById('grid-descontos-fc');
+            container.innerHTML = '';
+
+            // Garante que o objeto de congelamento de meses exista no banco
+            let houveMudancaNoBanco = false;
+            if (!dataFC.quotasMensais) {
+                dataFC.quotasMensais = {};
+                houveMudancaNoBanco = true;
+            }
+
+            // Descobre qual é a quota global "Ao Vivo" nas configurações neste exato momento
+            let padraoValor = 0;
+            let padraoNome = "Nenhuma quota vinculada";
+            const qPadrao = quotasGlobais.find(x => x.nome.toUpperCase().includes('FC') || x.nome.toUpperCase().includes('CJ'));
+            if (qPadrao) { padraoValor = qPadrao.valor; padraoNome = qPadrao.nome; }
+
+            let liveValor = padraoValor;
+            let liveNome = padraoNome;
+            if (dataFC.quotaId) {
+                const qRef = quotasGlobais.find(x => x.id === dataFC.quotaId);
+                if (qRef) { liveValor = qRef.valor; liveNome = qRef.nome; }
+            }
+
+            const hoje = new Date();
+            const mesAtual = hoje.getMonth();
+            const anoAtual = hoje.getFullYear();
+            const absMonthAtual = anoAtual * 12 + mesAtual;
+            let anoUltimoDesenhado = null;
+
+            for (let offset = -1; offset < window.limiteMesesFC - 1; offset++) {
+                let mesCard = mesAtual + offset;
+                let anoCard = anoAtual;
+
+                if (mesCard < 0) { mesCard = 12 + mesCard; anoCard--; } 
+                else if (mesCard > 11) { anoCard += Math.floor(mesCard / 12); mesCard = mesCard % 12; }
+
+                if (anoCard !== anoUltimoDesenhado) {
+                    const separador = document.createElement('div');
+                    separador.className = 'year-separator';
+                    separador.style.width = '100%';
+                    separador.style.marginBottom = '20px';
+                    separador.innerText = anoCard;
+                    container.appendChild(separador);
+                    anoUltimoDesenhado = anoCard;
+                }
+
+                const absMonthCard = anoCard * 12 + mesCard;
+
+                // ====================================================
+                // NOVA LÓGICA AUTOMÁTICA: MÁQUINA DO TEMPO (SNAPSHOTS)
+                // ====================================================
+                let valorBaseQuota;
+                let nomeQuotaBase;
+
+                if (absMonthCard < absMonthAtual) {
+                    // MÊS PASSADO: Usa o valor congelado na história. Se não foi congelado ainda, congela agora.
+                    if (dataFC.quotasMensais[absMonthCard]) {
+                        valorBaseQuota = dataFC.quotasMensais[absMonthCard].valor;
+                        nomeQuotaBase = dataFC.quotasMensais[absMonthCard].nome;
+                    } else {
+                        valorBaseQuota = liveValor;
+                        nomeQuotaBase = liveNome;
+                        dataFC.quotasMensais[absMonthCard] = { valor: liveValor, nome: liveNome };
+                        houveMudancaNoBanco = true;
+                    }
+                } else {
+                    // MÊS ATUAL OU FUTURO: Sempre usa o valor "Ao vivo" alterado nas configurações.
+                    valorBaseQuota = liveValor;
+                    nomeQuotaBase = liveNome;
+                    
+                    // Vai atualizando o "congelamento" no banco silenciosamente.
+                    // Assim, quando esse mês virar passado, ele já terá a foto exata do último valor que teve!
+                    if (!dataFC.quotasMensais[absMonthCard] || dataFC.quotasMensais[absMonthCard].valor !== liveValor || dataFC.quotasMensais[absMonthCard].nome !== liveNome) {
+                        dataFC.quotasMensais[absMonthCard] = { valor: liveValor, nome: liveNome };
+                        houveMudancaNoBanco = true;
+                    }
+                }
+                // ====================================================
+
+                const despesasDoMes = dataFC.despesas.filter(d => d.mes === mesCard && d.ano === anoCard);
+                const totalDespesas = despesasDoMes.reduce((acc, curr) => acc + curr.valor, 0);
+                const saldoMes = valorBaseQuota - totalDespesas;
+
+                let htmlItens = '';
+                despesasDoMes.forEach(d => {
+                    htmlItens += `
+                        <li style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding: 8px 0; font-size: 0.9rem;">
+                            <span>${d.desc}</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <strong>R$ ${formatarReal(d.valor)}</strong>
+                                <button class="text-muted" style="background: none; border: none; cursor: pointer; font-size: 1rem;" onclick="abrirModalDespesaFC('${d.id}', ${mesCard}, ${anoCard})" title="Editar">✏️</button>
+                                <button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 1rem;" onclick="excluirDespesaFC('${d.id}')" title="Excluir">✖</button>
+                            </div>
+                        </li>
+                    `;
+                });
+
+                const card = document.createElement('div');
+                const isMesAtualReal = (mesCard === mesAtual && anoCard === anoAtual);
+                const isMesAnterior = (mesCard === (mesAtual === 0 ? 11 : mesAtual - 1) && anoCard === (mesAtual === 0 ? anoAtual - 1 : anoAtual));
+                
+                card.className = `card ${isMesAtualReal ? 'card-atual' : ''}`;
+                card.style.display = 'flex';
+                card.style.flexDirection = 'column';
+                
+                const estiloFooter = isMesAnterior ? 'background: #dcfce7; border: 1px solid #bbf7d0;' : 'background: #f8fafc; border: 1px solid var(--border-color);';
+                const corTextoFooter = isMesAnterior ? 'var(--accent-success)' : 'var(--text-main)';
+                const corTextoValor = saldoMes < 0 ? 'var(--accent-danger)' : (isMesAnterior ? 'var(--accent-success)' : 'var(--sidebar-active)');
+
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                            ${isMesAtualReal ? '📅' : '🗓️'} ${mesesNomeArray[mesCard]}
+                        </h3>
+                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;" onclick="abrirModalDespesaFC(null, ${mesCard}, ${anoCard})">+ Despesa</button>
+                    </div>
+
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between;">
+                        <span>Quota Base: ${nomeQuotaBase}</span>
+                        <strong>R$ ${formatarReal(valorBaseQuota)}</strong>
+                    </div>
+
+                    <ul style="list-style: none; padding: 0; margin: 0; flex-grow: 1; min-height: 80px;">
+                        ${htmlItens || '<li class="text-muted" style="font-size: 0.85rem; padding: 8px 0;">Nenhuma despesa lançada.</li>'}
+                    </ul>
+
+                    <div style="${estiloFooter} padding: 12px; border-radius: 8px; margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: ${corTextoFooter}; font-size: 0.9rem;">Saldo do Mês:</strong>
+                        <strong style="color: ${corTextoValor}; font-size: 1.2rem;">R$ ${formatarReal(saldoMes)}</strong>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+
+            // Se precisou atualizar algum congelamento no meio do processo, salva no banco.
+            if (houveMudancaNoBanco) {
+                await DB.setDescontosFC(dataFC);
+            }
+        };
+
+        // --- Configuração da Quota Base ---
+        window.abrirModalConfigFC = async () => {
+            const quotas = await DB.getQuotas();
+            const dataFC = await DB.getDescontosFC();
+            const sel = document.getElementById('fc-select-quota');
+            sel.innerHTML = '<option value="">Nenhuma Quota (Usar Padrão FC/CJ)</option>';
+            
+            quotas.forEach(q => {
+                const opt = document.createElement('option');
+                opt.value = q.id;
+                opt.text = `${q.nome} - R$ ${formatarReal(q.valor)}`;
+                if (dataFC.quotaId === q.id) opt.selected = true;
+                sel.appendChild(opt);
+            });
+            document.getElementById('modal-config-fc').classList.remove('hidden');
+        };
+
+        window.fecharModalConfigFC = () => document.getElementById('modal-config-fc').classList.add('hidden');
+
+        window.salvarConfigFC = async () => {
+            const dataFC = await DB.getDescontosFC();
+            dataFC.quotaId = document.getElementById('fc-select-quota').value;
+            await DB.setDescontosFC(dataFC);
+            fecharModalConfigFC();
+            await renderizarDescontosFC();
+        };
+
+        // --- CRUD Despesas FC ---
+        window.abrirModalDespesaFC = async (idEdicao, mes, ano) => {
+            document.getElementById('fc-desp-id').value = idEdicao || '';
+            document.getElementById('fc-desp-mes').value = mes;
+            document.getElementById('fc-desp-ano').value = ano;
+            document.getElementById('titulo-modal-despesa-fc').innerText = idEdicao ? `Editar Despesa (${mesesNomeArray[mes]}/${ano})` : `Nova Despesa (${mesesNomeArray[mes]}/${ano})`;
+
+            if (idEdicao) {
+                const dataFC = await DB.getDescontosFC();
+                const d = dataFC.despesas.find(x => x.id === idEdicao);
+                if (d) {
+                    document.getElementById('fc-desp-desc').value = d.desc;
+                    document.getElementById('fc-desp-valor').value = d.valor;
+                }
+            } else {
+                document.getElementById('fc-desp-desc').value = '';
+                document.getElementById('fc-desp-valor').value = '';
+            }
+            document.getElementById('modal-despesa-fc').classList.remove('hidden');
+        };
+
+        window.fecharModalDespesaFC = () => document.getElementById('modal-despesa-fc').classList.add('hidden');
+
+        window.salvarDespesaFC = async () => {
+            const id = document.getElementById('fc-desp-id').value;
+            const mes = parseInt(document.getElementById('fc-desp-mes').value);
+            const ano = parseInt(document.getElementById('fc-desp-ano').value);
+            const desc = document.getElementById('fc-desp-desc').value.trim();
+            const valor = parseFloat(document.getElementById('fc-desp-valor').value);
+
+            if (!desc || isNaN(valor)) { alert("Preencha descrição e valor."); return; }
+
+            const dataFC = await DB.getDescontosFC();
+            
+            if (id) {
+                const idx = dataFC.despesas.findIndex(x => x.id === id);
+                if (idx !== -1) {
+                    dataFC.despesas[idx].desc = desc;
+                    dataFC.despesas[idx].valor = valor;
+                }
+            } else {
+                dataFC.despesas.push({ id: 'fcdesp_' + Date.now(), mes, ano, desc, valor });
+            }
+
+            await DB.setDescontosFC(dataFC);
+            fecharModalDespesaFC();
+            await renderizarDescontosFC();
+        };
+
+        window.excluirDespesaFC = async (id) => {
+            if (!confirm("Tem certeza que deseja excluir esta despesa? O saldo do mês será recalculado.")) return;
+            const dataFC = await DB.getDescontosFC();
+            dataFC.despesas = dataFC.despesas.filter(x => x.id !== id);
+            await DB.setDescontosFC(dataFC);
+            await renderizarDescontosFC();
+        };
 
     </script>
 </body>
