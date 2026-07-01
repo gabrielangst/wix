@@ -421,7 +421,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças 1.6.1
+                <span>📊</span> Finanças 1.6.2
             </div>
             <nav>
                 <ul id="main-menu">
@@ -1354,6 +1354,49 @@
             <div style="background: #fef2f2; padding: 12px; border-radius: 8px; margin-top: 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #fecaca;">
                 <strong style="color: var(--accent-danger); font-size: 0.9rem;">Total do Mês Consultado:</strong>
                 <strong id="total-antigas-consultado" style="color: var(--accent-danger); font-size: 1.2rem;">R$ 0,00</strong>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-excluir-recorrente" class="modal-overlay hidden" style="z-index: 1100;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Opções de Exclusão</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalExcluirRecorrente()">✖</button>
+            </div>
+            <input type="hidden" id="exc-rec-pessoa">
+            <input type="hidden" id="exc-rec-id">
+            
+            <p class="text-muted" style="margin-bottom: 20px;">Como deseja processar a exclusão desta despesa fixa?</p>
+
+            <div id="opcoes-exclusao-botoes" style="display: flex; flex-direction: column; gap: 12px;">
+                <button class="btn-primary" style="background-color: var(--sidebar-active);" onclick="mostrarCamposEncerramento()">Definir mês de encerramento (Manter histórico)</button>
+                <button class="btn-secondary text-danger" style="border-color: var(--accent-danger);" onclick="excluirRecorrenteTotalmente()">Apagar totalmente (inclusive meses pretéritos)</button>
+                <button class="btn-secondary" onclick="fecharModalExcluirRecorrente()">Cancelar</button>
+            </div>
+
+            <div id="opcoes-exclusao-encerramento" class="hidden" style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 16px;">
+                <h3 style="font-size: 1rem; margin-bottom: 12px;">Encerrar Cobrança</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">A partir de qual mês/ano ela deixará de ser cobrada?</p>
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <div class="form-group" style="flex: 1; margin: 0;">
+                        <label>Mês</label>
+                        <select id="exc-rec-mes" class="form-control">
+                            <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+                            <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+                            <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+                            <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1; margin: 0;">
+                        <label>Ano</label>
+                        <input type="number" id="exc-rec-ano" class="form-control">
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="btn-secondary" onclick="esconderCamposEncerramento()">Voltar</button>
+                    <button class="btn-primary" onclick="confirmarEncerramentoRecorrente()">Confirmar Encerramento</button>
+                </div>
             </div>
         </div>
     </div>
@@ -3691,13 +3734,92 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
         window.fecharModalListaParcelamentos = () => document.getElementById('modal-lista-parcelamentos').classList.add('hidden');
 
         window.excluirParcelamento = async (pessoa, id) => {
-            if (!confirm("Tem certeza que deseja excluir esta despesa recorrente?")) return;
+            let arr = pessoa === 'gabriel' ? await DB.getParticularGabriel() : await DB.getParticularKamila();
+            const item = arr.find(x => x.id === id);
+            if (!item) return;
+
+            if (item.parcelas === 0) {
+                // É fixa/indefinida, abre o novo modal bonitão
+                document.getElementById('exc-rec-pessoa').value = pessoa;
+                document.getElementById('exc-rec-id').value = id;
+                
+                // Reseta a interface do modal
+                document.getElementById('opcoes-exclusao-botoes').classList.remove('hidden');
+                document.getElementById('opcoes-exclusao-encerramento').classList.add('hidden');
+                
+                // Preenche o ano e mês atuais no input de atalho
+                const hoje = new Date();
+                document.getElementById('exc-rec-ano').value = hoje.getFullYear();
+                document.getElementById('exc-rec-mes').value = hoje.getMonth();
+
+                document.getElementById('modal-excluir-recorrente').classList.remove('hidden');
+            } else {
+                // Se já era parcelada normal (com prazo definido), não precisa de tela de encerramento, apenas apaga
+                if (!confirm("Tem certeza que deseja excluir completamente este parcelamento?")) return;
+                arr = arr.filter(x => x.id !== id);
+                if (pessoa === 'gabriel') await DB.setParticularGabriel(arr);
+                else await DB.setParticularKamila(arr);
+                abrirModalListaParcelamentos(pessoa);
+                await renderizarCardsParcelamentos();
+            }
+        };
+
+        // --- FUNÇÕES DE CONTROLE DO NOVO MODAL ---
+        window.fecharModalExcluirRecorrente = () => {
+            document.getElementById('modal-excluir-recorrente').classList.add('hidden');
+        };
+
+        window.mostrarCamposEncerramento = () => {
+            document.getElementById('opcoes-exclusao-botoes').classList.add('hidden');
+            document.getElementById('opcoes-exclusao-encerramento').classList.remove('hidden');
+        };
+
+        window.esconderCamposEncerramento = () => {
+            document.getElementById('opcoes-exclusao-botoes').classList.remove('hidden');
+            document.getElementById('opcoes-exclusao-encerramento').classList.add('hidden');
+        };
+
+        window.excluirRecorrenteTotalmente = async () => {
+            const pessoa = document.getElementById('exc-rec-pessoa').value;
+            const id = document.getElementById('exc-rec-id').value;
+            
             let arr = pessoa === 'gabriel' ? await DB.getParticularGabriel() : await DB.getParticularKamila();
             arr = arr.filter(x => x.id !== id);
             
             if (pessoa === 'gabriel') await DB.setParticularGabriel(arr);
             else await DB.setParticularKamila(arr);
             
+            fecharModalExcluirRecorrente();
+            abrirModalListaParcelamentos(pessoa);
+            await renderizarCardsParcelamentos();
+        };
+
+        window.confirmarEncerramentoRecorrente = async () => {
+            const pessoa = document.getElementById('exc-rec-pessoa').value;
+            const id = document.getElementById('exc-rec-id').value;
+            const mFim = parseInt(document.getElementById('exc-rec-mes').value);
+            const aFim = parseInt(document.getElementById('exc-rec-ano').value);
+
+            let arr = pessoa === 'gabriel' ? await DB.getParticularGabriel() : await DB.getParticularKamila();
+            const item = arr.find(x => x.id === id);
+
+            if (!item) return;
+
+            const absStart = item.anoInicio * 12 + item.mesInicio;
+            const absEnd = aFim * 12 + mFim;
+
+            if (absEnd < absStart) {
+                alert("O mês de encerramento não pode ser ANTERIOR ao mês de início da despesa!");
+                return;
+            }
+
+            // Mágica: Transforma a despesa infinita em uma finita
+            item.parcelas = absEnd - absStart + 1;
+
+            if (pessoa === 'gabriel') await DB.setParticularGabriel(arr);
+            else await DB.setParticularKamila(arr);
+            
+            fecharModalExcluirRecorrente();
             abrirModalListaParcelamentos(pessoa);
             await renderizarCardsParcelamentos();
         };
