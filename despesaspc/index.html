@@ -984,7 +984,7 @@
                 <button class="btn-secondary" onclick="abrirModalConfigFC()">⚙️ Configurar Quota</button>
             </div>
             
-            <p class="text-muted" style="margin-bottom: 24px;">Controle de despesas abatidas diretamente de uma quota base. O saldo mensal é calculado deduzindo as despesas do mês no valor total da quota. ATENÇÃO: ao alterar a quota de FC/CJ, o novo valor valerá apenas para o mês atual e seguintes. Nos meses anteriores, o valor antigo será mantido. ATUALIZAR o site (F5) após atualizar o valor da quota de FC. O saldo é o que vai para a caixinha de Investimentos (incluir manualmente lá).</p>
+            <p class="text-muted" style="margin-bottom: 24px;">Controle de despesas abatidas diretamente de uma quota base. O saldo mensal é calculado deduzindo as despesas do mês no valor total da quota. ATENÇÃO: ao alterar a quota de FC/CJ, o novo valor valerá apenas para o mês atual e seguintes. Nos meses anteriores, o valor antigo será mantido. ATUALIZAR o site (F5) após atualizar o valor da quota de FC. O total de despesas vai para o Santander (restituição). O "saldo do mês" é o que sobra para ir para a a caixinha de Investimentos.</p>
 
             <div id="grid-descontos-fc" class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));"></div>
             
@@ -4314,7 +4314,12 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                         ${htmlItens || '<li class="text-muted" style="font-size: 0.85rem; padding: 8px 0;">Nenhuma despesa lançada.</li>'}
                     </ul>
 
-                    <div style="${estiloFooter} padding: 12px; border-radius: 8px; margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; margin-top: 8px; border-top: 1px dashed var(--border-color);">
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Total de Despesas:</span>
+                        <strong style="color: var(--accent-danger); font-size: 0.95rem;">R$ ${formatarReal(totalDespesas)}</strong>
+                    </div>
+
+                    <div style="${estiloFooter} padding: 12px; border-radius: 8px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
                         <strong style="color: ${corTextoFooter}; font-size: 0.9rem;">Saldo do Mês:</strong>
                         <strong style="color: ${corTextoValor}; font-size: 1.2rem;">R$ ${formatarReal(saldoMes)}</strong>
                     </div>
