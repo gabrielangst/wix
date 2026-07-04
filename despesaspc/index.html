@@ -421,7 +421,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças 1.6.3
+                <span>📊</span> Finanças 1.6.4
             </div>
             <nav>
                 <ul id="main-menu">
@@ -524,22 +524,46 @@
                             <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem; font-weight: 600;" onclick="adicionarPagamentoMes()">+ Incluir Pagamento Avulso</button>
                         </div>
 
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Débito / Obrigação</th>
-                                        <th>Link de Pagamento</th>
-                                        <th>Valor Previsto</th>
-                                        <th>Vencimento</th>
-                                        <th>Data de Pagamento</th>
-                                        <th>Valor Pago (R$)</th>
-                                        <th>Diferença / Saldo</th>
-                                        <th>Observações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="table-body-mes-pagamentos"></tbody>
-                            </table>
+                        <div id="container-tabela-pendentes">
+                            <h3 style="margin-top: 10px; margin-bottom: 12px; color: var(--accent-danger); font-size: 1.1rem;">🔴 Pagamentos Pendentes</h3>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Débito / Obrigação</th>
+                                            <th>Link de Pagamento</th>
+                                            <th>Valor Previsto</th>
+                                            <th>Vencimento</th>
+                                            <th>Data de Pagamento</th>
+                                            <th>Valor Pago (R$)</th>
+                                            <th>Diferença / Saldo</th>
+                                            <th>Observações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-body-mes-pagamentos-pendentes"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="container-tabela-pagos">
+                            <h3 style="margin-top: 24px; margin-bottom: 12px; color: var(--accent-success); font-size: 1.1rem;">🟢 Pagamentos Realizados</h3>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Débito / Obrigação</th>
+                                            <th>Link de Pagamento</th>
+                                            <th>Valor Previsto</th>
+                                            <th>Vencimento</th>
+                                            <th>Data de Pagamento</th>
+                                            <th>Valor Pago (R$)</th>
+                                            <th>Diferença / Saldo</th>
+                                            <th>Observações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-body-mes-pagamentos-pagos"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1908,11 +1932,19 @@
             tbodyQuotas.appendChild(trTotal);
 
             // ==========================================
-            // ABAIXO CONTINUA A PARTE DOS PAGAMENTOS (Intacta)
+            // ABAIXO: LÓGICA DE PAGAMENTOS (SEPARADA EM PENDENTES E PAGOS)
             // ==========================================
-            const tbodyPagamentos = document.getElementById('table-body-mes-pagamentos'); 
-            tbodyPagamentos.innerHTML = '';
+            const tbodyPendentes = document.getElementById('table-body-mes-pagamentos-pendentes'); 
+            const tbodyPagos = document.getElementById('table-body-mes-pagamentos-pagos'); 
+            const divPendentes = document.getElementById('container-tabela-pendentes');
+            const divPagos = document.getElementById('container-tabela-pagos');
+
+            tbodyPendentes.innerHTML = '';
+            tbodyPagos.innerHTML = '';
             
+            let qtdPendentes = 0;
+            let qtdPagos = 0;
+
             mes.pagamentos.forEach((p, index) => {
                 const diferenca = p.valor - p.valorPago; 
                 const classeLinha = p.dataPgto ? 'linha-paga' : 'linha-pendente';
@@ -1935,8 +1967,20 @@
                     <td class="${classeSaldo}">R$ ${formatarReal(diferenca)}</td>
                     <td><input type="text" class="table-input" value="${p.obs || ''}" onchange="atualizarObsPagamento(${index}, this.value)"></td>
                 `;
-                tbodyPagamentos.appendChild(tr);
+                
+                // Distribui para a tabela correta validando se existe 'dataPgto'
+                if (p.dataPgto) {
+                    tbodyPagos.appendChild(tr);
+                    qtdPagos++;
+                } else {
+                    tbodyPendentes.appendChild(tr);
+                    qtdPendentes++;
+                }
             });
+
+            // Oculta a estrutura da tabela se não houver registros nela para manter a tela limpa
+            divPendentes.style.display = qtdPendentes > 0 ? 'block' : 'none';
+            divPagos.style.display = qtdPagos > 0 ? 'block' : 'none';
         }
 
         window.adicionarGastoQuota = async (idx) => {
