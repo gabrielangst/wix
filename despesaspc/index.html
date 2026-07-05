@@ -1060,16 +1060,20 @@
             </div>
             <div class="form-group">
                 <label>Mês de Referência</label>
-                <select id="select-mes" class="form-control">
+                <!-- Adicionado o evento onchange para atualizar o texto sempre que o usuário trocar o mês -->
+                <select id="select-mes" class="form-control" onchange="atualizarTextoPeriodo()">
                     <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
                     <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
                     <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
                     <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
                 </select>
+                <!-- Adicionado o parágrafo onde a informação do período vai aparecer -->
+                <small id="texto-periodo-previsto" class="text-muted" style="display:block; margin-top:6px; font-weight: 600;"></small>
             </div>
             <div class="form-group">
                 <label>Ano</label>
-                <select id="select-ano" class="form-control"></select>
+                <!-- O select foi trocado por um input numérico livre -->
+                <input type="number" id="select-ano" class="form-control">
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
                 <button class="btn-secondary" onclick="fecharModalNovoMes()">Cancelar</button>
@@ -1743,14 +1747,28 @@
             const dataHoje = new Date();
             const anoAtual = dataHoje.getFullYear();
             const mesAtual = dataHoje.getMonth();
-            const selectAno = document.getElementById('select-ano');
-            selectAno.innerHTML = '';
-            for (let i = anoAtual - 1; i <= anoAtual + 3; i++) {
-                const option = document.createElement('option'); option.value = i; option.text = i; selectAno.appendChild(option);
-            }
+            
             document.getElementById('select-mes').value = mesAtual;
-            document.getElementById('select-ano').value = anoAtual;
+            document.getElementById('select-ano').value = anoAtual; // Agora preenche o input aberto
+            
+            atualizarTextoPeriodo(); // Força a atualização do texto do período ao abrir a tela
+            
             document.getElementById('modal-novo-mes').classList.remove('hidden');
+        };
+
+        window.atualizarTextoPeriodo = () => {
+            const nomesDosMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const idxMes = parseInt(document.getElementById('select-mes').value);
+            
+            // Calcula qual é o próximo mês (se for Dezembro, volta para Janeiro)
+            let idxSeguinte = idxMes + 1;
+            if (idxSeguinte > 11) { 
+                idxSeguinte = 0; 
+            }
+            
+            // Monta e injeta a string na tela
+            const texto = `22 de ${nomesDosMeses[idxMes]} a 21 de ${nomesDosMeses[idxSeguinte]}`;
+            document.getElementById('texto-periodo-previsto').innerText = texto;
         };
 
         window.fecharModalNovoMes = () => document.getElementById('modal-novo-mes').classList.add('hidden');
