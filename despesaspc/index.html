@@ -372,19 +372,44 @@
             background-color: #fef9c3 !important; 
         }
 
-        /* Badge discreto de notificação */
-        .badge-pendente {
-            background-color: var(--accent-danger);
-            color: white;
-            width: 20px;
-            height: 20px;
+        /* --- ALERTA DE AUMENTOS PENDENTES (ATUALIZADO) --- */
+        @keyframes pulse-red-light {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(248, 113, 113, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+        }
+        
+        @keyframes pulse-yellow {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(112, 255, 120, 0.8); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(234, 179, 8, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
+        }
+
+        /* Base compartilhada para a bolinha */
+        .alerta-vermelho, .alerta-amarelo {
+            position: relative;
+        }
+        .alerta-vermelho::after, .alerta-amarelo::after {
+            content: '';
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            margin-top: -6px; /* Centraliza a nova altura de 12px */
+            width: 12px;      /* Aumentado (antes era 8px) */
+            height: 12px;     /* Aumentado (antes era 8px) */
             border-radius: 50%;
-            font-size: 0.7rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Variação Vermelha Clara (Atrasado) */
+        .alerta-vermelho::after {
+            background-color: #f87171; /* Vermelho claro */
+            animation: pulse-red-light 2s infinite;
+        }
+
+        /* Variação Amarela (Dentro do prazo, mas próximo) */
+        .alerta-amarelo::after {
+            background-color: #55f746; /* Amarelo */
+            animation: pulse-yellow 2s infinite;
         }
 
     </style>
@@ -421,7 +446,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças 1.6.4
+                <span>📊</span> Finanças 1.6.5
             </div>
             <nav>
                 <ul id="main-menu">
@@ -2674,6 +2699,47 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
         // --- LÓGICA DE AUMENTOS ---
         let idEdicao = null;
 
+        window.atualizarAlertaAumentos = (aumentos) => {
+            const hoje = new Date();
+            const absHoje = hoje.getFullYear() * 12 + hoje.getMonth();
+            
+            // Monta a data de hoje no formato YYYY-MM-DD para comparar com precisão os dias
+            const ano = hoje.getFullYear();
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            const hojeStr = `${ano}-${mes}-${dia}`;
+            
+            let temAtrasado = false;
+            let temProximo = false;
+            
+            aumentos.forEach(a => {
+                if (a.situacao !== 'Pendente' || !a.data) return;
+                
+                const [aAno, aMes] = a.data.split('-');
+                const absData = parseInt(aAno) * 12 + (parseInt(aMes) - 1);
+                
+                // Compara as datas como texto (ex: "2026-07-09" < "2026-07-10")
+                if (a.data < hojeStr) {
+                    temAtrasado = true; // Já passou da data prevista!
+                } else if (absData <= absHoje + 1) {
+                    temProximo = true; // Não passou, mas é neste mês ou no próximo
+                }
+            });
+
+            const btnMenu = document.querySelector('button[data-target="view-aumentos"]');
+            if (btnMenu) {
+                // Limpa as duas classes para não dar conflito
+                btnMenu.classList.remove('alerta-vermelho', 'alerta-amarelo');
+                
+                // O vermelho (atrasado) tem prioridade visual sobre o amarelo
+                if (temAtrasado) {
+                    btnMenu.classList.add('alerta-vermelho');
+                } else if (temProximo) {
+                    btnMenu.classList.add('alerta-amarelo');
+                }
+            }
+        };
+
         // Abre o modal NOVO
         window.abrirModalAumento = () => {
             document.getElementById('aumento-id-edicao').value = ''; 
@@ -2803,6 +2869,9 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
 
         window.renderizarAumentos = async () => {
             const aumentos = await DB.get('fin_aumentos', []);
+
+            window.atualizarAlertaAumentos(aumentos);
+
             const grid = document.getElementById('grid-aumentos');
             grid.innerHTML = '';
 
@@ -4481,4 +4550,4 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
 
     </script>
 </body>
-</html> 
+</html>
