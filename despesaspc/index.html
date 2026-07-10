@@ -461,7 +461,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças 1.6.5
+                <span>📊</span> Finanças 1.7.0
             </div>
             <nav>
                 <ul id="main-menu">
@@ -950,6 +950,7 @@
                                 <tr>
                                     <th>Data de Início</th>
                                     <th>Valor Líquido</th>
+                                    <th>Diferença</th>
                                     <th style="text-align: right;">Ações</th>
                                 </tr>
                             </thead>
@@ -966,6 +967,7 @@
                                 <tr>
                                     <th>Data de Início</th>
                                     <th>Valor Líquido</th>
+                                    <th>Diferença</th>
                                     <th style="text-align: right;">Ações</th>
                                 </tr>
                             </thead>
@@ -1554,6 +1556,42 @@
         </div>
     </div>
 
+    <!-- MODAL OBSERVAÇÕES DA QUOTA GLOBAL -->
+    <div id="modal-ver-obs-quota" class="modal-overlay hidden" style="z-index: 1130;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Detalhes da Observação</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalObsQuota()" title="Fechar">✖</button>
+            </div>
+            <input type="hidden" id="quota-id-obs-modal" value="">
+            <div class="form-group">
+                <textarea id="quota-obs-texto-modal" class="form-control" rows="8" placeholder="Detalhes, regras ou anotações desta quota..." style="resize: vertical; font-family: inherit; line-height: 1.5;"></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button class="btn-secondary" onclick="fecharModalObsQuota()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarObsQuotaPeloModal()">Salvar Anotações</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL OBSERVAÇÕES DA QUOTA DO MÊS -->
+    <div id="modal-ver-obs-quota-mes" class="modal-overlay hidden" style="z-index: 1140;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Detalhes da Observação do Mês</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalObsQuotaMes()" title="Fechar">✖</button>
+            </div>
+            <input type="hidden" id="quota-mes-idx-modal" value="">
+            <div class="form-group">
+                <textarea id="quota-mes-obs-texto-modal" class="form-control" rows="8" placeholder="Detalhes, regras ou anotações desta quota neste mês..." style="resize: vertical; font-family: inherit; line-height: 1.5;"></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button class="btn-secondary" onclick="fecharModalObsQuotaMes()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarObsQuotaMesPeloModal()">Salvar Anotações</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -1970,7 +2008,13 @@
                         <ul id="lista-historico-quota-${index}" class="hidden" style="list-style: none; padding: 0; margin-top: 8px;">${historicoHtml}</ul>
                     </td>
                     <td class="${classeSaldoQuota}">R$ ${formatarReal(saldoAtualizado)}</td>
-                    <td><input type="text" class="table-input" value="${q.obs || ''}" onchange="atualizarObsQuota(${index}, this.value)" placeholder="Notas..."></td>
+                    <td class="${classeSaldoQuota}">R$ ${formatarReal(saldoAtualizado)}</td>
+                    <td>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" class="table-input" value="${q.obs || ''}" onchange="atualizarObsQuota(${index}, this.value)" placeholder="" style="flex: 1;">
+                            <button type="button" onclick="abrirModalObsQuotaMes(${index})" title="Ver/Editar Detalhes" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">👁️</button>
+                        </div>
+                    </td>
                 `;
                 tbodyQuotas.appendChild(tr);
             });
@@ -2059,6 +2103,37 @@
             await DB.setMeses(meses); renderizarSubTabelasMes(mes);
         };
         window.atualizarObsQuota = async (idx, val) => { const meses = await DB.getMeses(); meses.find(m => m.id === mesSelecionadoId).quotas[idx].obs = val; await DB.setMeses(meses); };
+        
+        // --- CONTROLE DO MODAL DE OBSERVAÇÕES DAS QUOTAS DO MÊS ---
+        window.abrirModalObsQuotaMes = async (idx) => {
+            document.getElementById('quota-mes-idx-modal').value = idx;
+            const meses = await DB.getMeses();
+            const mes = meses.find(m => m.id === mesSelecionadoId);
+            const q = mes.quotas[idx];
+            
+            document.getElementById('quota-mes-obs-texto-modal').value = q.obs || '';
+            document.getElementById('modal-ver-obs-quota-mes').classList.remove('hidden');
+        };
+
+        window.fecharModalObsQuotaMes = () => {
+            document.getElementById('modal-ver-obs-quota-mes').classList.add('hidden');
+        };
+
+        window.salvarObsQuotaMesPeloModal = async () => {
+            const idx = parseInt(document.getElementById('quota-mes-idx-modal').value);
+            const texto = document.getElementById('quota-mes-obs-texto-modal').value;
+            
+            const meses = await DB.getMeses();
+            const mes = meses.find(m => m.id === mesSelecionadoId);
+            
+            if (mes && mes.quotas[idx]) {
+                mes.quotas[idx].obs = texto;
+                await DB.setMeses(meses);
+                fecharModalObsQuotaMes();
+                renderizarSubTabelasMes(mes); // Atualiza a tabela do mês refletindo a edição
+            }
+        };
+        
         window.atualizarDataPagamento = async (idx, val) => { const meses = await DB.getMeses(); const mes = meses.find(m => m.id === mesSelecionadoId); mes.pagamentos[idx].dataPgto = val; await DB.setMeses(meses); renderizarSubTabelasMes(mes); };
         window.atualizarValorPagamento = async (idx, val) => { const meses = await DB.getMeses(); const mes = meses.find(m => m.id === mesSelecionadoId); mes.pagamentos[idx].valorPago = parseFloat(val)||0; await DB.setMeses(meses); renderizarSubTabelasMes(mes); };
         window.atualizarObsPagamento = async (idx, val) => { const meses = await DB.getMeses(); meses.find(m => m.id === mesSelecionadoId).pagamentos[idx].obs = val; await DB.setMeses(meses); };
@@ -2079,7 +2154,12 @@
                     <td><input type="color" value="${q.cor}" onchange="atualizarPropriedadeQuotaGlobal('${q.id}', 'cor', this.value)" style="width: 32px; height: 32px; padding: 0; border: none; border-radius: 4px; cursor: pointer; background: transparent;"></td>
                     <td><input type="text" class="table-input" value="${q.nome}" onchange="atualizarPropriedadeQuotaGlobal('${q.id}', 'nome', this.value)"></td>
                     <td><input type="number" class="table-input" value="${q.valor}" onchange="atualizarPropriedadeQuotaGlobal('${q.id}', 'valor', this.value)"></td>
-                    <td><input type="text" class="table-input" value="${q.obs || ''}" onchange="atualizarPropriedadeQuotaGlobal('${q.id}', 'obs', this.value)" placeholder="Notas padrão..."></td>
+                    <td>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" class="table-input" value="${q.obs || ''}" onchange="atualizarPropriedadeQuotaGlobal('${q.id}', 'obs', this.value)" placeholder="" style="flex: 1;"> 
+                            <button type="button" onclick="abrirModalObsQuota('${q.id}')" title="Ver/Editar Detalhes" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">👁️</button>
+                        </div>
+                    </td>
                     <td style="display: flex; gap: 8px; align-items: center;">
                         <button onclick="moverQuota(${index}, -1)" title="Mover para cima" style="cursor:pointer; background:none; border:none; font-size:1.2rem;">⬆️</button>
                         <button onclick="moverQuota(${index}, 1)" title="Mover para baixo" style="cursor:pointer; background:none; border:none; font-size:1.2rem;">⬇️</button>
@@ -2109,6 +2189,35 @@
         window.atualizarPropriedadeQuotaGlobal = async (id, prop, val) => { const quotas = await DB.getQuotas(); const q = quotas.find(q=>q.id===id); if(q){ q[prop] = prop==='valor'?parseFloat(val)||0:val; await DB.setQuotas(quotas); } };
         window.moverQuota = async (idx, dir) => { const quotas = await DB.getQuotas(); if (idx+dir<0 || idx+dir>=quotas.length) return; const t = quotas[idx]; quotas[idx] = quotas[idx+dir]; quotas[idx+dir] = t; await DB.setQuotas(quotas); await renderizarQuotasGlobais(); };
         window.removerQuota = async (id) => { let quotas = await DB.getQuotas(); quotas = quotas.filter(q=>q.id!==id); await DB.setQuotas(quotas); await renderizarQuotasGlobais(); };
+
+        // --- CONTROLE DO MODAL DE OBSERVAÇÕES DAS QUOTAS GLOBAIS ---
+        window.abrirModalObsQuota = async (id) => {
+            document.getElementById('quota-id-obs-modal').value = id;
+            const quotas = await DB.getQuotas();
+            const q = quotas.find(x => x.id === id);
+            
+            document.getElementById('quota-obs-texto-modal').value = q.obs || '';
+            document.getElementById('modal-ver-obs-quota').classList.remove('hidden');
+        };
+
+        window.fecharModalObsQuota = () => {
+            document.getElementById('modal-ver-obs-quota').classList.add('hidden');
+        };
+
+        window.salvarObsQuotaPeloModal = async () => {
+            const id = document.getElementById('quota-id-obs-modal').value;
+            const texto = document.getElementById('quota-obs-texto-modal').value;
+            
+            const quotas = await DB.getQuotas();
+            const idx = quotas.findIndex(x => x.id === id);
+            
+            if (idx !== -1) {
+                quotas[idx].obs = texto;
+                await DB.setQuotas(quotas);
+                fecharModalObsQuota();
+                await renderizarQuotasGlobais(); // Atualiza a tabela com o novo texto no input
+            }
+        };
 
         // --- PAGAMENTOS GLOBAIS ---
         window.renderizarPagamentosGlobais = async () => {
@@ -3039,17 +3148,38 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 tbody.innerHTML = '';
                 
                 if (lista.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="text-muted" style="text-align:center; padding: 16px;">Nenhum rendimento cadastrado.</td></tr>';
+                    // Colspan alterado de 3 para 4 por conta da nova coluna
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-muted" style="text-align:center; padding: 16px;">Nenhum rendimento cadastrado.</td></tr>';
                     return;
                 }
                 
-                lista.forEach(item => {
+                // Adicionado o 'index' no forEach para conseguir acessar a linha de baixo
+                lista.forEach((item, index) => {
                     // Trata a data para evitar fuso horário incorreto na exibição
                     const dataFormatada = new Date(item.data + 'T00:00:00').toLocaleDateString('pt-BR');
+                    
+                    // Nova lógica de cálculo da diferença
+                    let diferencaHtml = '<span class="text-muted">-</span>';
+                    // Garante que não é o último item da lista (pois o último não tem um "anterior" para comparar)
+                    if (index < lista.length - 1) {
+                        const valorAtual = parseFloat(item.valor) || 0;
+                        const valorAntigo = parseFloat(lista[index + 1].valor) || 0;
+                        const diferenca = valorAtual - valorAntigo;
+                        
+                        if (diferenca > 0) {
+                            diferencaHtml = `<span class="text-success">+ R$ ${formatarReal(diferenca)}</span>`;
+                        } else if (diferenca < 0) {
+                            diferencaHtml = `<span class="text-danger">- R$ ${formatarReal(Math.abs(diferenca))}</span>`;
+                        } else {
+                            diferencaHtml = `<span>R$ 0,00</span>`;
+                        }
+                    }
+
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${dataFormatada}</td>
                         <td><strong>R$ ${formatarReal(parseFloat(item.valor))}</strong></td>
+                        <td>${diferencaHtml}</td>
                         <td style="text-align: right;">
                             <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;" onclick="abrirModalRendimento('${pessoa}', '${item.id}')">✏️ Ver mais / Editar</button>
                         </td>
