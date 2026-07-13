@@ -1,1 +1,1280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <link rel="manifest" href="./manifest.json">
+  <title>Despesas e Anotações Pessoais</title>
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --primary-hover: #4338CA;
+      --bg: #F3F4F6;
+      --surface: #FFFFFF;
+      --text: #1F2937;
+      --text-light: #6B7280;
+      --danger: #EF4444;
+      --danger-hover: #DC2626;
+    }
 
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    /* Abas Superiores (agora Inferiores) */
+    .tabs-container {
+      background: var(--surface);
+      padding: 1rem;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.05); /* Sombra invertida apontando para cima */
+      z-index: 10;
+    }
+
+    .tabs-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* 1. Ajuste na lista para dar espaço para a linha inferior e o notch não serem cortados */
+    .tabs {
+      display: flex;
+      overflow-x: auto;
+      gap: 0.75rem;
+      flex: 1;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-top: 6px;    /* ADICIONADO: Garante espaço no teto para o notch */
+      margin-top: -6px;    /* ADICIONADO: Compensa o espaço acima */
+      padding-bottom: 8px; 
+      margin-bottom: -8px; 
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+
+    /* 2. Ajuste no botão para permitir posicionamento absoluto da linha */
+    .tab-btn {
+      position: relative; /* ADICIONADO: Essencial para ancorar a linha */
+      padding: 0.5rem 1.25rem;
+      border-radius: 999px;
+      border: 1px solid #E5E7EB;
+      background: var(--surface);
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      /*evitar selecionar o texto da aba ao manter o dedo pressionado */
+      user-select: none;
+      -webkit-user-select: none; /* Necessário para funcionar bem no iOS/Safari */
+      -webkit-touch-callout: none; /* Evita aquele menu padrão do iOS de "Copiar" */
+    }
+
+    /* 3. NOVA REGRA: Cria a linha externa abaixo da aba ativa */
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -6px; /* Joga a linha para fora do botão (abaixo dele) */
+      left: 20%;   /* Deixa a linha centralizada e ligeiramente menor que o botão */
+      right: 20%;
+      height: 3px;  /* Espessura da linha */
+      background-color: var(--line-color, var(--text)); /* Puxa a cor dinâmica do JS */
+      border-radius: 99px; /* Bordas arredondadas na linha */
+    }
+
+    /* Estilo do Notch de Pendência */
+    .tab-btn .notch {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 12px;
+      height: 12px;
+      background-color: var(--danger);
+      border-radius: 50%;
+      border: 2px solid var(--surface);
+      z-index: 5;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .manage-tabs-btn {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+    }
+
+    /* Lista de Itens/Despesas */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    .expense-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .expense-item {
+      background: var(--surface);
+      padding: 1rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .expense-info strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+    .expense-info span {
+      font-size: 0.85rem;
+      color: var(--text-light);
+    }
+    
+    .expense-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .expense-amount {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-right: 0.5rem;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0.25rem;
+    }
+
+    .icon-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* Rodapé */
+    .footer {
+      background: var(--surface);
+      padding: 1rem 1rem calc(2.5rem + env(safe-area-inset-bottom));
+      border-top: 1px solid #E5E7EB; /* Linha sutil separando as abas dos botões */
+      /* box-shadow removido para fundir visualmente com o tabs-container */
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 0.875rem;
+      border-radius: 0.5rem;
+      border: none;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-danger { background: #FEF2F2; color: var(--danger); border: 1px solid #FECACA;}
+    .btn-outline { background: var(--surface); color: var(--text); border: 1px solid #D1D5DB; }
+    
+    /* Modais */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 5rem; 
+      z-index: 50;
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal-content {
+      background: var(--surface);
+      width: 100%;
+      max-width: 400px;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h2 { margin-bottom: 1rem; font-size: 1.25rem; }
+    
+    .input-group { margin-bottom: 1rem; }
+    .input-group label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .input-group input[type="text"],
+    .input-group input[type="number"] {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #D1D5DB;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+    .btn-cancel { background: #F3F4F6; color: var(--text); flex: 1; }
+    .btn-save { background: var(--primary); color: white; flex: 1; }
+
+    /* Lista interna do gerenciador */
+    .category-manager-list {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .category-manager-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: #F3F4F6;
+      border-radius: 0.5rem;
+    }
+    .category-controls {
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
+    }
+    
+    /* Estilo do checkbox */
+    .checkbox-label {
+      display: flex; 
+      align-items: center; 
+      gap: 0.35rem; 
+      font-size: 0.85rem; 
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--primary);
+    }
+    .checkbox-label input {
+      width: 1.2rem;
+      height: 1.2rem;
+      cursor: pointer;
+    }
+    /* Barra Superior (Cabeçalho do App) */
+    .top-bar {
+      background: var(--primary); /* Fundo com a cor principal (Azul) */
+      color: white; /* Texto branco */
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      z-index: 20; /* Garante que a sombra fique sobre o conteúdo */
+    }
+
+    .top-bar h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+
+    /* Estilos do Modal de Histórico */
+    .history-date-header {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+      border-bottom: 2px solid #E5E7EB;
+      padding-bottom: 0.25rem;
+    }
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      font-size: 0.9rem;
+      border-bottom: 1px dashed #E5E7EB;
+    }
+    .history-item.archived {
+      opacity: 0.5;
+    }
+    .history-item.archived span {
+      text-decoration: none; /* Antes estava line-through */
+    }
+    .history-item small {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-light);
+      text-decoration: none !important;
+    }
+    .history-amount {
+      font-weight: 700;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Nova barra no topo -->
+  <header class="top-bar">
+    <h1>Despesas e Anotações Pessoais v1.3.3</h1>
+  </header>
+
+  <main class="main-content">
+    <div class="expense-list" id="expenseList"></div>
+  </main>
+
+  <div class="tabs-container">
+    <div class="tabs-wrapper">
+      <div class="tabs" id="tabsList"></div>
+      <button class="manage-tabs-btn" onclick="openCategoryModal()" title="Configurações">⚙️</button>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="total-row" id="totalRow">
+      <span>Total:</span>
+      <span id="totalAmount">R$ 0,00</span>
+    </div>
+    <div class="action-buttons">
+      <button class="btn btn-danger" onclick="clearCurrentCategory()">Apagar Tudo</button>
+      <button class="btn btn-primary" id="btnNovaDespesa" onclick="openModal()">+ Nova Despesa</button>
+    </div>
+  </footer>
+
+  <div class="modal-overlay" id="expenseModal">
+    <div class="modal-content">
+      <h2 id="modalTitle">Adicionar</h2>
+      <input type="hidden" id="editId">
+
+      <!-- NOVO CAMPO DE CATEGORIA AQUI -->
+      <div class="input-group" style="margin-bottom: 1rem;">
+        <label>Categoria</label>
+        <select id="catInput" style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 1rem; background: var(--surface); color: var(--text);"></select>
+      </div>
+      
+      <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+        
+        <div class="input-group" id="valGroup" style="flex: 0 0 35%; margin-bottom: 0;">
+          <label>Valor (R$)</label>
+          <input type="number" id="valInput" placeholder="0.00" step="0.01">
+        </div>
+        
+        <div class="input-group" style="flex: 1; margin-bottom: 0;">
+          <label>Descrição</label>
+          <input type="text" id="descInput" placeholder="Ex: Almoço / Filme">
+        </div>
+        
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-save" onclick="saveExpense()">Incluir</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="categoryModal">
+    <div class="modal-content">
+      <h2>Configurações</h2>
+      <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Categorias / Listas</h3>
+      <div class="category-manager-list" id="categoryManagerList"></div>
+      
+      <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0; align-items: center;">
+        <input type="color" id="newCatColor" value="#FFCC99" style="width: 32px; height: 32px; padding: 0; border: none; border-radius: 4px; cursor: pointer;" title="Cor da categoria">
+        <input type="text" id="newCatInput" placeholder="Nova categoria" style="flex: 1;">
+        <label class="checkbox-label" title="Marque para gerenciar custos, desmarque para lista simples">
+          <input type="checkbox" id="newCatValores" checked> Val?
+        </label>
+        <button class="btn btn-primary" onclick="addCategory()" style="padding: 0.75rem; flex: none;">+</button>
+      </div>
+
+      <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid #E5E7EB;">
+      <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Backup de Dados</h3>
+      <div style="display: flex; gap: 0.5rem;">
+        <button class="btn btn-primary" onclick="exportData()" style="flex: 1; font-size: 0.9rem;">⬇️ Exportar</button>
+        <button class="btn btn-outline" onclick="document.getElementById('importFile').click()" style="flex: 1; font-size: 0.9rem;">⬆️ Importar</button>
+      </div>
+      <input type="file" id="importFile" accept=".json, .txt" style="display: none;" onchange="importData(event)">
+      
+      <div class="modal-actions">
+        <button class="btn btn-cancel" onclick="closeCategoryModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="editCategoryModal">
+    <div class="modal-content">
+      <h2>Editar Categoria</h2>
+      <input type="hidden" id="editCatOldName">
+      
+      <div class="input-group">
+        <label>Nome da Categoria</label>
+        <input type="text" id="editCatName" style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 1rem; margin-bottom: 1rem;">
+      </div>
+
+      <div class="input-group">
+        <label>Cor de Fundo da Categoria</label>
+        <input type="color" id="editCatColor" style="width: 100%; height: 40px; padding: 0; border: none; border-radius: 0.5rem; cursor: pointer;">
+      </div>
+
+      <div class="input-group" style="margin-top: 1rem;">
+        <label>Cor do Texto da Aba</label>
+        <input type="color" id="editCatTextColor" style="width: 100%; height: 40px; padding: 0; border: none; border-radius: 0.5rem; cursor: pointer;">
+      </div>
+
+      <div class="input-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1.5rem;">
+        <input type="checkbox" id="editCatValores" style="width: 1.3rem; height: 1.3rem; cursor: pointer;">
+        <label for="editCatValores" style="margin-bottom: 0; cursor: pointer; font-weight: 600;">
+          Ativar controle de valores financeiros (R$)
+        </label>
+      </div>
+
+      <div class="input-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+        <input type="checkbox" id="editCatNotch" style="width: 1.3rem; height: 1.3rem; cursor: pointer;">
+        <label for="editCatNotch" style="margin-bottom: 0; cursor: pointer; font-weight: 600;">
+          Ativar notch quando houver pendência
+        </label>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 2rem;">
+        <button class="btn btn-cancel" onclick="closeEditCategoryModal()">Cancelar</button>
+        <button class="btn btn-save" onclick="saveCategoryEdits()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="historyModal">
+    <div class="modal-content">
+      <h2 id="historyModalTitle">Histórico</h2>
+      <div id="historyList" style="max-height: 60vh; overflow-y: auto; margin-bottom: 1rem;">
+        </div>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" onclick="closeHistoryModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let categories = []; // Agora armazena objetos: {nome, ordem, temValores}
+    let currentCategory = ''; 
+
+    const formatCurrency = (value) => {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+    };
+
+    // --- SETUP DO INDEXEDDB (Failsafe v5) ---
+    const dbPromise = new Promise((resolve, reject) => {
+      const request = indexedDB.open('AppDespesasDB', 5);
+      
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains('despesas')) {
+          const store = db.createObjectStore('despesas', { keyPath: 'id', autoIncrement: true });
+          store.createIndex('categoria', 'categoria', { unique: false });
+          store.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('categorias')) {
+          db.createObjectStore('categorias', { keyPath: 'nome' });
+        }
+      };
+      
+      request.onsuccess = async (event) => {
+        const db = event.target.result;
+        try {
+            const tx = db.transaction('categorias', 'readwrite');
+            const store = tx.objectStore('categorias');
+            const req = store.getAll();
+
+            req.onsuccess = () => {
+              const defaults = ['Particular', 'Presentes', 'Restituir'];
+              const existing = req.result;
+
+              if (existing.length === 0) {
+                // Instalação limpa
+                defaults.forEach((cat, index) => store.put({ nome: cat, ordem: index, temValores: true, cor: '#FFCC99', corTexto: '#000000' }));
+              } else {
+                // Atualiza abas antigas para o formato novo (força ter valores se não tinha)
+                existing.forEach((catObj, index) => {
+                  let changed = false;
+                  if (typeof catObj.ordem !== 'number') {
+                    const defIndex = defaults.indexOf(catObj.nome);
+                    catObj.ordem = defIndex !== -1 ? defIndex : (99 + index);
+                    changed = true;
+                  }
+                  if (typeof catObj.temValores !== 'boolean') {
+                    catObj.temValores = true; // Por padrão, tudo que já existia era financeiro
+                    changed = true;
+                  }
+                  if (changed) store.put(catObj);
+                });
+              }
+            };
+            tx.oncomplete = () => resolve(db);
+            tx.onerror = () => reject(tx.error);
+        } catch(e) {
+            resolve(db);
+        }
+      };
+      request.onerror = () => reject(request.error);
+    });
+
+    // --- OPERAÇÕES DO BANCO ---
+    async function dbGetCategories() {
+      const db = await dbPromise;
+      return new Promise((resolve) => {
+        const tx = db.transaction('categorias', 'readonly');
+        const request = tx.objectStore('categorias').getAll();
+        request.onsuccess = () => {
+          const cats = request.result;
+          cats.sort((a, b) => a.ordem - b.ordem);
+          resolve(cats); // Retorna a array de objetos inteira
+        };
+      });
+    }
+
+    async function dbAddCategory(nome, temValores, cor = '#FFCC99', corTexto = '#000000', showNotch = true) {
+      const db = await dbPromise;
+      return new Promise((resolve) => {
+        const tx = db.transaction('categorias', 'readwrite');
+        const store = tx.objectStore('categorias');
+        const getReq = store.getAll();
+        
+        getReq.onsuccess = () => {
+          const all = getReq.result;
+          let maxOrdem = -1;
+          all.forEach(c => { if(c.ordem > maxOrdem) maxOrdem = c.ordem; });
+          
+          // Salva no banco com todos os parâmetros, forçando o notch ativado
+          store.put({ nome, ordem: maxOrdem + 1, temValores, cor, corTexto, showNotch });
+          tx.oncomplete = () => resolve();
+        };
+      });
+    }
+
+    async function dbUpdateCategory(oldNome, novoNome, temValores, cor, corTexto, showNotch) {
+      const db = await dbPromise;
+      
+      // Passo A: Atualizar ou recriar o registro na tabela de categorias
+      await new Promise((resolve) => {
+        const tx = db.transaction('categorias', 'readwrite');
+        const store = tx.objectStore('categorias');
+        
+        const req = store.get(oldNome);
+        req.onsuccess = () => {
+          const cat = req.result;
+          if (cat) {
+            // Se o nome mudou, deleta o registro antigo com a chave primária desatualizada
+            if (oldNome !== novoNome) {
+              store.delete(oldNome);
+            }
+            // Adiciona/Atualiza o registro com os novos parâmetros, INCLUINDO o showNotch
+            store.put({
+              nome: novoNome,
+              ordem: cat.ordem,
+              temValores: temValores,
+              cor: cor,
+              corTexto: corTexto,
+              showNotch: showNotch
+            });
+          }
+        };
+        tx.oncomplete = () => resolve();
+      });
+
+      // Passo B: Se o nome mudou, atualiza em lote a propriedade 'categoria' das despesas
+      if (oldNome !== novoNome) {
+        await new Promise((resolve) => {
+          const tx = db.transaction('despesas', 'readwrite');
+          const store = tx.objectStore('despesas');
+          const index = store.index('categoria');
+          const request = index.getAll(oldNome);
+
+          request.onsuccess = () => {
+            const despesas = request.result;
+            despesas.forEach(exp => {
+              exp.categoria = novoNome;
+              store.put(exp);
+            });
+          };
+          tx.oncomplete = () => resolve();
+        });
+      }
+    }
+
+    async function dbDeleteCategory(nome) {
+      const db = await dbPromise;
+      return new Promise((resolve) => {
+        const tx = db.transaction('categorias', 'readwrite');
+        tx.objectStore('categorias').delete(nome);
+        tx.oncomplete = () => resolve();
+      });
+    }
+
+    async function dbAddOrUpdateExpense(expense) {
+      const db = await dbPromise;
+      return new Promise((resolve) => {
+        const tx = db.transaction('despesas', 'readwrite');
+        const store = tx.objectStore('despesas');
+        if (expense.id) store.put(expense);
+        else store.add(expense);
+        tx.oncomplete = () => resolve();
+      });
+    }
+
+    async function dbGetExpensesByCategory(category) {
+      const db = await dbPromise;
+      return new Promise((resolve) => {
+        const tx = db.transaction('despesas', 'readonly');
+        const index = tx.objectStore('despesas').index('categoria');
+        const request = index.getAll(category);
+        request.onsuccess = () => {
+          // Filtra para mostrar apenas os NÃO arquivados na tela principal
+          const activeExpenses = request.result.filter(exp => !exp.arquivado);
+          resolve(activeExpenses.sort((a, b) => b.timestamp - a.timestamp));
+        };
+      });
+    }
+
+    async function dbGetExpenseCountByCategory(category) {
+      const db = await dbPromise;
+      return new Promise((resolve) => {
+        const tx = db.transaction('despesas', 'readonly');
+        const index = tx.objectStore('despesas').index('categoria');
+        const request = index.getAll(category); 
+        request.onsuccess = () => {
+          // O Notch só deve acender se houver itens ATIVOS (não arquivados)
+          const count = request.result.filter(exp => !exp.arquivado).length;
+          resolve(count);
+        };
+      });
+    }
+
+    async function dbGetAllExpenses() {
+      const db = await dbPromise;
+      return new Promise((resolve) => {
+        const tx = db.transaction('despesas', 'readonly');
+        const request = tx.objectStore('despesas').getAll();
+        request.onsuccess = () => resolve(request.result);
+      });
+    }
+
+    async function deleteExpense(id) {
+      if(confirm('Tem certeza que deseja apagar? O item irá para o histórico.')) {
+        const db = await dbPromise;
+        const tx = db.transaction('despesas', 'readwrite');
+        const store = tx.objectStore('despesas');
+        const req = store.get(id);
+        req.onsuccess = () => {
+          const exp = req.result;
+          if(exp) {
+            exp.arquivado = true; // Aplica o soft-delete
+            store.put(exp);
+          }
+        };
+        tx.oncomplete = async () => {
+          await renderTabs();
+          await loadExpenses();
+        };
+      }
+    }
+
+    async function clearCurrentCategory() {
+      if(!currentCategory) return;
+      if(confirm(`Tem certeza que deseja limpar a tela de "${currentCategory}"? Todos os itens irão para o histórico.`)) {
+        const db = await dbPromise;
+        const tx = db.transaction('despesas', 'readwrite');
+        const store = tx.objectStore('despesas');
+        const index = store.index('categoria');
+        const request = index.getAll(currentCategory);
+
+        request.onsuccess = () => {
+          const expenses = request.result;
+          expenses.forEach(exp => {
+            if (!exp.arquivado) {
+              exp.arquivado = true; // Arquiva todos
+              store.put(exp);
+            }
+          });
+        };
+
+        tx.oncomplete = async () => {
+          await renderTabs();
+          await loadExpenses();
+        };
+      }
+    }
+
+    async function cleanOldHistory() {
+      const db = await dbPromise;
+      return new Promise((resolve) => {
+        const tx = db.transaction('despesas', 'readwrite');
+        const store = tx.objectStore('despesas');
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+          const agora = Date.now();
+          const trintaDiasEmMs = 30 * 24 * 60 * 60 * 1000;
+
+          request.result.forEach(exp => {
+            // Se está no histórico (arquivado) e já se passaram 30 dias do timestamp, deleta permanentemente
+            if (exp.arquivado && (agora - exp.timestamp > trintaDiasEmMs)) {
+              store.delete(exp.id);
+            }
+          });
+        };
+        tx.oncomplete = () => resolve();
+      });
+    }
+
+    // --- LÓGICA DO APP ---
+    async function initApp() {
+      await cleanOldHistory();
+
+      categories = await dbGetCategories();
+      if (categories.length > 0 && !categories.some(c => c.nome === currentCategory)) {
+        currentCategory = categories[0].nome;
+      }
+      await renderTabs(); // Atualizado com await
+      await loadExpenses();
+    }
+
+    // --- Lógica de Pressionar e Segurar (Long Press) ---
+    let pressTimer;
+    let isLongPress = false;
+
+    function handleTabPressStart(categoryName) {
+      isLongPress = false;
+      pressTimer = window.setTimeout(() => {
+        isLongPress = true;
+        openHistoryModal(categoryName);
+      }, 600); // 600 milissegundos para considerar como "segurar"
+    }
+
+    function handleTabPressEnd() {
+      clearTimeout(pressTimer);
+    }
+
+    function handleTabClick(event, categoryName) {
+      if (isLongPress) {
+        event.preventDefault(); // Impede que a aba mude se foi um clique longo
+        return;
+      }
+      changeCategory(categoryName);
+    }
+    // --------------------------------------------------
+
+    async function renderTabs() {
+      const tabsList = document.getElementById('tabsList');
+      let tabsHTML = '';
+
+      for (const cat of categories) {
+        const isActive = cat.nome === currentCategory;
+        const bg = cat.cor || '#FFCC99';
+        const fg = cat.corTexto || '#000000';
+        
+        let hasNotch = false;
+        if (cat.showNotch !== false) {
+           const count = await dbGetExpenseCountByCategory(cat.nome);
+           if (count > 0) hasNotch = true;
+        }
+        
+        const tabStyle = isActive 
+          ? `background: ${bg}; color: ${fg}; border: 2.5px solid var(--text); font-weight: 800; opacity: 1; z-index: 2; --line-color: var(--text);` 
+          : `background: ${bg}; color: ${fg}; border: 1px solid transparent; font-weight: 600; opacity: 0.6;`;
+
+        // Aqui adicionamos os eventos onmousedown, ontouchstart, etc.
+        tabsHTML += `
+        <button class="tab-btn ${isActive ? 'active' : ''}" 
+                style="${tabStyle}"
+                onmousedown="handleTabPressStart('${cat.nome}')"
+                onmouseup="handleTabPressEnd()"
+                onmouseleave="handleTabPressEnd()"
+                ontouchstart="handleTabPressStart('${cat.nome}')"
+                ontouchend="handleTabPressEnd()"
+                onclick="handleTabClick(event, '${cat.nome}')">
+          ${cat.nome}
+          ${hasNotch ? '<div class="notch"></div>' : ''}
+        </button>
+        `;
+      }
+      
+      tabsList.innerHTML = tabsHTML;
+    }
+
+    async function changeCategory(categoryName) {
+      currentCategory = categoryName;
+      await renderTabs(); // Atualizado com await
+      await loadExpenses();
+    }
+
+    async function loadExpenses() {
+      const listEl = document.getElementById('expenseList');
+      const catConfig = categories.find(c => c.nome === currentCategory);
+      const usaValores = catConfig ? (catConfig.temValores !== false) : true;
+      
+      let total = 0;
+
+      // Ajusta interface baseado no tipo de categoria
+      const totalRow = document.getElementById('totalRow');
+      const btnNovo = document.getElementById('btnNovaDespesa');
+      
+      if (usaValores) {
+        totalRow.style.visibility = 'visible'; /* Torna a barra visível */
+        btnNovo.innerText = '+ Nova Despesa';
+      } else {
+        totalRow.style.visibility = 'hidden';  /* Oculta o texto, mas preserva o espaço físico dela */
+        btnNovo.innerText = '+ Novo Item';
+      }
+
+      if (!currentCategory) {
+        listEl.innerHTML = '<p style="text-align:center; color:#6B7280; margin-top:2rem;">Nenhuma categoria selecionada.</p>';
+        document.getElementById('totalAmount').innerText = formatCurrency(0);
+        return;
+      }
+
+      const expenses = await dbGetExpensesByCategory(currentCategory);
+      listEl.innerHTML = '';
+
+      if (expenses.length === 0) {
+        listEl.innerHTML = `<p style="text-align:center; color:#6B7280; margin-top:2rem;">Nenhum ${usaValores ? 'registro' : 'item'} adicionado.</p>`;
+      }
+
+      expenses.forEach(exp => {
+        total += exp.amount;
+        const item = document.createElement('div');
+        item.className = 'expense-item';
+        item.innerHTML = `
+          <div class="expense-info">
+            <strong>${exp.description}</strong>
+            <span>${new Date(exp.timestamp).toLocaleDateString('pt-BR')}</span>
+          </div>
+          <div class="expense-actions">
+            ${usaValores ? `<span class="expense-amount">${formatCurrency(exp.amount)}</span>` : ''}
+            <button class="icon-btn" onclick="editExpense(${exp.id}, '${exp.description}', ${exp.amount})" title="Editar">✏️</button>
+            <button class="icon-btn" onclick="deleteExpense(${exp.id})" title="Excluir">🗑️</button>
+          </div>
+        `;
+        listEl.appendChild(item);
+      });
+
+      document.getElementById('totalAmount').innerText = formatCurrency(total);
+    }
+
+    // --- DIÁLOGOS DE DESPESAS/ITENS ---
+    function openModal() {
+      if(!currentCategory) return alert('Por favor, crie uma categoria antes de adicionar itens.');
+      
+      const catConfig = categories.find(c => c.nome === currentCategory);
+      const usaValores = catConfig ? (catConfig.temValores !== false) : true;
+      
+      const editId = document.getElementById('editId').value;
+      const modalTitle = document.getElementById('modalTitle');
+      const valGroup = document.getElementById('valGroup');
+
+      // NOVO: Popula o select de categorias e define o padrão
+      const catSelect = document.getElementById('catInput');
+      catSelect.innerHTML = categories.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+      catSelect.value = currentCategory; // <-- Isso garante que a aba aberta venha selecionada
+
+      if (!editId) {
+        modalTitle.innerText = usaValores ? 'Adicionar Despesa' : 'Adicionar Item';
+      } else {
+        modalTitle.innerText = usaValores ? 'Editar Despesa' : 'Editar Item';
+      }
+
+      valGroup.style.display = usaValores ? 'block' : 'none';
+      
+      document.getElementById('expenseModal').classList.add('active');
+
+      setTimeout(() => {
+        if (usaValores) {
+          document.getElementById('valInput').focus();
+        } else {
+          document.getElementById('descInput').focus();
+        }
+      }, 100);
+    }
+    
+    function closeModal() {
+      document.getElementById('expenseModal').classList.remove('active');
+      document.getElementById('descInput').value = '';
+      document.getElementById('valInput').value = '';
+      document.getElementById('editId').value = '';
+    }
+
+    async function saveExpense() {
+      const catConfig = categories.find(c => c.nome === currentCategory);
+      const usaValores = catConfig ? (catConfig.temValores !== false) : true;
+
+      const desc = document.getElementById('descInput').value.trim();
+      const editId = document.getElementById('editId').value;
+      const categoriaSelecionada = document.getElementById('catInput').value; // <-- NOVO: Pega a categoria do select
+      
+      let val = 0;
+      if (usaValores) {
+        val = parseFloat(document.getElementById('valInput').value);
+        if (isNaN(val)) return alert('Preencha o valor corretamente.');
+      }
+
+      if (!desc) return alert('Preencha a descrição.');
+
+      const expense = {
+        description: desc,
+        amount: val, 
+        categoria: categoriaSelecionada, // <-- ATUALIZADO: Usa a categoria escolhida no modal
+        timestamp: Date.now()
+      };
+
+      if (editId) expense.id = Number(editId);
+
+      await dbAddOrUpdateExpense(expense);
+      closeModal();
+      await renderTabs();
+      await loadExpenses();
+    }
+
+    function editExpense(id, desc, amount) {
+      document.getElementById('descInput').value = desc;
+      document.getElementById('valInput').value = amount;
+      document.getElementById('editId').value = id;
+      openModal();
+    } 
+
+    // --- GERENCIAMENTO DE CATEGORIAS ---
+    function openCategoryModal() {
+      document.getElementById('categoryModal').classList.add('active');
+      renderCategoryManagerList();
+    }
+
+    function closeCategoryModal() {
+      document.getElementById('categoryModal').classList.remove('active');
+    }
+
+    async function renderCategoryManagerList() {
+      const container = document.getElementById('categoryManagerList');
+      const cats = await dbGetCategories();
+      
+      container.innerHTML = cats.map((cat, index) => {
+        const catColor = cat.cor || '#FFCC99';
+        
+        return `
+        <div class="category-manager-item" style="border-left: 4px solid ${catColor};">
+          <span style="font-weight: 500;">
+            ${cat.nome} 
+            <small style="color: var(--text-light); font-weight: normal; font-size: 0.75rem;">
+              (${cat.temValores !== false ? 'R$' : 'Lista'})
+            </small>
+          </span>
+          <div class="category-controls">
+            <button class="icon-btn" onclick="openEditCategoryModal('${cat.nome}')" title="Editar">✏️</button>
+            <button class="icon-btn" onclick="moveCategory(${index}, 'up')" ${index === 0 ? 'disabled' : ''}>⬆️</button>
+            <button class="icon-btn" onclick="moveCategory(${index}, 'down')" ${index === cats.length - 1 ? 'disabled' : ''}>⬇️</button>
+            <button class="icon-btn" onclick="removeCategory('${cat.nome}')" style="margin-left: 0.25rem;">🗑️</button>
+          </div>
+        </div>
+      `}).join('');
+    }
+
+    async function moveCategory(index, direction) {
+      const db = await dbPromise;
+      let cats = await dbGetCategories();
+
+      if (direction === 'up' && index > 0) {
+          const temp = cats[index];
+          cats[index] = cats[index - 1];
+          cats[index - 1] = temp;
+      } else if (direction === 'down' && index < cats.length - 1) {
+          const temp = cats[index];
+          cats[index] = cats[index + 1];
+          cats[index + 1] = temp;
+      } else {
+          return;
+      }
+
+      const tx = db.transaction('categorias', 'readwrite');
+      const store = tx.objectStore('categorias');
+      cats.forEach((cat, i) => {
+          cat.ordem = i;
+          store.put(cat);
+      });
+
+      await new Promise(resolve => tx.oncomplete = resolve);
+
+      await initApp();
+      await renderCategoryManagerList();
+    }
+
+    async function addCategory() {
+      const input = document.getElementById('newCatInput');
+      const check = document.getElementById('newCatValores');
+      const colorInput = document.getElementById('newCatColor'); 
+      const name = input.value.trim();
+      if (!name) return;
+
+      // Passa a cor de fundo escolhida e força o preto (#000000) no texto
+      await dbAddCategory(name, check.checked, colorInput.value, '#000000');
+      
+      input.value = '';
+      colorInput.value = '#FFCC99'; 
+      check.checked = true;
+      await initApp();
+      await renderCategoryManagerList();
+    }
+
+    async function removeCategory(name) {
+      if (confirm(`Excluir "${name}" removerá o acesso a ela na barra superior. Os dados salvos nela não serão deletados. Continuar?`)) {
+        await dbDeleteCategory(name);
+        await initApp();
+        await renderCategoryManagerList();
+      }
+    }
+
+    // --- EXPORTAR E IMPORTAR DADOS (JSON) ---
+    async function exportData() {
+      try {
+        const cats = await dbGetCategories();
+        const exps = await dbGetAllExpenses();
+        
+        const backupData = {
+          categorias: cats,
+          despesas: exps,
+          dataExportacao: new Date().toISOString()
+        };
+
+        const jsonString = JSON.stringify(backupData, null, 2);
+        const dateStr = new Date().toISOString().split('T')[0];
+        const filename = `backup_despesas_${dateStr}.txt`;
+        
+        const blob = new Blob([jsonString], { type: "application/json" });
+
+        if (navigator.canShare && navigator.share) {
+          // 2. Avisamos o celular que é um arquivo de texto simples (text/plain)
+          const file = new File([blob], filename, { type: "text/plain" });
+          
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'Backup de Despesas e Anotações',
+              text: 'Segue em anexo o arquivo de backup dos meus dados.'
+            });
+            return; 
+          }
+        }
+
+        // --- PLANO B: Download Tradicional ---
+        // Executado caso o navegador não suporte a Web Share API (ex: Chrome no Desktop)
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        
+        document.body.appendChild(a);
+        a.click();
+        
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        alert("Erro ao exportar dados: " + error.message);
+      }
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          
+          if (!data.categorias || !data.despesas) {
+            throw new Error("Formato de arquivo inválido.");
+          }
+
+          const db = await dbPromise;
+          
+          for (const cat of data.categorias) {
+             const tx = db.transaction('categorias', 'readwrite');
+             tx.objectStore('categorias').put(cat);
+             await new Promise(resolve => tx.oncomplete = resolve);
+          }
+
+          for (const exp of data.despesas) {
+            await dbAddOrUpdateExpense(exp);
+          }
+
+          alert("Dados importados com sucesso!");
+          await initApp();
+          if (document.getElementById('categoryModal').classList.contains('active')) {
+            renderCategoryManagerList();
+          }
+        } catch (error) {
+          alert("Erro ao importar arquivo: " + error.message);
+        }
+      };
+      
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    // Habilita o scroll horizontal com o mouse na barra de categorias
+    const tabsListEl = document.getElementById('tabsList');
+    tabsListEl.addEventListener('wheel', (evt) => {
+      // Previne que a página inteira role para baixo/cima acidentalmente
+      evt.preventDefault();
+      // Converte a força da rolagem vertical (deltaY) para horizontal (scrollLeft)
+      tabsListEl.scrollLeft += evt.deltaY;
+    });
+
+    window.addEventListener('DOMContentLoaded', initApp);
+
+    function openEditCategoryModal(nome) {
+      const cat = categories.find(c => c.nome === nome);
+      if (!cat) return;
+
+      document.getElementById('editCatOldName').value = cat.nome; 
+      document.getElementById('editCatName').value = cat.nome;    
+      document.getElementById('editCatColor').value = cat.cor || '#FFCC99';
+      document.getElementById('editCatTextColor').value = cat.corTexto || '#000000';
+      document.getElementById('editCatValores').checked = cat.temValores !== false;
+      
+      // O checkbox virá marcado por padrão (para os casos undefined ou true)
+      document.getElementById('editCatNotch').checked = cat.showNotch !== false; 
+
+      document.getElementById('editCategoryModal').classList.add('active');
+    }
+
+    function closeEditCategoryModal() {
+      document.getElementById('editCategoryModal').classList.remove('active');
+    }
+
+    async function saveCategoryEdits() {
+      const oldNome = document.getElementById('editCatOldName').value;
+      const novoNome = document.getElementById('editCatName').value.trim();
+      const cor = document.getElementById('editCatColor').value;
+      const corTexto = document.getElementById('editCatTextColor').value;
+      const temValores = document.getElementById('editCatValores').checked;
+      const showNotch = document.getElementById('editCatNotch').checked; // Lendo o status do Notch
+
+      if (!novoNome) return alert('O nome da categoria não pode ficar vazio.');
+      
+      if (oldNome !== novoNome && categories.some(c => c.nome.toLowerCase() === novoNome.toLowerCase())) {
+        return alert('Já existe uma categoria com este nome.');
+      }
+
+      // Enviando a variável showNotch como o 6º parâmetro para o banco
+      await dbUpdateCategory(oldNome, novoNome, temValores, cor, corTexto, showNotch);
+      
+      if (currentCategory === oldNome) {
+        currentCategory = novoNome;
+      }
+
+      closeEditCategoryModal();
+      await initApp();
+      await renderCategoryManagerList();
+    }
+
+    async function openHistoryModal(categoryName) {
+      const db = await dbPromise;
+      const tx = db.transaction('despesas', 'readonly');
+      const index = tx.objectStore('despesas').index('categoria');
+      const request = index.getAll(categoryName);
+
+      request.onsuccess = () => {
+        // FILTRO ALTERADO: Mantém APENAS os itens que estão arquivados (apagados da tela)
+        const deletedItems = request.result
+          .filter(exp => exp.arquivado)
+          .sort((a, b) => b.timestamp - a.timestamp);
+          
+        const container = document.getElementById('historyList');
+        container.innerHTML = '';
+
+        if (deletedItems.length === 0) {
+          container.innerHTML = '<p style="text-align:center; color: var(--text-light); margin-top: 2rem;">Nenhum item apagado nesta categoria.</p>';
+        } else {
+          // Agrupando por Data
+          const groupedByDate = {};
+          deletedItems.forEach(item => {
+            const dateStr = new Date(item.timestamp).toLocaleDateString('pt-BR');
+            if (!groupedByDate[dateStr]) groupedByDate[dateStr] = [];
+            groupedByDate[dateStr].push(item);
+          });
+
+          // Renderizando o HTML
+          for (const [date, items] of Object.entries(groupedByDate)) {
+            let groupHTML = `<div class="history-date-header">${date}</div>`;
+            
+            items.forEach(exp => {
+               const amountText = exp.amount ? formatCurrency(exp.amount) : '';
+               
+               groupHTML += `
+                <div class="history-item archived">
+                   <div>
+                     <span>${exp.description}</span>
+                     <small>(Apagado)</small>
+                   </div>
+                   <div class="history-amount">${amountText}</div>
+                </div>`;
+            });
+            container.innerHTML += groupHTML;
+          }
+        }
+        
+        // Atualiza o título do modal para deixar claro o que está sendo exibido
+        document.getElementById('historyModalTitle').innerText = `Histórico (Itens Apagados): ${categoryName}`;
+        document.getElementById('historyModal').classList.add('active');
+        
+        if (navigator.vibrate) navigator.vibrate(50);
+      };
+    }
+
+    function closeHistoryModal() {
+      document.getElementById('historyModal').classList.remove('active');
+    }
+
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+
+</body>
+</html>
