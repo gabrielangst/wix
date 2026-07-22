@@ -393,12 +393,15 @@
     }
 
   </style>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
 </head>
 <body>
 
   <!-- Nova barra no topo -->
   <header class="top-bar" id="appHeader">
-    <h1>Despesas e Anotações v2.0</h1>
+    <h1>Despesas e Anotações v2.1</h1>
     <button onclick="toggleMenu()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 5px;">⋮</button>
     
     <div class="menu-dropdown" id="topMenu">
@@ -603,6 +606,44 @@
   </div>
 
   <script>
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj_yFkSSzlzy3EZSyO-OvIsorfWE6l0Kc",
+      authDomain: "despesascel.firebaseapp.com",
+      projectId: "despesascel",
+      storageBucket: "despesascel.firebasestorage.app",
+      messagingSenderId: "505571142443",
+      appId: "1:505571142443:web:dce83080279e01927cb36e"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        // Usuário está logado. Pode inicializar os listeners do Firestore!
+        console.log("Logado como:", user.email);
+      } else {
+        // Não está logado, pede as credenciais
+        const email = prompt("Digite o e-mail de acesso à lista:");
+        const password = prompt("Digite a senha:");
+        
+        if (email && password) {
+          auth.signInWithEmailAndPassword(email, password)
+            .then(() => {
+              alert("Conectado com sucesso!");
+            })
+            .catch((error) => {
+              alert("Erro ao conectar: " + error.message);
+            });
+        }
+      }
+    });
+
+    const dbFirebase = firebase.firestore();
+
+
     let categories = []; // Agora armazena objetos: {nome, ordem, temValores}
     let currentCategory = ''; 
 
@@ -1575,38 +1616,65 @@
       btnRedo.style.opacity = historyIndex >= anotacoesHistory.length - 1 ? '0.3' : '1';
     }
 
-    // --- LÓGICA: LISTA DE COMPRAS ---
+    // --- LÓGICA: LISTA DE COMPRAS (FIREBASE FIRESTORE) ---
     let comprasState = [];
+    let unsubscribeCompras = null;
 
-    async function initComprasData() {
-      comprasState = await dbGetCompras();
-      
-      if (comprasState.length === 0) {
-        const defaultData = {
-          "Alimentos": ["abóbora", "açúcar", "arroz", "água", "alho", "alface", "azeite", "banana", "barrinha de cereal Supino Coco", "batata doce", "biscoito", "brócolis", "café solúvel", "carne (alcatra para bife 1kg)", "filé mignon", "carne moída (500g)", "cebola", "cenoura", "chá", "Feijão", "frango", "hamburguer", "leite", "leite fermentado", "lentilha", "limão", "linhaça dourada", "macarrão", "maçã", "maizena", "mamão", "mandioca", "manteiga", "margarina", "molho de tomate", "morango", "mortadela", "oleo", "orégano", "pão de forma", "ovo", "pão", "pão de queijo", "peixe", "pimenta", "pimenta do reino", "polpa", "presunto", "queijo", "queijo branco", "refrigerante", "sal", "salsicha", "suco", "suco polpa", "tapioca", "temperos", "tomate"],
-          "Limpeza": ["água sanitária", "alcool", "amaciante", "bom ar freeco", "bucha", "cif", "desinfetante", "detergente", "escova tanque", "esponja", "fio dental oral b", "lixeira", "pano de prato", "papel alumínio", "papel filme", "papel higiênico", "papel toalha", "pasta de dente", "pato", "sabão para roupas", "sabonete líquido", "sacos de lixo", "veja (limpador de uso geral)", "vanish", "vassoura"],
-          "Higiene": ["desodorante", "durex", "papel A4", "algodão", "shampoo", "super bonder", "pilhas AAA", "potes", "vaso"],
-          "Farmácia": ["avamys", "eno", "neosoro", "soro fisiológico"],
-          "Específicos": ["balde", "pano de chão", "chocolates vizinhos", "maple"]
-        };
-        
-        let idCounter = 1;
-        for (const [cat, items] of Object.entries(defaultData)) {
-          for (const nome of items) {
-            const item = { id: idCounter++, nome: nome, categoria: cat, checked: true }; // Agora vem marcado
-            comprasState.push(item);
-            await dbSaveCompra(item);
+    // O seu dicionário original de itens padrão
+    const defaultData = {
+      "Alimentos": ["abóbora", "açúcar", "arroz", "água", "alho", "alface", "azeite", "banana", "barrinha de cereal Supino Coco", "batata doce", "biscoito", "brócolis", "café solúvel", "carne (alcatra para bife 1kg)", "filé mignon", "carne moída (500g)", "cebola", "cenoura", "chá", "Feijão", "frango", "hamburguer", "leite", "leite fermentado", "lentilha", "limão", "linhaça dourada", "macarrão", "maçã", "maizena", "mamão", "mandioca", "manteiga", "margarina", "molho de tomate", "morango", "mortadela", "oleo", "orégano", "pão de forma", "ovo", "pão", "pão de queijo", "peixe", "pimenta", "pimenta do reino", "polpa", "presunto", "queijo", "queijo branco", "refrigerante", "sal", "salsicha", "suco", "suco polpa", "tapioca", "temperos", "tomate"],
+      "Limpeza": ["água sanitária", "alcool", "amaciante", "bom ar freeco", "bucha", "cif", "desinfetante", "detergente", "escova tanque", "esponja", "fio dental oral b", "lixeira", "pano de prato", "papel alumínio", "papel filme", "papel higiênico", "papel toalha", "pasta de dente", "pato", "sabão para roupas", "sabonete líquido", "sacos de lixo", "veja (limpador de uso geral)", "vanish", "vassoura"],
+      "Higiene": ["desodorante", "durex", "papel A4", "algodão", "shampoo", "super bonder", "pilhas AAA", "potes", "vaso"],
+      "Farmácia": ["avamys", "eno", "neosoro", "soro fisiológico"],
+      "Específicos": ["balde", "pano de chão", "chocolates vizinhos", "maple"]
+    };
+
+    // Inicializa a escuta em tempo real do Firestore e carrega os dados iniciais se necessário
+    function initComprasData() {
+      if (!unsubscribeCompras) {
+        unsubscribeCompras = dbFirebase.collection('compras').onSnapshot(async (snapshot) => {
+          
+          // Se a coleção na nuvem estiver vazia, fazemos o upload da lista padrão
+          if (snapshot.empty) {
+            console.log("Coleção vazia! Semeando Firestore com a lista padrão...");
+            const batch = dbFirebase.batch();
+            
+            for (const [cat, items] of Object.entries(defaultData)) {
+              for (const nome of items) {
+                const docRef = dbFirebase.collection('compras').doc(); // Gera um ID único automático
+                batch.set(docRef, { 
+                  nome: nome, 
+                  categoria: cat, 
+                  checked: true, // Mantendo o padrão original de já virem marcados (cortados)
+                  timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+              }
+            }
+            // Dispara todas as gravações de uma vez (isso ativará o onSnapshot novamente)
+            await batch.commit(); 
+            return; 
           }
-        }
+
+          // Se já existirem dados, renderizamos normalmente
+          comprasState = [];
+          snapshot.forEach((doc) => {
+            comprasState.push({ docId: doc.id, ...doc.data() });
+          });
+          
+          if (document.getElementById('comprasModal').classList.contains('active')) {
+            renderCompras();
+          }
+        });
       }
     }
 
-    async function openComprasModal() {
+    // Abertura do modal adaptada para não precisar de await no carregamento inicial
+    function openComprasModal() {
       document.getElementById('topMenu').style.display = 'none';
-      await initComprasData();
+      initComprasData(); 
       document.getElementById('searchCompras').value = '';
       document.getElementById('filterUnchecked').checked = false;
-      renderCompras();
+      // O onSnapshot dispara imediatamente e cuida de chamar o renderCompras()
       document.getElementById('comprasModal').classList.add('active');
     }
 
@@ -1658,12 +1726,12 @@
             html += `
               <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0; ${item.checked ? 'opacity: 0.5;' : ''}">
                 <label class="checkbox-label" style="flex:1; color: var(--text); font-weight: 500; ${item.checked ? 'text-decoration: line-through;' : ''}">
-                  <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCompra(${item.id})">
+                  <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCompra('${item.docId}')">
                   ${item.nome}
                 </label>
                 <div style="display: flex; gap: 0.15rem;">
-                  <button class="icon-btn" onclick="editCompraItem(${item.id})" style="font-size: 1.1rem;" title="Editar">✏️</button>
-                  <button class="icon-btn" onclick="deleteCompraItem(${item.id})" style="font-size: 1.1rem;" title="Excluir">🗑️</button>
+                  <button class="icon-btn" onclick="editCompraItem('${item.docId}')" style="font-size: 1.1rem;" title="Editar">✏️</button>
+                  <button class="icon-btn" onclick="deleteCompraItem('${item.docId}')" style="font-size: 1.1rem;" title="Excluir">🗑️</button>  
                 </div>
               </div>
             `;
@@ -1681,12 +1749,13 @@
       }
     }
 
-    async function toggleCompra(id) {
-      const item = comprasState.find(i => i.id === id);
+    // --- CRUD NO FIRESTORE ---
+    async function toggleCompra(docId) {
+      const item = comprasState.find(i => i.docId === docId);
       if (item) {
-        item.checked = !item.checked;
-        await dbSaveCompra(item);
-        renderCompras();
+        await dbFirebase.collection('compras').doc(docId).update({
+          checked: !item.checked
+        });
       }
     }
 
@@ -1697,43 +1766,41 @@
       let cat = prompt('Categoria (ex: Alimentos, Limpeza, Higiene, Farmácia, Específicos):', 'Alimentos');
       if (!cat || cat.trim() === '') cat = 'Outros';
 
-      const maxId = comprasState.reduce((max, i) => i.id > max ? i.id : max, 0);
-      const newItem = { id: maxId + 1, nome: nome.trim(), categoria: cat.trim(), checked: false };
-      
-      comprasState.push(newItem);
-      await dbSaveCompra(newItem);
-      renderCompras();
+      const newItem = { 
+        nome: nome.trim(), 
+        categoria: cat.trim(), 
+        checked: false, 
+        timestamp: firebase.firestore.FieldValue.serverTimestamp() 
+      };
+      await dbFirebase.collection('compras').add(newItem);
     }
 
-    async function editCompraItem(id) {
-      const item = comprasState.find(i => i.id === id);
+    async function editCompraItem(docId) {
+      const item = comprasState.find(i => i.docId === docId);
       if (!item) return;
       
       const novoNome = prompt('Editar nome do item:', item.nome);
       if (novoNome && novoNome.trim() !== '') {
-        item.nome = novoNome.trim();
-        await dbSaveCompra(item);
-        renderCompras();
+        await dbFirebase.collection('compras').doc(docId).update({
+          nome: novoNome.trim()
+        });
       }
     }
 
-    async function deleteCompraItem(id) {
+    async function deleteCompraItem(docId) {
       if (confirm('Remover definitivamente este item da lista?')) {
-        comprasState = comprasState.filter(i => i.id !== id);
-        await dbDeleteCompra(id);
-        renderCompras();
+        await dbFirebase.collection('compras').doc(docId).delete();
       }
     }
 
     async function toggleAllCompras(isChecked) {
-      // Cria um array de promessas para salvar todos os itens no banco simultaneamente
-      const promessas = comprasState.map(item => {
-        item.checked = isChecked;
-        return dbSaveCompra(item);
+      // O uso do batch garante que todos os itens marquem/desmarquem juntos de forma atômica
+      const batch = dbFirebase.batch();
+      comprasState.forEach(item => {
+        const docRef = dbFirebase.collection('compras').doc(item.docId);
+        batch.update(docRef, { checked: isChecked });
       });
-      
-      await Promise.all(promessas);
-      renderCompras();
+      await batch.commit();
     }
 
   </script>
