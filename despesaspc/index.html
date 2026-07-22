@@ -461,7 +461,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças 1.7.0
+                <span>📊</span> Finanças 1.7.1
             </div>
             <nav>
                 <ul id="main-menu">
@@ -1976,13 +1976,19 @@
             mes.quotas.forEach((q, index) => {
                 const historico = q.historico || [];
                 if (!q.historico && q.gasto > 0) historico.push({ valor: q.gasto, desc: 'Gasto anterior', data: '' });
-                let historicoHtml = historico.map((item, i) => `
+                let historicoHtml = historico.map((item, i) => {
+                    const isCredito = item.valor < 0;
+                    const corValor = isCredito ? 'var(--accent-success)' : 'var(--text-main)';
+                    const displayValor = isCredito ? `+ R$ ${formatarReal(Math.abs(item.valor))}` : `- R$ ${formatarReal(item.valor)}`;
+
+                    return `
                     <li style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 4px; margin-top: 4px; border-radius: 4px;">
                         <span style="font-size: 0.8rem; flex: 1;">${item.desc} ${item.data ? `(${item.data})` : ''}</span>
-                        <strong style="font-size: 0.85rem; margin-right: 8px;">R$ ${formatarReal(item.valor)}</strong>
+                        <strong style="font-size: 0.85rem; margin-right: 8px; color: ${corValor};">${displayValor}</strong>
                         <button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 0.7rem;" onclick="removerItemHistorico(${index}, ${i})">✖</button>
                     </li>
-                `).join('');
+                    `;
+                }).join('');
                 
                 // Recalcula o gasto total baseado no histórico para garantir precisão
                 const totalGasto = historico.reduce((acc, curr) => acc + curr.valor, 0);
@@ -2015,7 +2021,8 @@
                         <div style="display: flex; gap: 4px; margin-bottom: 8px;">
                             <input type="text" id="desc-gasto-${index}" class="table-input" style="flex: 1;" placeholder="Descrição">
                             <input type="number" id="add-gasto-${index}" class="table-input" style="width: 80px;" placeholder="R$">
-                            <button class="btn-primary" style="padding: 4px 10px;" onclick="adicionarGastoQuota(${index})">+</button>
+                            <button class="btn-secondary" style="padding: 4px 10px; color: var(--accent-danger); border-color: var(--accent-danger); font-weight: bold;" onclick="adicionarGastoQuota(${index}, 'debito')" title="Adicionar Despesa (Débito)">-</button>
+                            <button class="btn-secondary" style="padding: 4px 10px; color: var(--accent-success); border-color: var(--accent-success); font-weight: bold;" onclick="adicionarGastoQuota(${index}, 'credito')" title="Adicionar Crédito (Estorno/Entrada)">+</button>
                         </div>
                         <ul id="lista-historico-quota-${index}" class="hidden" style="list-style: none; padding: 0; margin-top: 8px;">${historicoHtml}</ul>
                     </td>
@@ -2097,15 +2104,39 @@
             divPagos.style.display = qtdPagos > 0 ? 'block' : 'none';
         }
 
-        window.adicionarGastoQuota = async (idx) => {
-            const val = parseFloat(document.getElementById(`add-gasto-${idx}`).value);
-            const desc = document.getElementById(`desc-gasto-${idx}`).value || 'Gasto';
+        window.adicionarGastoQuota = async (idx, tipo = 'debito') => {
+            let val = parseFloat(document.getElementById(`add-gasto-${idx}`).value);
+            let desc = document.getElementById(`desc-gasto-${idx}`).value;
+            
             if (isNaN(val) || val <= 0) return;
-            const meses = await DB.getMeses(); const mes = meses.find(m => m.id === mesSelecionadoId);
+            
+            // Define um nome padrão caso o usuário deixe a descrição em branco
+            if (!desc) {
+                desc = tipo === 'credito' ? 'Crédito/Estorno' : 'Gasto';
+            }
+            
+            // O crédito entra negativo no histórico para subtrair do "gasto total" da quota
+            if (tipo === 'credito') {
+                val = -Math.abs(val);
+            } else {
+                val = Math.abs(val);
+            }
+
+            const meses = await DB.getMeses(); 
+            const mes = meses.find(m => m.id === mesSelecionadoId);
+            
             if (!mes.quotas[idx].historico) mes.quotas[idx].historico = [];
-            mes.quotas[idx].historico.push({ valor: val, desc, data: new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) });
+            
+            mes.quotas[idx].historico.push({ 
+                valor: val, 
+                desc, 
+                data: new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) 
+            });
+            
             mes.quotas[idx].gasto = mes.quotas[idx].historico.reduce((acc, curr) => acc + curr.valor, 0);
-            await DB.setMeses(meses); renderizarSubTabelasMes(mes);
+            
+            await DB.setMeses(meses); 
+            renderizarSubTabelasMes(mes);
         };
         window.removerItemHistorico = async (idxQuota, idxHist) => {
             if(!confirm("Remover este item?")) return;
