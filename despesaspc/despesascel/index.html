@@ -581,9 +581,15 @@
         <button class="btn btn-primary" onclick="addCompraItem()" style="padding: 0 1rem; flex: none;">+</button>
       </div>
       
-      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #E5E7EB;">
-        <input type="checkbox" id="filterUnchecked" onchange="renderCompras()" style="width: 1.3rem; height: 1.3rem; cursor: pointer;">
-        <label for="filterUnchecked" style="margin: 0; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Mostrar apenas itens pendentes</label>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #E5E7EB;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" id="filterUnchecked" onchange="renderCompras()" style="width: 1.3rem; height: 1.3rem; cursor: pointer;">
+          <label for="filterUnchecked" style="margin: 0; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Só pendentes</label>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" id="checkAllCompras" onchange="toggleAllCompras(this.checked)" style="width: 1.3rem; height: 1.3rem; cursor: pointer;">
+          <label for="checkAllCompras" style="margin: 0; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Tudo</label>
+        </div>
       </div>
 
       <div id="comprasListContainer" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;">
@@ -1666,6 +1672,13 @@
         }
       }
       container.innerHTML = html;
+
+      // Sincroniza o status visual do checkbox "Tudo"
+      const checkAllEl = document.getElementById('checkAllCompras');
+      if (checkAllEl && comprasState.length > 0) {
+        // Se todos os itens do comprasState estiverem checados, marca o "Tudo"
+        checkAllEl.checked = comprasState.every(item => item.checked);
+      }
     }
 
     async function toggleCompra(id) {
@@ -1710,6 +1723,17 @@
         await dbDeleteCompra(id);
         renderCompras();
       }
+    }
+
+    async function toggleAllCompras(isChecked) {
+      // Cria um array de promessas para salvar todos os itens no banco simultaneamente
+      const promessas = comprasState.map(item => {
+        item.checked = isChecked;
+        return dbSaveCompra(item);
+      });
+      
+      await Promise.all(promessas);
+      renderCompras();
     }
 
   </script>
