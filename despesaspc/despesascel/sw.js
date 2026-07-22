@@ -1,4 +1,4 @@
-const CACHE_NAME = 'app-despesas-v133'; // Mudamos a versão!
+const CACHE_NAME = 'app-despesas-v140'; // Mudamos a versão!
 
 self.addEventListener('install', (e) => {
   self.skipWaiting(); // Força o celular a atualizar o app na mesma hora
