@@ -401,7 +401,7 @@
 
   <!-- Nova barra no topo -->
   <header class="top-bar" id="appHeader">
-    <h1>Despesas e Anotações v2.1</h1>
+    <h1>Despesas e Anotações v2.2</h1>
     <button onclick="toggleMenu()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 5px;">⋮</button>
     
     <div class="menu-dropdown" id="topMenu">
@@ -489,12 +489,11 @@
       </div>
 
       <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid #E5E7EB;">
-      <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Backup de Dados</h3>
+      <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Backup na Nuvem</h3>
       <div style="display: flex; gap: 0.5rem;">
-        <button class="btn btn-primary" onclick="exportData()" style="flex: 1; font-size: 0.9rem;">⬇️ Exportar</button>
-        <button class="btn btn-outline" onclick="document.getElementById('importFile').click()" style="flex: 1; font-size: 0.9rem;">⬆️ Importar</button>
+        <button class="btn btn-primary" onclick="exportDataToFirestore()" style="flex: 1; font-size: 0.9rem;">⬇️ Salvar na Nuvem</button>
+        <button class="btn btn-outline" onclick="importDataFromFirestore()" style="flex: 1; font-size: 0.9rem;">⬆️ Restaurar da Nuvem</button>
       </div>
-      <input type="file" id="importFile" accept=".json, .txt" style="display: none;" onchange="importData(event)">
       
       <div class="modal-actions">
         <button class="btn btn-cancel" onclick="closeCategoryModal()">Fechar</button>
@@ -1331,102 +1330,121 @@
       }
     }
 
-    // --- EXPORTAR E IMPORTAR DADOS (JSON) ---
-    async function exportData() {
+    // --- BACKUP NA NUVEM (FIRESTORE) ---
+    // Função auxiliar para garantir que o usuário está logado antes do backup
+    function checkAuthForBackup() {
+      if (!auth.currentUser) {
+        document.getElementById('categoryModal').classList.remove('active');
+        document.getElementById('loginModal').classList.add('active');
+        alert("Faça login primeiro para gerenciar seus backups.");
+        return false;
+      }
+      return true;
+    }
+
+    async function exportDataToFirestore() {
+      if (!checkAuthForBackup()) return;
+
+      const user = auth.currentUser;
+      const backupRef = dbFirebase.collection('backups').doc(user.uid);
+      
       try {
+        const docSnap = await backupRef.get();
+        
+        // Se já tiver backup, avisa a data e pede confirmação
+        if (docSnap.exists) {
+          const dataAntiga = docSnap.data().dataExportacao;
+          const dataFormatada = new Date(dataAntiga).toLocaleString('pt-BR');
+          if (!confirm(`Já existe um backup salvo em:\n${dataFormatada}\n\nDeseja substituí-lo pelos dados atuais do aparelho?`)) {
+            return;
+          }
+        }
+
+        // Coleta os dados locais (as compras já estão seguras no Firestore)
         const cats = await dbGetCategories();
         const exps = await dbGetAllExpenses();
         const anot = await dbGetAnotacao();
-        const comp = await dbGetCompras();
         
         const backupData = {
           categorias: cats,
           despesas: exps,
           anotacoes: anot,
-          compras: comp,
           dataExportacao: new Date().toISOString()
         };
 
-        const jsonString = JSON.stringify(backupData, null, 2);
-        const dateStr = new Date().toISOString().split('T')[0];
-        const filename = `backup_despesas_${dateStr}.txt`;
-        
-        const blob = new Blob([jsonString], { type: "application/json" });
+        // Salva na nuvem convertendo para string JSON
+        await backupRef.set({
+          payload: JSON.stringify(backupData),
+          dataExportacao: backupData.dataExportacao
+        });
 
-        if (navigator.canShare && navigator.share) {
-          const file = new File([blob], filename, { type: "text/plain" });
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: 'Backup de Despesas e Anotações',
-              text: 'Segue em anexo o arquivo de backup dos meus dados.'
-            });
-            return; 
-          }
-        }
-
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        alert("Backup salvo na nuvem com sucesso!");
       } catch (error) {
-        alert("Erro ao exportar dados: " + error.message);
+        alert("Erro ao salvar backup: " + error.message);
       }
     }
 
-    function importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+    async function importDataFromFirestore() {
+      if (!checkAuthForBackup()) return;
 
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          
-          if (!data.categorias || !data.despesas) {
-            throw new Error("Formato de arquivo inválido.");
+      const user = auth.currentUser;
+      const backupRef = dbFirebase.collection('backups').doc(user.uid);
+
+      try {
+        const docSnap = await backupRef.get();
+        
+        // Se não tiver arquivo, informa e cancela
+        if (!docSnap.exists) {
+          alert("Nenhum backup encontrado na nuvem para esta conta.");
+          return;
+        }
+
+        const dataAntiga = docSnap.data().dataExportacao;
+        const dataFormatada = new Date(dataAntiga).toLocaleString('pt-BR');
+
+        // Pede confirmação avisando que tudo será apagado
+        if (!confirm(`Backup encontrado com data de:\n${dataFormatada}\n\nDeseja importar? ATENÇÃO: Isso apagará TODOS os dados atuais deste aparelho!`)) {
+          return;
+        }
+
+        const parsedData = JSON.parse(docSnap.data().payload);
+        const db = await dbPromise;
+
+        // Limpa as tabelas locais (IndexedDB) para garantir que não fiquem dados antigos misturados
+        const txClear = db.transaction(['categorias', 'despesas', 'anotacoes'], 'readwrite');
+        txClear.objectStore('categorias').clear();
+        txClear.objectStore('despesas').clear();
+        txClear.objectStore('anotacoes').clear();
+        await new Promise(resolve => txClear.oncomplete = resolve);
+
+        // Restaura Categorias
+        if (parsedData.categorias) {
+          for (const cat of parsedData.categorias) {
+            const tx = db.transaction('categorias', 'readwrite');
+            tx.objectStore('categorias').put(cat);
+            await new Promise(resolve => tx.oncomplete = resolve);
           }
+        }
 
-          const db = await dbPromise;
-          
-          for (const cat of data.categorias) {
-             const tx = db.transaction('categorias', 'readwrite');
-             tx.objectStore('categorias').put(cat);
-             await new Promise(resolve => tx.oncomplete = resolve);
-          }
-
-          for (const exp of data.despesas) {
+        // Restaura Despesas
+        if (parsedData.despesas) {
+          for (const exp of parsedData.despesas) {
             await dbAddOrUpdateExpense(exp);
           }
-
-          // Restaura as Anotações
-          if (data.anotacoes !== undefined) {
-            await dbSaveAnotacao(data.anotacoes);
-          }
-
-          // Restaura a Lista de Compras
-          if (data.compras && data.compras.length > 0) {
-            for (const item of data.compras) {
-              await dbSaveCompra(item);
-            }
-          }
-
-          alert("Dados importados com sucesso!");
-          await initApp();
-          if (document.getElementById('categoryModal').classList.contains('active')) {
-            renderCategoryManagerList();
-          }
-        } catch (error) {
-          alert("Erro ao importar arquivo: " + error.message);
         }
-      };
-      
-      reader.readAsText(file);
-      event.target.value = '';
+
+        // Restaura Anotações
+        if (parsedData.anotacoes !== undefined) {
+          await dbSaveAnotacao(parsedData.anotacoes);
+        }
+
+        alert("Dados restaurados com sucesso!");
+        await initApp();
+        renderCategoryManagerList();
+        
+      } catch (error) {
+        alert("Erro ao restaurar backup: " + error.message);
+      }
     }
 
     // Habilita o scroll horizontal com o mouse na barra de categorias
