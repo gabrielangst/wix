@@ -167,6 +167,10 @@
       margin-right: 0.5rem;
     }
 
+    .credit-amount {
+      color: #3B82F6 !important; /* Azul */
+    }
+
     .icon-btn {
       background: none;
       border: none;
@@ -352,7 +356,7 @@
 
   <!-- Nova barra no topo -->
   <header class="top-bar">
-    <h1>Despesas e Anotações Pessoais v1.3.3</h1>
+    <h1>Despesas e Anotações Pessoais v1.4.0</h1>
   </header>
 
   <main class="main-content">
@@ -373,7 +377,7 @@
     </div>
     <div class="action-buttons">
       <button class="btn btn-danger" onclick="clearCurrentCategory()">Apagar Tudo</button>
-      <button class="btn btn-primary" id="btnNovaDespesa" onclick="openModal()">+ Nova Despesa</button>
+      <button class="btn btn-primary" id="btnNovaDespesa" onclick="openModal()">+ Adicionar</button>
     </div>
   </footer>
 
@@ -386,6 +390,15 @@
       <div class="input-group" style="margin-bottom: 1rem;">
         <label>Categoria</label>
         <select id="catInput" style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 1rem; background: var(--surface); color: var(--text);"></select>
+      </div>
+
+      <!-- NOVO CAMPO DE TIPO -->
+      <div class="input-group" id="tipoGroup" style="margin-bottom: 1rem;">
+        <label>Tipo de Lançamento</label>
+        <select id="tipoInput" style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 1rem; background: var(--surface); color: var(--text);">
+          <option value="despesa">Despesa</option>
+          <option value="credito">Crédito</option>
+        </select>
       </div>
       
       <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
@@ -855,10 +868,10 @@
       const btnNovo = document.getElementById('btnNovaDespesa');
       
       if (usaValores) {
-        totalRow.style.visibility = 'visible'; /* Torna a barra visível */
-        btnNovo.innerText = '+ Nova Despesa';
+        totalRow.style.visibility = 'visible'; 
+        btnNovo.innerText = '+ Adicionar'; // Alterado aqui também
       } else {
-        totalRow.style.visibility = 'hidden';  /* Oculta o texto, mas preserva o espaço físico dela */
+        totalRow.style.visibility = 'hidden';  
         btnNovo.innerText = '+ Novo Item';
       }
 
@@ -876,7 +889,22 @@
       }
 
       expenses.forEach(exp => {
-        total += exp.amount;
+        const tipo = exp.tipo || 'despesa'; // Fallback para itens já salvos
+        const isCredito = tipo === 'credito';
+
+        // Lógica de saldo: créditos somam, despesas subtraem
+        if (usaValores) {
+           if (isCredito) {
+               total += exp.amount;
+           } else {
+               total -= exp.amount;
+           }
+        }
+
+        // Estilização dinâmica
+        const amountClass = isCredito ? 'expense-amount credit-amount' : 'expense-amount';
+        const prefix = isCredito ? '+ ' : '';
+
         const item = document.createElement('div');
         item.className = 'expense-item';
         item.innerHTML = `
@@ -885,15 +913,25 @@
             <span>${new Date(exp.timestamp).toLocaleDateString('pt-BR')}</span>
           </div>
           <div class="expense-actions">
-            ${usaValores ? `<span class="expense-amount">${formatCurrency(exp.amount)}</span>` : ''}
-            <button class="icon-btn" onclick="editExpense(${exp.id}, '${exp.description}', ${exp.amount})" title="Editar">✏️</button>
+            ${usaValores ? `<span class="${amountClass}">${prefix}${formatCurrency(exp.amount)}</span>` : ''}
+            <button class="icon-btn" onclick="editExpense(${exp.id}, '${exp.description}', ${exp.amount}, '${tipo}')" title="Editar">✏️</button>
             <button class="icon-btn" onclick="deleteExpense(${exp.id})" title="Excluir">🗑️</button>
           </div>
         `;
         listEl.appendChild(item);
       });
 
-      document.getElementById('totalAmount').innerText = formatCurrency(total);
+      const totalAmountEl = document.getElementById('totalAmount');
+      totalAmountEl.innerText = formatCurrency(total);
+
+      // Aplica as cores baseadas no valor do total
+      if (total > 0) {
+        totalAmountEl.style.color = '#10B981'; // Verde (Emerald)
+      } else if (total < 0) {
+        totalAmountEl.style.color = 'var(--danger)'; // Vermelho (puxando a variável já existente no seu CSS)
+      } else {
+        totalAmountEl.style.color = 'var(--text)'; // Cor padrão escura para o zero
+      }
     }
 
     // --- DIÁLOGOS DE DESPESAS/ITENS ---
@@ -906,19 +944,17 @@
       const editId = document.getElementById('editId').value;
       const modalTitle = document.getElementById('modalTitle');
       const valGroup = document.getElementById('valGroup');
+      const tipoGroup = document.getElementById('tipoGroup'); // Puxando a nova div
 
-      // NOVO: Popula o select de categorias e define o padrão
       const catSelect = document.getElementById('catInput');
       catSelect.innerHTML = categories.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
-      catSelect.value = currentCategory; // <-- Isso garante que a aba aberta venha selecionada
+      catSelect.value = currentCategory;
 
-      if (!editId) {
-        modalTitle.innerText = usaValores ? 'Adicionar Despesa' : 'Adicionar Item';
-      } else {
-        modalTitle.innerText = usaValores ? 'Editar Despesa' : 'Editar Item';
-      }
+      // Alterado para apenas 'Adicionar' ou 'Editar'
+      modalTitle.innerText = !editId ? 'Adicionar' : 'Editar';
 
       valGroup.style.display = usaValores ? 'block' : 'none';
+      tipoGroup.style.display = usaValores ? 'block' : 'none'; // Oculta tipo se for só lista
       
       document.getElementById('expenseModal').classList.add('active');
 
@@ -944,7 +980,8 @@
 
       const desc = document.getElementById('descInput').value.trim();
       const editId = document.getElementById('editId').value;
-      const categoriaSelecionada = document.getElementById('catInput').value; // <-- NOVO: Pega a categoria do select
+      const categoriaSelecionada = document.getElementById('catInput').value;
+      const tipoSelecionado = document.getElementById('tipoInput').value; // Captura o tipo
       
       let val = 0;
       if (usaValores) {
@@ -957,7 +994,8 @@
       const expense = {
         description: desc,
         amount: val, 
-        categoria: categoriaSelecionada, // <-- ATUALIZADO: Usa a categoria escolhida no modal
+        categoria: categoriaSelecionada,
+        tipo: tipoSelecionado, // Adiciona o tipo no banco de dados
         timestamp: Date.now()
       };
 
@@ -969,12 +1007,14 @@
       await loadExpenses();
     }
 
-    function editExpense(id, desc, amount) {
+    // Adicionado o parâmetro 'tipo' com 'despesa' como fallback para dados antigos
+    function editExpense(id, desc, amount, tipo = 'despesa') {
       document.getElementById('descInput').value = desc;
       document.getElementById('valInput').value = amount;
+      document.getElementById('tipoInput').value = tipo; // Popula o select
       document.getElementById('editId').value = id;
       openModal();
-    } 
+    }
 
     // --- GERENCIAMENTO DE CATEGORIAS ---
     function openCategoryModal() {
