@@ -301,12 +301,15 @@
     }
     /* Barra Superior (Cabeçalho do App) */
     .top-bar {
-      background: var(--primary); /* Fundo com a cor principal (Azul) */
-      color: white; /* Texto branco */
+      background: var(--primary);
+      color: white;
       padding: 1rem;
-      text-align: center;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      z-index: 20; /* Garante que a sombra fique sobre o conteúdo */
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
     }
 
     .top-bar h1 {
@@ -314,6 +317,9 @@
       font-weight: 700;
       margin: 0;
       letter-spacing: 0.5px;
+      flex: 1;
+      text-align: center;
+      margin-left: 2rem; /* Compensa o botão para manter o título centralizado */
     }
 
     /* Estilos do Modal de Histórico */
@@ -350,13 +356,55 @@
       font-weight: 700;
     }
 
+    /* Novo: Dropdown Menu */
+    .menu-dropdown {
+      display: none; 
+      position: absolute; 
+      top: 90%; 
+      right: 1rem; 
+      background: var(--surface); 
+      color: var(--text); 
+      border-radius: 0.5rem; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+      flex-direction: column; 
+      z-index: 100; 
+      overflow: hidden; 
+      min-width: 180px;
+    }
+
+    .menu-dropdown button {
+      padding: 0.85rem 1rem; 
+      border: none; 
+      background: none; 
+      text-align: left; 
+      width: 100%; 
+      cursor: pointer; 
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .menu-dropdown button:first-child {
+      border-bottom: 1px solid #E5E7EB;
+    }
+
+    .menu-dropdown button:hover {
+      background: var(--bg);
+    }
+
   </style>
 </head>
 <body>
 
   <!-- Nova barra no topo -->
-  <header class="top-bar">
-    <h1>Despesas e Anotações Pessoais v1.4.0</h1>
+  <header class="top-bar" id="appHeader">
+    <h1>Despesas e Anotações v2.0</h1>
+    <button onclick="toggleMenu()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 5px;">⋮</button>
+    
+    <div class="menu-dropdown" id="topMenu">
+      <button onclick="openAnotacoesModal()">📝 Anotações</button>
+      <button onclick="openComprasModal()">🛒 Lista de Compras</button>
+    </div>
   </header>
 
   <main class="main-content">
@@ -503,6 +551,51 @@
     </div>
   </div>
 
+  <!-- Modal Anotações -->
+  <div class="modal-overlay" id="anotacoesModal">
+    <div class="modal-content" style="display: flex; flex-direction: column; height: 70vh;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="margin: 0;">Anotações Livres</h2>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="icon-btn" id="btnUndo" onclick="undoAnotacao()" title="Desfazer" disabled style="font-size: 1.3rem;">↩️</button>
+          <button class="icon-btn" id="btnRedo" onclick="redoAnotacao()" title="Refazer" disabled style="font-size: 1.3rem;">↪️</button>
+        </div>
+      </div>
+      
+      <textarea id="textoAnotacoes" oninput="handleAnotacaoInput()" placeholder="Digite suas anotações aqui..." style="flex: 1; width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-family: inherit; font-size: 1rem; resize: none; margin-bottom: 1rem;"></textarea>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0;">
+        <span id="statusAnotacao" style="font-size: 0.9rem; color: #10B981; font-weight: 600; opacity: 0; transition: opacity 0.3s;">Conteúdo salvo</span>
+        <button class="btn btn-primary" style="width: auto; padding: 0.75rem 2rem;" onclick="closeAnotacoesModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Lista de Compras -->
+  <div class="modal-overlay" id="comprasModal">
+    <div class="modal-content" style="display: flex; flex-direction: column; height: 90vh; max-height: 90vh;">
+      <h2>Lista de Compras</h2>
+      
+      <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <input type="text" id="searchCompras" placeholder="Pesquisar item..." onkeyup="renderCompras()" style="flex: 1; margin: 0;">
+        <button class="btn btn-primary" onclick="addCompraItem()" style="padding: 0 1rem; flex: none;">+</button>
+      </div>
+      
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #E5E7EB;">
+        <input type="checkbox" id="filterUnchecked" onchange="renderCompras()" style="width: 1.3rem; height: 1.3rem; cursor: pointer;">
+        <label for="filterUnchecked" style="margin: 0; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Mostrar apenas itens pendentes</label>
+      </div>
+
+      <div id="comprasListContainer" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;">
+        <!-- A lista renderizada entra aqui -->
+      </div>
+
+      <div class="modal-actions" style="margin-top: 1rem;">
+        <button class="btn btn-cancel" onclick="closeComprasModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let categories = []; // Agora armazena objetos: {nome, ordem, temValores}
     let currentCategory = ''; 
@@ -511,9 +604,10 @@
       return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
     };
 
-    // --- SETUP DO INDEXEDDB (Failsafe v5) ---
+    // --- SETUP DO INDEXEDDB (Failsafe v6) ---
     const dbPromise = new Promise((resolve, reject) => {
-      const request = indexedDB.open('AppDespesasDB', 5);
+      // Subimos para a versão 6 para criar as novas tabelas de anotações e compras
+      const request = indexedDB.open('AppDespesasDB', 6);
       
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
@@ -524,6 +618,13 @@
         }
         if (!db.objectStoreNames.contains('categorias')) {
           db.createObjectStore('categorias', { keyPath: 'nome' });
+        }
+        // NOVAS TABELAS:
+        if (!db.objectStoreNames.contains('anotacoes')) {
+          db.createObjectStore('anotacoes', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('compras')) {
+          db.createObjectStore('compras', { keyPath: 'id' });
         }
       };
       
@@ -539,10 +640,8 @@
               const existing = req.result;
 
               if (existing.length === 0) {
-                // Instalação limpa
                 defaults.forEach((cat, index) => store.put({ nome: cat, ordem: index, temValores: true, cor: '#FFCC99', corTexto: '#000000' }));
               } else {
-                // Atualiza abas antigas para o formato novo (força ter valores se não tinha)
                 existing.forEach((catObj, index) => {
                   let changed = false;
                   if (typeof catObj.ordem !== 'number') {
@@ -551,7 +650,7 @@
                     changed = true;
                   }
                   if (typeof catObj.temValores !== 'boolean') {
-                    catObj.temValores = true; // Por padrão, tudo que já existia era financeiro
+                    catObj.temValores = true; 
                     changed = true;
                   }
                   if (changed) store.put(catObj);
@@ -771,6 +870,52 @@
             }
           });
         };
+        tx.oncomplete = () => resolve();
+      });
+    }
+
+    // --- OPERAÇÕES DO BANCO: ANOTAÇÕES E COMPRAS ---
+    async function dbGetAnotacao() {
+      const db = await dbPromise;
+      return new Promise((resolve) => {
+        const tx = db.transaction('anotacoes', 'readonly');
+        const req = tx.objectStore('anotacoes').get('geral');
+        req.onsuccess = () => resolve(req.result ? req.result.texto : '');
+      });
+    }
+
+    async function dbSaveAnotacao(texto) {
+      const db = await dbPromise;
+      return new Promise((resolve) => {
+        const tx = db.transaction('anotacoes', 'readwrite');
+        tx.objectStore('anotacoes').put({ id: 'geral', texto });
+        tx.oncomplete = () => resolve();
+      });
+    }
+
+    async function dbGetCompras() {
+      const db = await dbPromise;
+      return new Promise((resolve) => {
+        const tx = db.transaction('compras', 'readonly');
+        const req = tx.objectStore('compras').getAll();
+        req.onsuccess = () => resolve(req.result);
+      });
+    }
+
+    async function dbSaveCompra(item) {
+      const db = await dbPromise;
+      return new Promise((resolve) => {
+        const tx = db.transaction('compras', 'readwrite');
+        tx.objectStore('compras').put(item);
+        tx.oncomplete = () => resolve();
+      });
+    }
+
+    async function dbDeleteCompra(id) {
+      const db = await dbPromise;
+      return new Promise((resolve) => {
+        const tx = db.transaction('compras', 'readwrite');
+        tx.objectStore('compras').delete(id);
         tx.oncomplete = () => resolve();
       });
     }
@@ -1110,10 +1255,14 @@
       try {
         const cats = await dbGetCategories();
         const exps = await dbGetAllExpenses();
+        const anot = await dbGetAnotacao();
+        const comp = await dbGetCompras();
         
         const backupData = {
           categorias: cats,
           despesas: exps,
+          anotacoes: anot,
+          compras: comp,
           dataExportacao: new Date().toISOString()
         };
 
@@ -1124,9 +1273,7 @@
         const blob = new Blob([jsonString], { type: "application/json" });
 
         if (navigator.canShare && navigator.share) {
-          // 2. Avisamos o celular que é um arquivo de texto simples (text/plain)
           const file = new File([blob], filename, { type: "text/plain" });
-          
           if (navigator.canShare({ files: [file] })) {
             await navigator.share({
               files: [file],
@@ -1137,16 +1284,12 @@
           }
         }
 
-        // --- PLANO B: Download Tradicional ---
-        // Executado caso o navegador não suporte a Web Share API (ex: Chrome no Desktop)
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
         a.download = filename;
-        
         document.body.appendChild(a);
         a.click();
-        
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } catch (error) {
@@ -1177,6 +1320,18 @@
 
           for (const exp of data.despesas) {
             await dbAddOrUpdateExpense(exp);
+          }
+
+          // Restaura as Anotações
+          if (data.anotacoes !== undefined) {
+            await dbSaveAnotacao(data.anotacoes);
+          }
+
+          // Restaura a Lista de Compras
+          if (data.compras && data.compras.length > 0) {
+            for (const item of data.compras) {
+              await dbSaveCompra(item);
+            }
           }
 
           alert("Dados importados com sucesso!");
@@ -1306,6 +1461,255 @@
 
     function closeHistoryModal() {
       document.getElementById('historyModal').classList.remove('active');
+    }
+
+    // --- LÓGICA DO MENU SUPERIOR ---
+    function toggleMenu() {
+      const menu = document.getElementById('topMenu');
+      menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    document.addEventListener('click', function(event) {
+      const menu = document.getElementById('topMenu');
+      const header = document.getElementById('appHeader');
+      if (menu && menu.style.display === 'flex' && !header.contains(event.target)) {
+        menu.style.display = 'none';
+      }
+    });
+
+    // --- LÓGICA: ANOTAÇÕES LIVRES ---
+    let anotacoesHistory = [];
+    let historyIndex = -1;
+    let saveTimeout;
+    let isProgrammaticChange = false;
+
+    async function openAnotacoesModal() {
+      document.getElementById('topMenu').style.display = 'none';
+      const texto = await dbGetAnotacao();
+      document.getElementById('textoAnotacoes').value = texto;
+      
+      // Reseta o histórico sempre que abre
+      anotacoesHistory = [texto];
+      historyIndex = 0;
+      updateUndoRedoButtons();
+      
+      document.getElementById('anotacoesModal').classList.add('active');
+    }
+
+    function closeAnotacoesModal() {
+      document.getElementById('anotacoesModal').classList.remove('active');
+    }
+
+    function handleAnotacaoInput() {
+      if (isProgrammaticChange) return; // Ignora se a mudança veio dos botões desfazer/refazer
+      
+      const texto = document.getElementById('textoAnotacoes').value;
+      
+      clearTimeout(saveTimeout);
+      const statusEl = document.getElementById('statusAnotacao');
+      statusEl.style.opacity = '0'; // Esconde o aviso caso esteja digitando de novo
+      
+      // Aguarda 500ms após o usuário parar de digitar para salvar
+      saveTimeout = setTimeout(async () => {
+        await dbSaveAnotacao(texto);
+        
+        // Adiciona ao histórico (se houver refazer pendente, ele corta a frente)
+        anotacoesHistory = anotacoesHistory.slice(0, historyIndex + 1);
+        anotacoesHistory.push(texto);
+        historyIndex++;
+        
+        updateUndoRedoButtons();
+        
+        // Mostra o status visual
+        statusEl.innerText = 'Conteúdo salvo';
+        statusEl.style.opacity = '1';
+        
+        // Esconde o status após 2 segundos
+        setTimeout(() => { statusEl.style.opacity = '0'; }, 2000);
+      }, 500); 
+    }
+
+    async function undoAnotacao() {
+      if (historyIndex > 0) {
+        historyIndex--;
+        await applyHistoryChange();
+      }
+    }
+
+    async function redoAnotacao() {
+      if (historyIndex < anotacoesHistory.length - 1) {
+        historyIndex++;
+        await applyHistoryChange();
+      }
+    }
+
+    async function applyHistoryChange() {
+      isProgrammaticChange = true;
+      const texto = anotacoesHistory[historyIndex];
+      document.getElementById('textoAnotacoes').value = texto;
+      await dbSaveAnotacao(texto);
+      updateUndoRedoButtons();
+      isProgrammaticChange = false;
+      
+      // Pisca o aviso de salvo
+      const statusEl = document.getElementById('statusAnotacao');
+      statusEl.innerText = 'Restaurado';
+      statusEl.style.opacity = '1';
+      setTimeout(() => { statusEl.style.opacity = '0'; }, 1500);
+    }
+
+    function updateUndoRedoButtons() {
+      const btnUndo = document.getElementById('btnUndo');
+      const btnRedo = document.getElementById('btnRedo');
+      
+      btnUndo.disabled = historyIndex <= 0;
+      btnUndo.style.opacity = historyIndex <= 0 ? '0.3' : '1';
+      
+      btnRedo.disabled = historyIndex >= anotacoesHistory.length - 1;
+      btnRedo.style.opacity = historyIndex >= anotacoesHistory.length - 1 ? '0.3' : '1';
+    }
+
+    // --- LÓGICA: LISTA DE COMPRAS ---
+    let comprasState = [];
+
+    async function initComprasData() {
+      comprasState = await dbGetCompras();
+      
+      if (comprasState.length === 0) {
+        const defaultData = {
+          "Alimentos": ["abóbora", "açúcar", "arroz", "água", "alho", "alface", "azeite", "banana", "barrinha de cereal Supino Coco", "batata doce", "biscoito", "brócolis", "café solúvel", "carne (alcatra para bife 1kg)", "filé mignon", "carne moída (500g)", "cebola", "cenoura", "chá", "Feijão", "frango", "hamburguer", "leite", "leite fermentado", "lentilha", "limão", "linhaça dourada", "macarrão", "maçã", "maizena", "mamão", "mandioca", "manteiga", "margarina", "molho de tomate", "morango", "mortadela", "oleo", "orégano", "pão de forma", "ovo", "pão", "pão de queijo", "peixe", "pimenta", "pimenta do reino", "polpa", "presunto", "queijo", "queijo branco", "refrigerante", "sal", "salsicha", "suco", "suco polpa", "tapioca", "temperos", "tomate"],
+          "Limpeza": ["água sanitária", "alcool", "amaciante", "bom ar freeco", "bucha", "cif", "desinfetante", "detergente", "escova tanque", "esponja", "fio dental oral b", "lixeira", "pano de prato", "papel alumínio", "papel filme", "papel higiênico", "papel toalha", "pasta de dente", "pato", "sabão para roupas", "sabonete líquido", "sacos de lixo", "veja (limpador de uso geral)", "vanish", "vassoura"],
+          "Higiene": ["desodorante", "durex", "papel A4", "algodão", "shampoo", "super bonder", "pilhas AAA", "potes", "vaso"],
+          "Farmácia": ["avamys", "eno", "neosoro", "soro fisiológico"],
+          "Específicos": ["balde", "pano de chão", "chocolates vizinhos", "maple"]
+        };
+        
+        let idCounter = 1;
+        for (const [cat, items] of Object.entries(defaultData)) {
+          for (const nome of items) {
+            const item = { id: idCounter++, nome: nome, categoria: cat, checked: true }; // Agora vem marcado
+            comprasState.push(item);
+            await dbSaveCompra(item);
+          }
+        }
+      }
+    }
+
+    async function openComprasModal() {
+      document.getElementById('topMenu').style.display = 'none';
+      await initComprasData();
+      document.getElementById('searchCompras').value = '';
+      document.getElementById('filterUnchecked').checked = false;
+      renderCompras();
+      document.getElementById('comprasModal').classList.add('active');
+    }
+
+    function closeComprasModal() {
+      document.getElementById('comprasModal').classList.remove('active');
+    }
+
+    function renderCompras() {
+      const container = document.getElementById('comprasListContainer');
+      
+      // Função auxiliar para remover acentos usando normalização unicode
+      const removeAcentos = (str) => {
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      };
+
+      // Pegamos o termo, deixamos minúsculo e removemos os acentos
+      const termOriginal = document.getElementById('searchCompras').value;
+      const term = removeAcentos(termOriginal.toLowerCase()); 
+      
+      const onlyUnchecked = document.getElementById('filterUnchecked').checked;
+      
+      let filtered = comprasState.filter(item => {
+        if (onlyUnchecked && item.checked) return false;
+        
+        // Se houver texto na busca, removemos os acentos do nome do item para comparar
+        if (term) {
+          const nomeNormalizado = removeAcentos(item.nome.toLowerCase());
+          if (!nomeNormalizado.includes(term)) return false;
+        }
+        
+        return true;
+      });
+
+      const grouped = {};
+      filtered.forEach(item => {
+        if (!grouped[item.categoria]) grouped[item.categoria] = [];
+        grouped[item.categoria].push(item);
+      });
+
+      let html = '';
+      if (filtered.length === 0) {
+        html = '<p style="text-align:center; color: var(--text-light); margin-top: 2rem;">Nenhum item encontrado.</p>';
+      } else {
+        for (const cat in grouped) {
+          html += `<div style="background: #F9FAFB; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #E5E7EB;">
+                    <h3 style="font-size: 0.95rem; color: var(--primary); margin-bottom: 0.5rem; padding-bottom: 0.25rem; border-bottom: 2px solid #E5E7EB;">${cat}</h3>`;
+          
+          grouped[cat].forEach(item => {
+            html += `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0; ${item.checked ? 'opacity: 0.5;' : ''}">
+                <label class="checkbox-label" style="flex:1; color: var(--text); font-weight: 500; ${item.checked ? 'text-decoration: line-through;' : ''}">
+                  <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCompra(${item.id})">
+                  ${item.nome}
+                </label>
+                <div style="display: flex; gap: 0.15rem;">
+                  <button class="icon-btn" onclick="editCompraItem(${item.id})" style="font-size: 1.1rem;" title="Editar">✏️</button>
+                  <button class="icon-btn" onclick="deleteCompraItem(${item.id})" style="font-size: 1.1rem;" title="Excluir">🗑️</button>
+                </div>
+              </div>
+            `;
+          });
+          html += `</div>`;
+        }
+      }
+      container.innerHTML = html;
+    }
+
+    async function toggleCompra(id) {
+      const item = comprasState.find(i => i.id === id);
+      if (item) {
+        item.checked = !item.checked;
+        await dbSaveCompra(item);
+        renderCompras();
+      }
+    }
+
+    async function addCompraItem() {
+      const nome = prompt('Nome do novo item:');
+      if (!nome || nome.trim() === '') return;
+      
+      let cat = prompt('Categoria (ex: Alimentos, Limpeza, Higiene, Farmácia, Específicos):', 'Alimentos');
+      if (!cat || cat.trim() === '') cat = 'Outros';
+
+      const maxId = comprasState.reduce((max, i) => i.id > max ? i.id : max, 0);
+      const newItem = { id: maxId + 1, nome: nome.trim(), categoria: cat.trim(), checked: false };
+      
+      comprasState.push(newItem);
+      await dbSaveCompra(newItem);
+      renderCompras();
+    }
+
+    async function editCompraItem(id) {
+      const item = comprasState.find(i => i.id === id);
+      if (!item) return;
+      
+      const novoNome = prompt('Editar nome do item:', item.nome);
+      if (novoNome && novoNome.trim() !== '') {
+        item.nome = novoNome.trim();
+        await dbSaveCompra(item);
+        renderCompras();
+      }
+    }
+
+    async function deleteCompraItem(id) {
+      if (confirm('Remover definitivamente este item da lista?')) {
+        comprasState = comprasState.filter(i => i.id !== id);
+        await dbDeleteCompra(id);
+        renderCompras();
+      }
     }
 
   </script>
