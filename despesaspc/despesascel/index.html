@@ -605,6 +605,31 @@
     </div>
   </div>
 
+  <!-- Modal de Login -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-content">
+      <h2>Acesso Sincronizado</h2>
+      <p style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-light);">
+        Faça login para acessar a lista de compras.
+      </p>
+      
+      <div class="input-group">
+        <label>E-mail</label>
+        <input type="email" id="loginEmail" placeholder="seu@email.com" style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 1rem;">
+      </div>
+      
+      <div class="input-group">
+        <label>Senha</label>
+        <input type="password" id="loginPassword" placeholder="******" style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 1rem;">
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-cancel" onclick="fecharLoginModal()">Cancelar</button>
+        <button class="btn btn-save" onclick="fazerLogin()">Entrar</button>
+      </div>
+    </div>
+  </div>
+
   <script>
 
     const firebaseConfig = {
@@ -620,26 +645,35 @@
 
     const auth = firebase.auth();
 
+    // Apenas monitora e loga no console se deu certo
     auth.onAuthStateChanged((user) => {
       if (user) {
-        // Usuário está logado. Pode inicializar os listeners do Firestore!
         console.log("Logado como:", user.email);
-      } else {
-        // Não está logado, pede as credenciais
-        const email = prompt("Digite o e-mail de acesso à lista:");
-        const password = prompt("Digite a senha:");
-        
-        if (email && password) {
-          auth.signInWithEmailAndPassword(email, password)
-            .then(() => {
-              alert("Conectado com sucesso!");
-            })
-            .catch((error) => {
-              alert("Erro ao conectar: " + error.message);
-            });
-        }
       }
     });
+
+    function fecharLoginModal() {
+      document.getElementById('loginModal').classList.remove('active');
+    }
+
+    function fazerLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      
+      if (email && password) {
+        auth.signInWithEmailAndPassword(email, password)
+          .then(() => {
+            // Sucesso! Fecha o modal de login e abre a lista de compras
+            fecharLoginModal();
+            openComprasModal(); 
+          })
+          .catch((error) => {
+            alert("Erro ao conectar: " + error.message);
+          });
+      } else {
+        alert("Por favor, preencha o e-mail e a senha.");
+      }
+    }
 
     const dbFirebase = firebase.firestore();
 
@@ -1671,10 +1705,18 @@
     // Abertura do modal adaptada para não precisar de await no carregamento inicial
     function openComprasModal() {
       document.getElementById('topMenu').style.display = 'none';
+      
+      // Verifica se o usuário NÃO está logado
+      if (!auth.currentUser) {
+        // Abre a tela de login
+        document.getElementById('loginModal').classList.add('active');
+        return; // Para a execução aqui e não abre a lista
+      }
+
+      // Se chegou aqui, é porque está logado. Segue o fluxo normal:
       initComprasData(); 
       document.getElementById('searchCompras').value = '';
       document.getElementById('filterUnchecked').checked = false;
-      // O onSnapshot dispara imediatamente e cuida de chamar o renderCompras()
       document.getElementById('comprasModal').classList.add('active');
     }
 
