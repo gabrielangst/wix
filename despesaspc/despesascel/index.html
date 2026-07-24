@@ -54,7 +54,7 @@
       padding-top: 6px;    /* ADICIONADO: Garante espaço no teto para o notch */
       margin-top: -6px;    /* ADICIONADO: Compensa o espaço acima */
       padding-bottom: 8px; 
-      margin-bottom: -8px;  
+      margin-bottom: -8px; 
     }
     .tabs::-webkit-scrollbar { display: none; }
 
@@ -401,12 +401,13 @@
 
   <!-- Nova barra no topo -->
   <header class="top-bar" id="appHeader">
-    <h1>Despesas e Anotações v2.2</h1>
+    <h1>Despesas e Anotações v2.3</h1>
     <button onclick="toggleMenu()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 5px;">⋮</button>
     
     <div class="menu-dropdown" id="topMenu">
       <button onclick="openAnotacoesModal()">📝 Anotações</button>
       <button onclick="openComprasModal()">🛒 Lista de Compras</button>
+      <button onclick="fazerLogout()" style="color: var(--danger); border-top: 1px solid #E5E7EB;">🚪 Sair (Logout)</button>
     </div>
   </header>
 
@@ -493,6 +494,9 @@
       <div style="display: flex; gap: 0.5rem;">
         <button class="btn btn-primary" onclick="exportDataToFirestore()" style="flex: 1; font-size: 0.9rem;">⬇️ Salvar na Nuvem</button>
         <button class="btn btn-outline" onclick="importDataFromFirestore()" style="flex: 1; font-size: 0.9rem;">⬆️ Restaurar da Nuvem</button>
+        <!-- Input de arquivo oculto -->
+        <input type="file" id="importJsonInput" accept=".json" style="display: none;" onchange="importFromJsonFile(event)">
+        <button class="btn btn-outline" onclick="document.getElementById('importJsonInput').click()" style="flex: 1; font-size: 0.9rem;">📂 Importar JSON Local</button>
       </div>
       
       <div class="modal-actions">
@@ -588,9 +592,9 @@
           <input type="checkbox" id="filterUnchecked" onchange="renderCompras()" style="width: 1.3rem; height: 1.3rem; cursor: pointer;">
           <label for="filterUnchecked" style="margin: 0; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Só pendentes</label>
         </div>
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <div style="display: none; align-items: center; gap: 0.5rem;">
           <input type="checkbox" id="checkAllCompras" onchange="toggleAllCompras(this.checked)" style="width: 1.3rem; height: 1.3rem; cursor: pointer;">
-          <label for="checkAllCompras" style="margin: 0; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Tudo</label>
+          <label for="checkAllCompras" style="margin: 0; font-size: 0.85rem; font-weight: 600; cursor: pointer; ">Tudo</label>
         </div>
       </div>
 
@@ -1861,6 +1865,89 @@
         batch.update(docRef, { checked: isChecked });
       });
       await batch.commit();
+    }
+
+    //importar antigo arquivo Json
+    async function importFromJsonFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const content = e.target.result;
+          const parsedData = JSON.parse(content);
+
+          // Pede confirmação avisando que os dados atuais serão substituídos
+          if (!confirm(`Deseja importar este arquivo JSON?\n\nATENÇÃO: Isso apagará TODOS os dados locais atuais deste aparelho!`)) {
+            event.target.value = ''; // Reseta o input
+            return;
+          }
+
+          const db = await dbPromise;
+
+          // Limpa as tabelas locais (IndexedDB)
+          const txClear = db.transaction(['categorias', 'despesas', 'anotacoes'], 'readwrite');
+          txClear.objectStore('categorias').clear();
+          txClear.objectStore('despesas').clear();
+          txClear.objectStore('anotacoes').clear();
+          await new Promise(resolve => txClear.oncomplete = resolve);
+
+          // Restaura Categorias
+          if (parsedData.categorias) {
+            for (const cat of parsedData.categorias) {
+              const tx = db.transaction('categorias', 'readwrite');
+              tx.objectStore('categorias').put(cat);
+              await new Promise(resolve => tx.oncomplete = resolve);
+            }
+          }
+
+          // Restaura Despesas
+          if (parsedData.despesas) {
+            for (const exp of parsedData.despesas) {
+              await dbAddOrUpdateExpense(exp);
+            }
+          }
+
+          // Restaura Anotações (se existirem no JSON antigo)
+          if (parsedData.anotacoes !== undefined) {
+            await dbSaveAnotacao(parsedData.anotacoes);
+          }
+
+          alert("Dados do JSON importados com sucesso!");
+          await initApp();
+          renderCategoryManagerList();
+          
+          event.target.value = ''; // Reseta o input de arquivo
+
+        } catch (error) {
+          alert("Erro ao importar o arquivo JSON: " + error.message);
+          event.target.value = ''; // Reseta o input
+        }
+      };
+      
+      // Lê o conteúdo do arquivo como texto
+      reader.readAsText(file);
+    }
+
+    function fazerLogout() {
+      // Fecha o menu suspenso
+      document.getElementById('topMenu').style.display = 'none';
+
+      // Verifica se existe um usuário logado
+      if (auth.currentUser) {
+        if (confirm("Tem certeza que deseja sair da sua conta?")) {
+          auth.signOut().then(() => {
+            alert("Você foi desconectado com sucesso.");
+            // Opcional: Se a lista de compras estiver aberta, podemos fechá-la
+            closeComprasModal();
+          }).catch((error) => {
+            alert("Erro ao tentar sair: " + error.message);
+          });
+        }
+      } else {
+        alert("Você já está desconectado.");
+      }
     }
 
   </script>
