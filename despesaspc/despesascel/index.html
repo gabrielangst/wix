@@ -401,7 +401,7 @@
 
   <!-- Nova barra no topo -->
   <header class="top-bar" id="appHeader">
-    <h1>Despesas e Anotações v2.3</h1>
+    <h1>Despesas e Anotações v2.4</h1>
     <button onclick="toggleMenu()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 5px;">⋮</button>
     
     <div class="menu-dropdown" id="topMenu">
@@ -629,6 +629,35 @@
       <div class="modal-actions">
         <button class="btn btn-cancel" onclick="fecharLoginModal()">Cancelar</button>
         <button class="btn btn-save" onclick="fazerLogin()">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Adicionar Item na Lista de Compras -->
+  <div class="modal-overlay" id="addCompraModal">
+    <div class="modal-content">
+      <h2>Novo Item</h2>
+      
+      <div class="input-group">
+        <label>Nome do Item</label>
+        <input type="text" id="novoCompraNome" placeholder="Ex: Leite, Maçã...">
+      </div>
+      
+      <div class="input-group">
+        <label>Categoria</label>
+        <select id="novoCompraCatSelect" onchange="handleCompraCatChange()" style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 1rem; background: var(--surface); color: var(--text);">
+          <!-- Opções geradas dinamicamente via JS -->
+        </select>
+      </div>
+      
+      <div class="input-group" id="novaCatGroup" style="display: none;">
+        <label>Nome da Nova Categoria</label>
+        <input type="text" id="novoCompraNovaCat" placeholder="Ex: Padaria">
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-cancel" onclick="closeAddCompraModal()">Cancelar</button>
+        <button class="btn btn-save" onclick="saveNewCompraItem()">Incluir</button>
       </div>
     </div>
   </div>
@@ -1823,20 +1852,93 @@
       }
     }
 
-    async function addCompraItem() {
-      const nome = prompt('Nome do novo item:');
-      if (!nome || nome.trim() === '') return;
+    // Função para abrir o novo modal e preencher o dropdown
+    function addCompraItem() {
+      // Extrai categorias únicas do estado atual das compras e as coloca em ordem alfabética
+      const categoriasUnicas = [...new Set(comprasState.map(item => item.categoria))].sort();
       
-      let cat = prompt('Categoria (ex: Alimentos, Limpeza, Higiene, Farmácia, Específicos):', 'Alimentos');
-      if (!cat || cat.trim() === '') cat = 'Outros';
+      const select = document.getElementById('novoCompraCatSelect');
+      select.innerHTML = '';
+      
+      // Adiciona as categorias existentes
+      categoriasUnicas.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.text = cat;
+        select.appendChild(option);
+      });
+      
+      // Adiciona a opção de criar uma nova categoria no final
+      const novaOption = document.createElement('option');
+      novaOption.value = 'NOVA_CATEGORIA';
+      novaOption.text = '+ Criar nova categoria';
+      novaOption.style.fontWeight = 'bold';
+      select.appendChild(novaOption);
+      
+      // Reseta os campos de texto
+      document.getElementById('novoCompraNome').value = '';
+      document.getElementById('novoCompraNovaCat').value = '';
+      document.getElementById('novaCatGroup').style.display = 'none';
+      
+      // Define "Alimentos" como padrão, ou a primeira da lista
+      if (categoriasUnicas.includes('Alimentos')) {
+         select.value = 'Alimentos';
+      } else if (categoriasUnicas.length > 0) {
+         select.value = categoriasUnicas[0];
+      } else {
+         select.value = 'NOVA_CATEGORIA';
+         handleCompraCatChange(); // Mostra o campo de nova categoria se não houver nenhuma
+      }
 
+      // Exibe o modal
+      document.getElementById('addCompraModal').classList.add('active');
+      setTimeout(() => document.getElementById('novoCompraNome').focus(), 100);
+    }
+
+    // Função para exibir/esconder o campo de "Nova Categoria" conforme o dropdown
+    function handleCompraCatChange() {
+      const select = document.getElementById('novoCompraCatSelect');
+      const novaCatGroup = document.getElementById('novaCatGroup');
+      
+      if (select.value === 'NOVA_CATEGORIA') {
+        novaCatGroup.style.display = 'block';
+        document.getElementById('novoCompraNovaCat').focus();
+      } else {
+        novaCatGroup.style.display = 'none';
+      }
+    }
+
+    // Função para fechar o modal
+    function closeAddCompraModal() {
+      document.getElementById('addCompraModal').classList.remove('active');
+    }
+
+    // Função para finalmente salvar no Firebase
+    async function saveNewCompraItem() {
+      const nome = document.getElementById('novoCompraNome').value.trim();
+      if (!nome) return alert('Por favor, digite o nome do item.');
+      
+      let cat = document.getElementById('novoCompraCatSelect').value;
+      
+      // Se a opção selecionada for a de criar nova, pega o valor do input escondido
+      if (cat === 'NOVA_CATEGORIA') {
+        cat = document.getElementById('novoCompraNovaCat').value.trim();
+        if (!cat) return alert('Por favor, digite o nome da nova categoria.');
+      }
+      
+      // Cria o item igual ao formato que você já usava
       const newItem = { 
-        nome: nome.trim(), 
-        categoria: cat.trim(), 
+        nome: nome, 
+        categoria: cat, 
         checked: false, 
         timestamp: firebase.firestore.FieldValue.serverTimestamp() 
       };
+      
+      // Salva no banco
       await dbFirebase.collection('compras').add(newItem);
+      
+      // Fecha a janela
+      closeAddCompraModal();
     }
 
     async function editCompraItem(docId) {
