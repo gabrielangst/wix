@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setlist Réveillon</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --surface: #1e1e1e;
+            --primary: #d4af37;
+            --text-main: #f5f5f5;
+            --text-muted: #a0a0a0;
+            --border: #333;
+            --danger: #ff4757;
+            --radius: 8px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; }
+
+        header {
+            background-color: var(--surface);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        header h1 { color: var(--primary); font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .auth-container { display: flex; align-items: center; gap: 10px; }
+        .user-info { font-size: 0.9rem; color: var(--text-muted); display: none; }
+        .auth-btn { background: var(--primary); border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        
+        main { max-width: 600px; margin: 0 auto; padding: 20px; display: none; /* Escondido até logar */ }
+
+        /* Song Card */
+        .song-card { background-color: var(--surface); border-radius: var(--radius); margin-bottom: 15px; border: 1px solid var(--border); overflow: hidden; }
+        .song-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .song-info h2 { font-size: 1.2rem; margin-bottom: 4px; }
+        .song-info p { color: var(--text-muted); font-size: 0.9rem; }
+        .song-actions button { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 5px; margin-left: 10px; }
+        .song-actions button.delete-btn:hover { color: var(--danger); }
+        .song-actions button.edit-btn:hover { color: var(--primary); }
+
+        /* Expandable Details */
+        .song-details { display: none; padding: 15px; border-top: 1px solid var(--border); background-color: rgba(0,0,0,0.2); }
+        .song-card.expanded .song-details { display: block; }
+        .details-section { margin-bottom: 15px; }
+        .details-section h3 { color: var(--primary); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
+        .details-section pre { background-color: #000; padding: 10px; border-radius: 4px; overflow-x: auto; font-family: monospace; white-space: pre-wrap; font-size: 0.9rem; color: #ddd; }
+        
+        .links-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+        .tutorial-link { display: inline-block; padding: 8px 12px; background-color: var(--border); color: var(--text-main); text-decoration: none; border-radius: 4px; font-size: 0.85rem; }
+        .tutorial-link:hover { background-color: var(--primary); color: #000; }
+
+        /* FAB Button */
+        .fab { position: fixed; bottom: 30px; right: 30px; background-color: var(--primary); color: #000; width: 60px; height: 60px; border-radius: 50%; display: none; justify-content: center; align-items: center; font-size: 2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5); cursor: pointer; border: none; z-index: 100; }
+
+        /* Modal Dialog */
+        dialog { background-color: var(--surface); color: var(--text-main); border: 1px solid var(--primary); border-radius: var(--radius); padding: 20px; width: 90%; max-width: 500px; margin: auto; top: 50%; transform: translateY(-50%); }
+        dialog::backdrop { background-color: rgba(0, 0, 0, 0.8); }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 5px; color: var(--text-muted); font-size: 0.9rem; }
+        .form-group input, .form-group textarea { background-color: #121212; border: 1px solid var(--border); color: var(--text-main); padding: 10px; border-radius: 4px; font-size: 1rem; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); }
+        .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-cancel { background-color: transparent; color: var(--text-muted); }
+        .btn-save { background-color: var(--primary); color: #000; }
+        
+        .loading { text-align: center; margin-top: 50px; color: var(--primary); display: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Setlist Réveillon</h1>
+        <div class="auth-container">
+            <span class="user-info" id="userInfo"></span>
+            <button class="auth-btn" id="authBtn">Login com Google</button>
+        </div>
+    </header>
+
+    <div class="loading" id="loadingState">Carregando dados...</div>
+
+    <main id="setlist-container">
+        <!-- Músicas renderizadas aqui -->
+    </main>
+
+    <button class="fab" id="fabBtn" onclick="ui.openModal()">+</button>
+
+    <dialog id="songModal">
+        <h2 id="modalTitle" style="margin-bottom: 15px; color: var(--primary);">Nova Música</h2>
+        <form id="songForm">
+            <input type="hidden" id="songId">
+            <div class="form-group">
+                <label for="title">Título da Música *</label>
+                <input type="text" id="title" required>
+            </div>
+            <div class="form-group">
+                <label for="artist">Artista / Banda</label>
+                <input type="text" id="artist">
+            </div>
+            <div class="form-group">
+                <label for="notes">Anotações (Tom, BPM, estrutura...)</label>
+                <textarea id="notes" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="linkGuitar">Link - Tutorial Violão/Guitarra</label>
+                <input type="url" id="linkGuitar" placeholder="https://youtube.com/...">
+            </div>
+            <div class="form-group">
+                <label for="linkDrums">Link - Tutorial Bateria</label>
+                <input type="url" id="linkDrums" placeholder="https://youtube.com/...">
+            </div>
+            <div class="form-group">
+                <label for="lyrics">Letra / Cifra</label>
+                <textarea id="lyrics" rows="5"></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-cancel" onclick="ui.closeModal()">Cancelar</button>
+                <button type="submit" class="btn btn-save">Salvar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script type="module">
+        // Importações modulares do Firebase v10
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // COLOQUE SUAS CREDENCIAIS AQUI
+        const firebaseConfig = {
+          apiKey: "AIzaSyBoM04B-U8OLW85Q3PFyRvYMzv8mpvRj-g",
+          authDomain: "setlist-show.firebaseapp.com",
+          projectId: "setlist-show",
+          storageBucket: "setlist-show.firebasestorage.app",
+          messagingSenderId: "516147951376",
+          appId: "1:516147951376:web:1b85b13a0a2cb9bc521795"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // Armazena as músicas localmente em memória para edição
+        let currentSongs = [];
+        let currentUser = null;
+
+        /**
+         * Camada de Dados (Firebase Realtime Database)
+         */
+        class DatabaseService {
+            constructor(db) {
+                this.db = db;
+            }
+
+            // Ouve as mudanças em tempo real!
+            listenToSongs(uid, callback) {
+                const songsRef = ref(this.db, `users/${uid}/songs`);
+                onValue(songsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    const songs = [];
+                    if (data) {
+                        for (const [id, songData] of Object.entries(data)) {
+                            songs.push({ id, ...songData });
+                        }
+                    }
+                    callback(songs);
+                });
+            }
+
+            async addSong(uid, songData) {
+                const songsRef = ref(this.db, `users/${uid}/songs`);
+                await push(songsRef, songData);
+            }
+
+            async updateSong(uid, id, songData) {
+                const songRef = ref(this.db, `users/${uid}/songs/${id}`);
+                await update(songRef, songData);
+            }
+
+            async deleteSong(uid, id) {
+                const songRef = ref(this.db, `users/${uid}/songs/${id}`);
+                await remove(songRef);
+            }
+        }
+
+        /**
+         * Controlador da Interface
+         */
+        class UIController {
+            constructor(dbService) {
+                this.dbService = dbService;
+                this.container = document.getElementById('setlist-container');
+                this.modal = document.getElementById('songModal');
+                this.form = document.getElementById('songForm');
+                
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                this.form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (!currentUser) return;
+                    await this.handleFormSubmit();
+                });
+
+                this.modal.addEventListener('click', (e) => {
+                    const dialogDimensions = this.modal.getBoundingClientRect()
+                    if (e.clientX < dialogDimensions.left || e.clientX > dialogDimensions.right || 
+                        e.clientY < dialogDimensions.top || e.clientY > dialogDimensions.bottom) {
+                        this.closeModal();
+                    }
+                });
+            }
+
+            renderSetlist(songs) {
+                currentSongs = songs; // Atualiza cache local
+                this.container.innerHTML = '';
+                document.getElementById('loadingState').style.display = 'none';
+
+                if (songs.length === 0) {
+                    this.container.innerHTML = '<p style="text-align:center; color:var(--text-muted); margin-top:50px;">O setlist está vazio. Adicione a primeira música!</p>';
+                    return;
+                }
+
+                songs.forEach(song => {
+                    const card = document.createElement('div');
+                    card.className = 'song-card';
+                    
+                    let linksHtml = '';
+                    if (song.linkGuitar || song.linkDrums) {
+                        linksHtml = `
+                            <div class="details-section">
+                                <h3>Tutoriais</h3>
+                                <div class="links-grid">
+                                    ${song.linkGuitar ? `<a href="${song.linkGuitar}" target="_blank" class="tutorial-link">🎸 Violão</a>` : ''}
+                                    ${song.linkDrums ? `<a href="${song.linkDrums}" target="_blank" class="tutorial-link">🥁 Bateria</a>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    card.innerHTML = `
+                        <div class="song-header" onclick="this.parentElement.classList.toggle('expanded')">
+                            <div class="song-info">
+                                <h2>${song.title}</h2>
+                                <p>${song.artist || 'Artista desconhecido'}</p>
+                            </div>
+                            <div class="song-actions">
+                                <button class="edit-btn" onclick="event.stopPropagation(); window.ui.editSong('${song.id}')">✎</button>
+                                <button class="delete-btn" onclick="event.stopPropagation(); window.ui.deleteSong('${song.id}')">✖</button>
+                            </div>
+                        </div>
+                        <div class="song-details">
+                            ${song.notes ? `<div class="details-section"><h3>Anotações</h3><p>${song.notes}</p></div>` : ''}
+                            ${linksHtml}
+                            ${song.lyrics ? `<div class="details-section"><h3>Letra / Cifra</h3><pre>${song.lyrics}</pre></div>` : ''}
+                        </div>
+                    `;
+                    this.container.appendChild(card);
+                });
+            }
+
+            openModal() {
+                this.form.reset();
+                document.getElementById('songId').value = '';
+                document.getElementById('modalTitle').textContent = 'Nova Música';
+                this.modal.showModal();
+            }
+
+            closeModal() {
+                this.modal.close();
+                this.form.reset();
+            }
+
+            async handleFormSubmit() {
+                const id = document.getElementById('songId').value;
+                const songData = {
+                    title: document.getElementById('title').value,
+                    artist: document.getElementById('artist').value,
+                    notes: document.getElementById('notes').value,
+                    linkGuitar: document.getElementById('linkGuitar').value,
+                    linkDrums: document.getElementById('linkDrums').value,
+                    lyrics: document.getElementById('lyrics').value
+                };
+
+                if (id) {
+                    await this.dbService.updateSong(currentUser.uid, id, songData);
+                } else {
+                    await this.dbService.addSong(currentUser.uid, songData);
+                }
+                this.closeModal();
+            }
+
+            editSong(id) {
+                const song = currentSongs.find(s => s.id === id);
+                if (!song) return;
+
+                document.getElementById('songId').value = song.id;
+                document.getElementById('title').value = song.title;
+                document.getElementById('artist').value = song.artist || '';
+                document.getElementById('notes').value = song.notes || '';
+                document.getElementById('linkGuitar').value = song.linkGuitar || '';
+                document.getElementById('linkDrums').value = song.linkDrums || '';
+                document.getElementById('lyrics').value = song.lyrics || '';
+
+                document.getElementById('modalTitle').textContent = 'Editar Música';
+                this.modal.showModal();
+            }
+
+            async deleteSong(id) {
+                if (confirm('Tem certeza que deseja remover esta música do setlist?')) {
+                    await this.dbService.deleteSong(currentUser.uid, id);
+                }
+            }
+        }
+
+        const dbService = new DatabaseService(db);
+        const ui = new UIController(dbService);
+        
+        // Expor ui globalmente pois usamos módulos (type="module") e o HTML tem funções inline
+        window.ui = ui;
+
+        // Gestão de Autenticação e UI
+        const authBtn = document.getElementById('authBtn');
+        const userInfo = document.getElementById('userInfo');
+        const mainEl = document.getElementById('setlist-container');
+        const fabBtn = document.getElementById('fabBtn');
+        const loadingState = document.getElementById('loadingState');
+
+        authBtn.addEventListener('click', async () => {
+            if (currentUser) {
+                await signOut(auth);
+            } else {
+                const provider = new GoogleAuthProvider();
+                signInWithPopup(auth, provider).catch(err => console.error(err));
+            }
+        });
+
+        // Listener de estado de Autenticação
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                authBtn.textContent = 'Sair';
+                userInfo.textContent = user.displayName;
+                userInfo.style.display = 'inline';
+                mainEl.style.display = 'block';
+                fabBtn.style.display = 'flex';
+                loadingState.style.display = 'block';
+                
+                // Inicia o listener do Realtime DB!
+                dbService.listenToSongs(user.uid, (songs) => {
+                    ui.renderSetlist(songs);
+                });
+            } else {
+                authBtn.textContent = 'Login com Google';
+                userInfo.style.display = 'none';
+                mainEl.style.display = 'none';
+                fabBtn.style.display = 'none';
+                loadingState.style.display = 'none';
+                mainEl.innerHTML = '';
+            }
+        });
+
+    </script>
+</body>
+</html>
