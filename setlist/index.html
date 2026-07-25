@@ -39,35 +39,31 @@
         .auth-btn { background: var(--surface); color: var(--primary); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; }
         .auth-btn:hover { background: var(--primary); color: #fff; }
         
-        /* Telas */
         #app-content { display: none; }
         
-        /* Tela de Login */
-        #auth-screen {
-            max-width: 400px;
-            margin: 60px auto;
-            padding: 30px;
-            background-color: var(--surface);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
+        #auth-screen { max-width: 400px; margin: 60px auto; padding: 30px; background-color: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         #auth-screen h2 { color: var(--primary); margin-bottom: 20px; }
         .auth-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         .error-msg { color: var(--danger); font-size: 0.85rem; margin-top: 10px; min-height: 20px; }
 
         main { max-width: 600px; margin: 0 auto; padding: 20px; }
 
-        /* Song Card */
-        .song-card { background-color: var(--surface); border-radius: var(--radius); margin-bottom: 15px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        /* Song Card & Drag Drop */
+        .song-card { background-color: var(--surface); border-radius: var(--radius); margin-bottom: 15px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s; cursor: grab; }
+        .song-card.dragging { opacity: 0.6; box-shadow: 0 10px 20px rgba(0,0,0,0.1); border: 2px dashed var(--primary); cursor: grabbing; }
+        
         .song-header { padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer; }
         
+        .drag-handle { color: #cccccc; font-size: 1.5rem; margin-right: 15px; display: flex; align-items: center; justify-content: center; user-select: none; }
+        .drag-handle:hover { color: var(--primary); }
+
         .song-info { flex: 1; }
-        .song-info h2 { font-size: 1.2rem; margin-bottom: 4px; color: var(--text-main); }
+        .song-info h2 { font-size: 1.2rem; margin-bottom: 4px; color: var(--text-main); display: flex; align-items: center; }
         .song-info p { color: var(--text-muted); font-size: 0.9rem; }
         
-        /* Badges de Informação / Links Rápidos */
+        .yt-icon { margin-right: 8px; display: flex; align-items: center; transition: transform 0.2s; }
+        .yt-icon:hover { transform: scale(1.1); }
+
         .song-badges { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
         .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; background: #eeeeee; padding: 3px 8px; border-radius: 12px; color: var(--text-muted); }
         .badge-link { cursor: pointer; color: var(--primary); background: #fdf5e6; text-decoration: none; border: 1px solid var(--primary); }
@@ -78,17 +74,14 @@
         .song-actions button.delete-btn:hover { color: var(--danger); }
         .song-actions button.edit-btn:hover { color: var(--primary); }
 
-        /* Expandable Details */
         .song-details { display: none; padding: 15px; border-top: 1px solid var(--border); background-color: #fdfdfd; }
         .song-card.expanded .song-details { display: block; }
         .details-section { margin-bottom: 15px; }
         .details-section h3 { color: var(--primary); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
         .details-section pre { background-color: #f4f6f8; padding: 10px; border-radius: 4px; overflow-x: auto; font-family: monospace; white-space: pre-wrap; font-size: 0.9rem; color: #333; border: 1px solid var(--border); }
 
-        /* FAB Button */
         .fab { position: fixed; bottom: 30px; right: 30px; background-color: var(--primary); color: #fff; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; border: none; z-index: 100; }
 
-        /* Modal Dialog & Forms */
         dialog { background-color: var(--surface); color: var(--text-main); border: 1px solid var(--primary); border-radius: var(--radius); padding: 20px; width: 90%; max-width: 500px; margin: auto; top: 50%; transform: translateY(-50%); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         dialog::backdrop { background-color: rgba(0, 0, 0, 0.5); }
         .form-group { margin-bottom: 15px; display: flex; flex-direction: column; text-align: left; }
@@ -108,22 +101,17 @@
 <body>
 
     <header>
-        <h1>Setlist Réveillon</h1>
+        <h1>Setlist Réveillon v1.0</h1>
         <div class="auth-container">
             <span class="user-info" id="userInfo"></span>
             <button class="auth-btn" id="logoutBtn">Sair</button>
         </div>
     </header>
 
-    <!-- Tela de Login / Cadastro -->
     <div id="auth-screen">
         <h2>Acesso ao Setlist</h2>
-        <div class="form-group">
-            <input type="email" id="emailInput" placeholder="E-mail" required>
-        </div>
-        <div class="form-group">
-            <input type="password" id="passwordInput" placeholder="Senha" required>
-        </div>
+        <div class="form-group"><input type="email" id="emailInput" placeholder="E-mail" required></div>
+        <div class="form-group"><input type="password" id="passwordInput" placeholder="Senha" required></div>
         <div class="auth-buttons">
             <button id="loginBtn" class="btn btn-save">Entrar</button>
             <button id="registerBtn" class="btn btn-secondary" style="display: none;">Criar Conta</button>
@@ -131,18 +119,13 @@
         <p id="authError" class="error-msg"></p>
     </div>
 
-    <!-- Conteúdo Principal do App -->
     <div id="app-content">
         <div class="loading" id="loadingState">Carregando dados...</div>
-        
-        <main id="setlist-container">
-            <!-- Músicas renderizadas aqui -->
-        </main>
-
+        <!-- Container que permite o drop -->
+        <main id="setlist-container"></main>
         <button class="fab" onclick="ui.openModal()">+</button>
     </div>
 
-    <!-- Modal para Adicionar/Editar Música -->
     <dialog id="songModal">
         <h2 id="modalTitle" style="margin-bottom: 15px; color: var(--primary);">Nova Música</h2>
         <form id="songForm">
@@ -154,6 +137,11 @@
             <div class="form-group">
                 <label for="artist">Artista / Banda</label>
                 <input type="text" id="artist">
+            </div>
+            <!-- NOVO CAMPO: Link Ensaio -->
+            <div class="form-group">
+                <label for="linkRehearsal">Versão para ensaiar (Link YouTube)</label>
+                <input type="url" id="linkRehearsal" placeholder="https://youtube.com/...">
             </div>
             <div class="form-group">
                 <label for="notes">Anotações (Tom, BPM, estrutura...)</label>
@@ -183,7 +171,6 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getDatabase, ref, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // SUAS CREDENCIAIS
         const firebaseConfig = {
           apiKey: "AIzaSyBoM04B-U8OLW85Q3PFyRvYMzv8mpvRj-g",
           authDomain: "setlist-show.firebaseapp.com",
@@ -204,10 +191,9 @@
         class DatabaseService {
             constructor(db) { 
                 this.db = db;
-                this.basePath = 'setlist/songs'; // Caminho global para toda a banda
+                this.basePath = 'setlist/songs'; 
             }
 
-            // Removemos o parâmetro uid, pois agora o caminho é compartilhado
             listenToSongs(callback) {
                 const songsRef = ref(this.db, this.basePath);
                 onValue(songsRef, (snapshot) => {
@@ -218,6 +204,8 @@
                             songs.push({ id, ...songData });
                         }
                     }
+                    // Ordena o array usando o campo 'order' que criaremos
+                    songs.sort((a, b) => (a.order || 0) - (b.order || 0));
                     callback(songs);
                 });
             }
@@ -236,6 +224,12 @@
                 const songRef = ref(this.db, `${this.basePath}/${id}`);
                 await remove(songRef);
             }
+
+            // Função para atualizar várias músicas ao mesmo tempo (no drag and drop)
+            async updateMultiple(updates) {
+                const basePathRef = ref(this.db, this.basePath);
+                await update(basePathRef, updates);
+            }
         }
 
         class UIController {
@@ -244,7 +238,12 @@
                 this.container = document.getElementById('setlist-container');
                 this.modal = document.getElementById('songModal');
                 this.form = document.getElementById('songForm');
+                
+                // SVG do Youtube Inline
+                this.youtubeIcon = `<svg viewBox="0 0 24 24" fill="#ff0000" width="24" height="24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>`;
+                
                 this.setupEventListeners();
+                this.setupDragAndDrop();
             }
 
             setupEventListeners() {
@@ -253,6 +252,58 @@
                     if (!currentUser) return;
                     await this.handleFormSubmit();
                 });
+            }
+
+            setupDragAndDrop() {
+                this.container.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    const afterElement = this.getDragAfterElement(this.container, e.clientY);
+                    const draggable = document.querySelector('.dragging');
+                    if (draggable) {
+                        if (afterElement == null) {
+                            this.container.appendChild(draggable);
+                        } else {
+                            this.container.insertBefore(draggable, afterElement);
+                        }
+                    }
+                });
+
+                this.container.addEventListener('drop', async (e) => {
+                    e.preventDefault();
+                    // Quando soltar, recalcula a ordem de todos na tela
+                    const cards = [...this.container.querySelectorAll('.song-card')];
+                    const updates = {};
+                    let hasChanges = false;
+
+                    cards.forEach((card, index) => {
+                        const songId = card.dataset.id;
+                        const song = currentSongs.find(s => s.id === songId);
+                        // Se a ordem visual ficou diferente do banco, registra o update
+                        if (song && song.order !== index) {
+                            updates[`${songId}/order`] = index;
+                            hasChanges = true;
+                        }
+                    });
+
+                    // Dispara atualização pro Firebase
+                    if (hasChanges) {
+                        await this.dbService.updateMultiple(updates);
+                    }
+                });
+            }
+
+            // Lógica para saber onde inserir o elemento durante o arraste
+            getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('.song-card:not(.dragging)')];
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
             }
 
             renderSetlist(songs) {
@@ -268,6 +319,12 @@
                 songs.forEach((song, index) => {
                     const card = document.createElement('div');
                     card.className = 'song-card';
+                    card.draggable = true; // Ativa Drag and Drop no card
+                    card.dataset.id = song.id;
+                    
+                    // Eventos visuais do arraste
+                    card.addEventListener('dragstart', () => card.classList.add('dragging'));
+                    card.addEventListener('dragend', () => card.classList.remove('dragging'));
                     
                     let badgesHtml = '<div class="song-badges">';
                     if (song.notes) badgesHtml += '<span class="badge" title="Possui anotações">📝 Notas</span>';
@@ -276,10 +333,18 @@
                     if (song.linkDrums) badgesHtml += `<a href="${song.linkDrums}" target="_blank" class="badge badge-link" onclick="event.stopPropagation()">🥁 Bateria</a>`;
                     badgesHtml += '</div>';
 
+                    // Lógica para montar o Título com ou sem o ícone do Youtube
+                    let titleHtml = '';
+                    if (song.linkRehearsal) {
+                        titleHtml += `<a href="${song.linkRehearsal}" target="_blank" class="yt-icon" onclick="event.stopPropagation()" title="Versão para ensaiar">${this.youtubeIcon}</a>`;
+                    }
+                    titleHtml += `<span>${index + 1}. ${song.title}</span>`;
+
                     card.innerHTML = `
                         <div class="song-header" onclick="this.parentElement.classList.toggle('expanded')">
+                            <div class="drag-handle" onclick="event.stopPropagation()" title="Arraste para reordenar">☰</div>
                             <div class="song-info">
-                                <h2>${index + 1}. ${song.title}</h2>
+                                <h2>${titleHtml}</h2>
                                 <p>${song.artist || 'Artista desconhecido'}</p>
                                 ${badgesHtml}
                             </div>
@@ -314,6 +379,7 @@
                 const songData = {
                     title: document.getElementById('title').value,
                     artist: document.getElementById('artist').value,
+                    linkRehearsal: document.getElementById('linkRehearsal').value,
                     notes: document.getElementById('notes').value,
                     linkGuitar: document.getElementById('linkGuitar').value,
                     linkDrums: document.getElementById('linkDrums').value,
@@ -323,6 +389,8 @@
                 if (id) {
                     await this.dbService.updateSong(id, songData);
                 } else {
+                    // Se for música nova, adiciona no final (tamanho atual do setlist)
+                    songData.order = currentSongs.length;
                     await this.dbService.addSong(songData);
                 }
                 this.closeModal();
@@ -335,6 +403,7 @@
                 document.getElementById('songId').value = song.id;
                 document.getElementById('title').value = song.title;
                 document.getElementById('artist').value = song.artist || '';
+                document.getElementById('linkRehearsal').value = song.linkRehearsal || '';
                 document.getElementById('notes').value = song.notes || '';
                 document.getElementById('linkGuitar').value = song.linkGuitar || '';
                 document.getElementById('linkDrums').value = song.linkDrums || '';
@@ -355,7 +424,6 @@
         const ui = new UIController(dbService);
         window.ui = ui;
 
-        // Gestão de Autenticação
         const emailInput = document.getElementById('emailInput');
         const passwordInput = document.getElementById('passwordInput');
         const loginBtn = document.getElementById('loginBtn');
@@ -365,7 +433,6 @@
         
         const authScreen = document.getElementById('auth-screen');
         const appContent = document.getElementById('app-content');
-        const userInfo = document.getElementById('userInfo');
         const loadingState = document.getElementById('loadingState');
 
         function showError(msg) {
@@ -411,25 +478,19 @@
             if (user) {
                 authScreen.style.display = 'none';
                 appContent.style.display = 'block';
-                
                 logoutBtn.style.display = 'block';
-                userInfo.textContent = user.email;
-                userInfo.style.display = 'none';
                 loadingState.style.display = 'block';
                 
                 emailInput.value = '';
                 passwordInput.value = '';
                 
-                // Agora escutamos o setlist global, sem passar o user.uid
                 dbService.listenToSongs((songs) => {
                     ui.renderSetlist(songs);
                 });
             } else {
                 authScreen.style.display = 'block';
                 appContent.style.display = 'none';
-                
                 logoutBtn.style.display = 'none';
-                userInfo.style.display = 'none';
                 document.getElementById('setlist-container').innerHTML = '';
             }
         });
