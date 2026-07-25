@@ -49,12 +49,13 @@
         main { max-width: 600px; margin: 0 auto; padding: 20px; }
 
         /* Song Card & Drag Drop */
-        .song-card { background-color: var(--surface); border-radius: var(--radius); margin-bottom: 15px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s; cursor: grab; }
-        .song-card.dragging { opacity: 0.6; box-shadow: 0 10px 20px rgba(0,0,0,0.1); border: 2px dashed var(--primary); cursor: grabbing; }
+        .song-card { background-color: var(--surface); border-radius: var(--radius); margin-bottom: 15px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s; }
+        .song-card.dragging { opacity: 0.6; box-shadow: 0 10px 20px rgba(0,0,0,0.1); border: 2px dashed var(--primary); }
         
         .song-header { padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer; }
         
-        .drag-handle { color: #cccccc; font-size: 1.5rem; margin-right: 15px; display: flex; align-items: center; justify-content: center; user-select: none; }
+        .drag-handle { color: #cccccc; font-size: 1.5rem; margin-right: 15px; display: flex; align-items: center; justify-content: center; user-select: none; cursor: grab; padding: 0 5px; }
+        .drag-handle:active { cursor: grabbing; color: var(--primary); }
         .drag-handle:hover { color: var(--primary); }
 
         .song-info { flex: 1; }
@@ -121,7 +122,6 @@
 
     <div id="app-content">
         <div class="loading" id="loadingState">Carregando dados...</div>
-        <!-- Container que permite o drop -->
         <main id="setlist-container"></main>
         <button class="fab" onclick="ui.openModal()">+</button>
     </div>
@@ -138,7 +138,6 @@
                 <label for="artist">Artista / Banda</label>
                 <input type="text" id="artist">
             </div>
-            <!-- NOVO CAMPO: Link Ensaio -->
             <div class="form-group">
                 <label for="linkRehearsal">Versão para ensaiar (Link YouTube)</label>
                 <input type="url" id="linkRehearsal" placeholder="https://youtube.com/...">
@@ -204,7 +203,6 @@
                             songs.push({ id, ...songData });
                         }
                     }
-                    // Ordena o array usando o campo 'order' que criaremos
                     songs.sort((a, b) => (a.order || 0) - (b.order || 0));
                     callback(songs);
                 });
@@ -225,7 +223,6 @@
                 await remove(songRef);
             }
 
-            // Função para atualizar várias músicas ao mesmo tempo (no drag and drop)
             async updateMultiple(updates) {
                 const basePathRef = ref(this.db, this.basePath);
                 await update(basePathRef, updates);
@@ -239,7 +236,6 @@
                 this.modal = document.getElementById('songModal');
                 this.form = document.getElementById('songForm');
                 
-                // SVG do Youtube Inline
                 this.youtubeIcon = `<svg viewBox="0 0 24 24" fill="#ff0000" width="24" height="24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>`;
                 
                 this.setupEventListeners();
@@ -270,7 +266,6 @@
 
                 this.container.addEventListener('drop', async (e) => {
                     e.preventDefault();
-                    // Quando soltar, recalcula a ordem de todos na tela
                     const cards = [...this.container.querySelectorAll('.song-card')];
                     const updates = {};
                     let hasChanges = false;
@@ -278,21 +273,18 @@
                     cards.forEach((card, index) => {
                         const songId = card.dataset.id;
                         const song = currentSongs.find(s => s.id === songId);
-                        // Se a ordem visual ficou diferente do banco, registra o update
                         if (song && song.order !== index) {
                             updates[`${songId}/order`] = index;
                             hasChanges = true;
                         }
                     });
 
-                    // Dispara atualização pro Firebase
                     if (hasChanges) {
                         await this.dbService.updateMultiple(updates);
                     }
                 });
             }
 
-            // Lógica para saber onde inserir o elemento durante o arraste
             getDragAfterElement(container, y) {
                 const draggableElements = [...container.querySelectorAll('.song-card:not(.dragging)')];
                 return draggableElements.reduce((closest, child) => {
@@ -319,12 +311,7 @@
                 songs.forEach((song, index) => {
                     const card = document.createElement('div');
                     card.className = 'song-card';
-                    card.draggable = true; // Ativa Drag and Drop no card
                     card.dataset.id = song.id;
-                    
-                    // Eventos visuais do arraste
-                    card.addEventListener('dragstart', () => card.classList.add('dragging'));
-                    card.addEventListener('dragend', () => card.classList.remove('dragging'));
                     
                     let badgesHtml = '<div class="song-badges">';
                     if (song.notes) badgesHtml += '<span class="badge" title="Possui anotações">📝 Notas</span>';
@@ -333,7 +320,6 @@
                     if (song.linkDrums) badgesHtml += `<a href="${song.linkDrums}" target="_blank" class="badge badge-link" onclick="event.stopPropagation()">🥁 Bateria</a>`;
                     badgesHtml += '</div>';
 
-                    // Lógica para montar o Título com ou sem o ícone do Youtube
                     let titleHtml = '';
                     if (song.linkRehearsal) {
                         titleHtml += `<a href="${song.linkRehearsal}" target="_blank" class="yt-icon" onclick="event.stopPropagation()" title="Versão para ensaiar">${this.youtubeIcon}</a>`;
@@ -341,8 +327,8 @@
                     titleHtml += `<span>${index + 1}. ${song.title}</span>`;
 
                     card.innerHTML = `
-                        <div class="song-header" onclick="this.parentElement.classList.toggle('expanded')">
-                            <div class="drag-handle" onclick="event.stopPropagation()" title="Arraste para reordenar">☰</div>
+                        <div class="song-header">
+                            <div class="drag-handle" title="Arraste para reordenar">☰</div>
                             <div class="song-info">
                                 <h2>${titleHtml}</h2>
                                 <p>${song.artist || 'Artista desconhecido'}</p>
@@ -358,6 +344,41 @@
                             ${song.lyrics ? `<div class="details-section"><h3>Letra / Cifra</h3><pre>${song.lyrics}</pre></div>` : ''}
                         </div>
                     `;
+
+                    // Lógica para Drag and Drop pelo ícone ☰
+                    const dragHandle = card.querySelector('.drag-handle');
+                    
+                    dragHandle.addEventListener('mousedown', () => card.draggable = true);
+                    dragHandle.addEventListener('touchstart', () => card.draggable = true, { passive: true });
+                    
+                    card.addEventListener('dragstart', (e) => {
+                        card.classList.add('dragging');
+                        // Necessário para o drag funcionar bem no Firefox
+                        if (e.dataTransfer) e.dataTransfer.setData('text/plain', song.id); 
+                    });
+                    
+                    card.addEventListener('dragend', () => {
+                        card.classList.remove('dragging');
+                        card.draggable = false;
+                    });
+
+                    // Inteligência do Accordion (Header) para não atrapalhar seleção de texto
+                    const header = card.querySelector('.song-header');
+                    header.addEventListener('click', (e) => {
+                        // Se há texto selecionado, não faz nada (permite copiar)
+                        if (window.getSelection().toString().length > 0) return;
+                        
+                        // Não expande se o usuário clicou nos botões, ícones ou no arrastador
+                        if (e.target.closest('.song-actions') || 
+                            e.target.closest('.yt-icon') || 
+                            e.target.closest('.drag-handle') ||
+                            e.target.closest('.badge-link')) {
+                            return;
+                        }
+
+                        card.classList.toggle('expanded');
+                    });
+
                     this.container.appendChild(card);
                 });
             }
@@ -389,7 +410,6 @@
                 if (id) {
                     await this.dbService.updateSong(id, songData);
                 } else {
-                    // Se for música nova, adiciona no final (tamanho atual do setlist)
                     songData.order = currentSongs.length;
                     await this.dbService.addSong(songData);
                 }
