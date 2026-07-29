@@ -461,7 +461,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças 1.8.0
+                <span>📊</span> Finanças 1.9.0
             </div>
             <nav>
                 <ul id="main-menu">
@@ -1604,6 +1604,105 @@
         </div>
     </div>
 
+    <!-- MODAL FORMULÁRIO CAIXINHA (NOVA / EDITAR) -->
+    <div id="modal-form-caixinha" class="modal-overlay hidden" style="z-index: 1150;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 id="titulo-modal-form-caixinha" style="font-size: 1.2rem;">Nova Caixinha</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalFormCaixinha()">✖</button>
+            </div>
+            <input type="hidden" id="form-caixinha-id">
+            <div class="form-group">
+                <label>Nome da Caixinha</label>
+                <input type="text" id="form-caixinha-nome" class="form-control" placeholder="Ex: Reserva de Emergência">
+            </div>
+            <div class="form-group">
+                <label>Selecione uma Categoria Existente</label>
+                <select id="form-caixinha-categoria-select" class="form-control" onchange="limparNovaCategoria()"></select>
+            </div>
+            <div class="form-group">
+                <label>OU Crie uma Nova Categoria</label>
+                <input type="text" id="form-caixinha-categoria-nova" class="form-control" placeholder="Ex: Viagens" oninput="limparSelectCategoria()">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button class="btn-secondary" onclick="fecharModalFormCaixinha()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarFormCaixinha()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TRANSAÇÃO (ADICIONAR) CAIXINHA -->
+    <div id="modal-transacao-caixinha" class="modal-overlay hidden" style="z-index: 1160;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Adicionar Movimentação</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalTransacaoCaixinha()">✖</button>
+            </div>
+            <input type="hidden" id="trans-caixinha-id">
+            <input type="hidden" id="trans-caixinha-saldo-atual">
+            
+            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+                <span class="text-muted">Saldo Atual:</span>
+                <strong id="trans-caixinha-display-saldo" style="font-size: 1.1rem;">R$ 0,00</strong>
+            </div>
+
+            <div class="form-group">
+                <label>Tipo de Movimentação</label>
+                <!-- O select agora muda de cor dinamicamente -->
+                <select id="trans-caixinha-tipo" class="form-control" onchange="calcularPreviewTransacaoCaixinha()" style="color: var(--accent-success); font-weight: bold;">
+                    <option value="Crédito">Crédito (+)</option>
+                    <option value="Débito">Débito (-)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="trans-caixinha-desc" class="form-control" placeholder="Ex: Rendimento, Depósito, Saque">
+            </div>
+            <div class="form-group">
+                <label>Valor da Movimentação (R$)</label>
+                <input type="number" id="trans-caixinha-valor" class="form-control" step="0.01" oninput="calcularPreviewTransacaoCaixinha(true)">
+            </div>
+            
+            <!-- Adicionei IDs específicos nesta div e label para alterar o fundo no JS -->
+            <div id="trans-caixinha-container-final" class="form-group" style="background: #f0fdf4; padding: 12px; border-radius: 8px; border: 1px solid #bbf7d0; transition: all 0.3s;">
+                <label id="trans-caixinha-label-final" style="color: var(--accent-success);">Contabilização Final (Total Após Movimentação)</label>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Dica: Altere este valor para calcular automaticamente o valor da movimentação acima (Útil para correção monetária).</p>
+                <input type="number" id="trans-caixinha-total-final" class="form-control" step="0.01" style="font-weight: bold; color: var(--accent-success);" oninput="calcularPreviewTransacaoCaixinha(false)">
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button class="btn-secondary" onclick="fecharModalTransacaoCaixinha()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarTransacaoCaixinha()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR HISTÓRICO CAIXINHA -->
+    <div id="modal-editar-historico-caixinha" class="modal-overlay hidden" style="z-index: 1170;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.2rem;">Editar Lançamentos</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalEditarHistoricoCaixinha()">✖</button>
+            </div>
+            <input type="hidden" id="edit-hist-caixinha-id">
+            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 16px;">Atenção: Editar ou excluir lançamentos recalculará o saldo atual da caixinha automaticamente.</p>
+            <div class="table-container" style="max-height: 50vh; overflow-y: auto; margin-top: 0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">Data</th>
+                            <th style="width: 30%;">Descrição</th>
+                            <th style="width: 40%;">Tipo</th>
+                            <th style="width: 20%;">Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-editar-historico-caixinha"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -2385,9 +2484,8 @@
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <h3 style="margin: 0;">${c.nome}</h3>
                             <div style="display: flex; gap: 8px;">
-                                <button onclick="mudarCategoriaCaixinha('${c.id}')" title="Mudar Categoria" style="background:none; border:none; cursor:pointer; font-size: 1rem;">🏷️</button>
+                                <button onclick="abrirModalFormCaixinha('${c.id}')" title="Editar Caixinha (Nome/Categoria)" style="background:none; border:none; cursor:pointer; font-size: 1rem;">⚙️</button>
                                 <button onclick="abrirModalObsCaixinha('${c.id}')" title="Observações" style="background:none; border:none; cursor:pointer; font-size: 1rem;">💬</button>
-                                <button onclick="renomearCaixinha('${c.id}')" title="Renomear" style="background:none; border:none; cursor:pointer; font-size: 1rem;">✏️</button>
                                 <button onclick="excluirCaixinha('${c.id}')" title="Excluir" style="background:none; border:none; cursor:pointer; font-size: 1rem;">🗑️</button>
                             </div>
                         </div>
@@ -2399,9 +2497,9 @@
                         ${c.obs ? `<div style="margin-bottom: 12px; font-size: 0.85rem; color: var(--text-muted); font-style: italic; white-space: pre-wrap;">${c.obs}</div>` : ''}
                         
                         <div style="display:flex; gap:8px;" class="mt-4">
-                            <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="ajustarCaixinha('${c.id}', 'Crédito')">+ Creditar</button>
-                            <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="ajustarCaixinha('${c.id}', 'Débito')">- Debitar</button>
+                            <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="abrirModalTransacaoCaixinha('${c.id}')">+ Adicionar</button>
                             <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem; margin-left: auto;" onclick="toggleHistoricoCaixinha('${c.id}')">⏳ Histórico</button>
+                            <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="abrirModalEditarHistoricoCaixinha('${c.id}')">✏️ Editar</button>                            
                         </div>
                         
                         <!-- Usamos CLASS em vez de ID aqui para não duplicar IDs nos dois locais -->
@@ -2431,42 +2529,283 @@
         window.abrirModalCaixinhas = async () => { document.getElementById('modal-caixinhas').classList.remove('hidden'); await renderizarCaixinhas(); };
         window.fecharModalCaixinhas = () => document.getElementById('modal-caixinhas').classList.add('hidden');
         
-        window.criarNovaCaixinha = async () => {
-            const nome = prompt("Nome da nova caixinha:");
-            if (!nome) return;
-            
-            // Pede a categoria e usa 'Geral' se a pessoa deixar em branco
-            let categoria = prompt("Categoria (ex: Geral, Particular, Carro):", "Geral");
-            if (!categoria || categoria.trim() === "") categoria = "Geral";
+        
 
-            const cx = await DB.getCaixinhas();
-            cx.push({ id: 'c_' + Date.now(), nome: nome.trim(), categoria: categoria.trim(), saldo: 0, historico: [] });
-            await DB.setCaixinhas(cx);
-            await renderizarCaixinhas();
-        };
-
-        window.mudarCategoriaCaixinha = async (id) => {
-            const cx = await DB.getCaixinhas();
-            const c = cx.find(c => c.id === id);
-            if (!c) return;
-
-            const novaCategoria = prompt("Digite a nova categoria para esta caixinha:", c.categoria || "Geral");
-            if (novaCategoria && novaCategoria.trim() !== "") {
-                c.categoria = novaCategoria.trim();
-                await DB.setCaixinhas(cx);
-                await renderizarCaixinhas();
-            }
-        };
-
-        window.renomearCaixinha = async (id) => { const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; const n = prompt("Novo nome:", c.nome); if(n && n.trim()!==""){ c.nome=n.trim(); await DB.setCaixinhas(cx); await renderizarCaixinhas(); } };
         window.excluirCaixinha = async (id) => { let cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; if(c.saldo>0 && !confirm(`A caixinha tem R$ ${formatarReal(c.saldo)}!
 Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; cx = cx.filter(c=>c.id!==id); await DB.setCaixinhas(cx); await renderizarCaixinhas(); };
-        window.ajustarCaixinha = async (id, tipo) => { const v = parseFloat(prompt(`Valor para ${tipo}:`)); if(!v||isNaN(v)) return; const d = prompt("Descrição:"); const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(tipo==='Crédito') c.saldo+=v; else c.saldo-=v; c.historico.push({tipo, valor:v, desc:d||'Ajuste', data:new Date().toLocaleDateString()}); await DB.setCaixinhas(cx); await renderizarCaixinhas(); };
         window.toggleHistoricoCaixinha = (id) => {
             document.querySelectorAll(`.historico-${id}`).forEach(el => el.classList.toggle('hidden'));
         };
         window.abrirModalHistorico = async (id) => { const cx = await DB.getCaixinhas(); const c = cx.find(c=>c.id===id); if(!c) return; document.getElementById('titulo-modal-historico').innerText = `Histórico - ${c.nome}`; document.getElementById('lista-historico-completo').innerHTML = [...c.historico].reverse().map(h=>`<li style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 0.95rem;"><span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">${h.tipo==='Crédito'?'+':'-'}</strong> ${h.desc} <br><span style="color: var(--text-muted); font-size: 0.8rem;">${h.data}</span></span><strong class="${h.tipo==='Crédito'?'text-success':'text-danger'}">R$ ${formatarReal(h.valor)}</strong></li>`).join(''); document.getElementById('modal-historico').classList.remove('hidden'); };
         window.fecharModalHistorico = () => document.getElementById('modal-historico').classList.add('hidden');
+
+        // --- FUNÇÕES DE CADASTRO E EDIÇÃO DE CAIXINHA (CATEGORIA/NOME) ---
+        window.criarNovaCaixinha = () => abrirModalFormCaixinha();
+        
+        window.abrirModalFormCaixinha = async (idCaixinha = null) => {
+            const cx = await DB.getCaixinhas();
+            
+            // Coleta categorias únicas existentes
+            const categoriasUnicas = [...new Set(cx.map(c => c.categoria).filter(c => c && c.trim() !== ''))];
+            categoriasUnicas.sort();
+            
+            const select = document.getElementById('form-caixinha-categoria-select');
+            select.innerHTML = '<option value="">-- Selecione uma existente --</option>';
+            categoriasUnicas.forEach(cat => {
+                select.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+
+            if (idCaixinha) {
+                const c = cx.find(x => x.id === idCaixinha);
+                document.getElementById('titulo-modal-form-caixinha').innerText = "Editar Caixinha";
+                document.getElementById('form-caixinha-id').value = idCaixinha;
+                document.getElementById('form-caixinha-nome').value = c.nome;
+                
+                if (categoriasUnicas.includes(c.categoria)) {
+                    select.value = c.categoria;
+                    document.getElementById('form-caixinha-categoria-nova').value = '';
+                } else {
+                    select.value = '';
+                    document.getElementById('form-caixinha-categoria-nova').value = c.categoria || 'Geral';
+                }
+            } else {
+                document.getElementById('titulo-modal-form-caixinha').innerText = "Nova Caixinha";
+                document.getElementById('form-caixinha-id').value = '';
+                document.getElementById('form-caixinha-nome').value = '';
+                select.value = '';
+                document.getElementById('form-caixinha-categoria-nova').value = '';
+            }
+            
+            document.getElementById('modal-form-caixinha').classList.remove('hidden');
+        };
+
+        window.limparNovaCategoria = () => { document.getElementById('form-caixinha-categoria-nova').value = ''; };
+        window.limparSelectCategoria = () => { document.getElementById('form-caixinha-categoria-select').value = ''; };
+        window.fecharModalFormCaixinha = () => document.getElementById('modal-form-caixinha').classList.add('hidden');
+
+        window.salvarFormCaixinha = async () => {
+            const id = document.getElementById('form-caixinha-id').value;
+            const nome = document.getElementById('form-caixinha-nome').value.trim();
+            const catSelect = document.getElementById('form-caixinha-categoria-select').value;
+            const catNova = document.getElementById('form-caixinha-categoria-nova').value.trim();
+            
+            if (!nome) { alert("Informe o nome da caixinha."); return; }
+            
+            let categoriaFinal = catNova || catSelect || "Geral";
+            
+            const cx = await DB.getCaixinhas();
+            
+            if (id) {
+                const c = cx.find(x => x.id === id);
+                if (c) {
+                    c.nome = nome;
+                    c.categoria = categoriaFinal;
+                }
+            } else {
+                cx.push({ id: 'c_' + Date.now(), nome: nome, categoria: categoriaFinal, saldo: 0, historico: [] });
+            }
+            
+            await DB.setCaixinhas(cx);
+            fecharModalFormCaixinha();
+            await renderizarCaixinhas();
+        };
+
+        window.excluirCaixinha = async (id) => { 
+            let cx = await DB.getCaixinhas(); 
+            const c = cx.find(c=>c.id===id); 
+            if(!c) return; 
+            if(c.saldo > 0 && !confirm(`A caixinha tem R$ ${formatarReal(c.saldo)}!\nVocê tem certeza que quer excluir ela? Essa ação é irreversível.`)) return; 
+            cx = cx.filter(c=>c.id!==id); 
+            await DB.setCaixinhas(cx); 
+            await renderizarCaixinhas(); 
+        };       
+
+        window.fecharModalTransacaoCaixinha = () => document.getElementById('modal-transacao-caixinha').classList.add('hidden');
+
+        window.abrirModalTransacaoCaixinha = async (idCaixinha) => {
+            const cx = await DB.getCaixinhas();
+            const c = cx.find(x => x.id === idCaixinha);
+            if(!c) return;
+
+            document.getElementById('trans-caixinha-id').value = c.id;
+            document.getElementById('trans-caixinha-saldo-atual').value = c.saldo || 0;
+            document.getElementById('trans-caixinha-display-saldo').innerText = `R$ ${formatarReal(c.saldo || 0)}`;
+            
+            document.getElementById('trans-caixinha-tipo').value = 'Crédito';
+            document.getElementById('trans-caixinha-desc').value = '';
+            document.getElementById('trans-caixinha-valor').value = '';
+            document.getElementById('trans-caixinha-total-final').value = c.saldo || 0;
+
+            // Invoca a função para garantir que abra com a cor verde (Crédito)
+            window.calcularPreviewTransacaoCaixinha(true);
+
+            document.getElementById('modal-transacao-caixinha').classList.remove('hidden');
+        };
+
+        window.calcularPreviewTransacaoCaixinha = (mudouValor = true) => {
+            const saldoAtual = parseFloat(document.getElementById('trans-caixinha-saldo-atual').value) || 0;
+            let tipo = document.getElementById('trans-caixinha-tipo').value;
+            const elValor = document.getElementById('trans-caixinha-valor');
+            const elFinal = document.getElementById('trans-caixinha-total-final');
+            
+            // Elementos visuais que vão mudar de cor
+            const elSelect = document.getElementById('trans-caixinha-tipo');
+            const containerFinal = document.getElementById('trans-caixinha-container-final');
+            const labelFinal = document.getElementById('trans-caixinha-label-final');
+
+            if (mudouValor) {
+                // O usuário digitou no campo Valor. Calcula o Total Final.
+                const valor = parseFloat(elValor.value) || 0;
+                if (tipo === 'Crédito') elFinal.value = (saldoAtual + valor).toFixed(2);
+                else elFinal.value = (saldoAtual - valor).toFixed(2);
+            } else {
+                // O usuário digitou no campo Total Final. Calcula o Valor necessário.
+                const final = parseFloat(elFinal.value) || 0;
+                let dif = final - saldoAtual;
+                
+                // Inverte o tipo automaticamente se o valor final gerar uma conta contrária
+                if (dif > 0 && tipo === 'Débito') {
+                    document.getElementById('trans-caixinha-tipo').value = 'Crédito';
+                    tipo = 'Crédito';
+                } else if (dif < 0 && tipo === 'Crédito') {
+                    document.getElementById('trans-caixinha-tipo').value = 'Débito';
+                    tipo = 'Débito';
+                }
+                
+                elValor.value = Math.abs(dif).toFixed(2);
+            }
+
+            // --- LÓGICA DAS CORES DINÂMICAS ---
+            if (tipo === 'Crédito') {
+                elSelect.style.color = 'var(--accent-success)';
+                containerFinal.style.background = '#f0fdf4'; // Fundo verde claro
+                containerFinal.style.borderColor = '#bbf7d0';
+                labelFinal.style.color = 'var(--accent-success)';
+                elFinal.style.color = 'var(--accent-success)';
+            } else {
+                elSelect.style.color = 'var(--accent-danger)';
+                containerFinal.style.background = '#fef2f2'; // Fundo vermelho claro
+                containerFinal.style.borderColor = '#fecaca';
+                labelFinal.style.color = 'var(--accent-danger)';
+                elFinal.style.color = 'var(--accent-danger)';
+            }
+        };
+
+        window.salvarTransacaoCaixinha = async () => {
+            const id = document.getElementById('trans-caixinha-id').value;
+            const tipo = document.getElementById('trans-caixinha-tipo').value;
+            const desc = document.getElementById('trans-caixinha-desc').value.trim() || 'Ajuste';
+            const valor = parseFloat(document.getElementById('trans-caixinha-valor').value);
+            
+            if (!valor || isNaN(valor) || valor <= 0) { alert("Informe um valor válido maior que zero."); return; }
+
+            const cx = await DB.getCaixinhas();
+            const c = cx.find(x => x.id === id);
+            if(!c) return;
+
+            if (tipo === 'Crédito') c.saldo += valor;
+            else c.saldo -= valor;
+
+            if (!c.historico) c.historico = [];
+            c.historico.push({
+                tipo: tipo,
+                valor: valor,
+                desc: desc,
+                data: new Date().toLocaleDateString('pt-BR')
+            });
+
+            await DB.setCaixinhas(cx);
+            fecharModalTransacaoCaixinha();
+            await renderizarCaixinhas();
+        };
+
+        // --- FUNÇÕES DE EDITAR HISTÓRICO DA CAIXINHA ---
+        window.abrirModalEditarHistoricoCaixinha = async (idCaixinha) => {
+            const cx = await DB.getCaixinhas();
+            const c = cx.find(x => x.id === idCaixinha);
+            if(!c) return;
+
+            document.getElementById('edit-hist-caixinha-id').value = c.id;
+            const tbody = document.getElementById('tbody-editar-historico-caixinha');
+            tbody.innerHTML = '';
+
+            if (!c.historico || c.historico.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;" class="text-muted">Nenhuma movimentação para editar.</td></tr>';
+            } else {
+                // Renderiza de trás pra frente (mais novos primeiro)
+                [...c.historico].reverse().forEach((h, indexRev) => {
+                    const originalIndex = c.historico.length - 1 - indexRev; // Posição exata no array
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${h.data}</td>
+                        <td><input type="text" class="table-input" value="${h.desc}" id="edit-hist-desc-${originalIndex}"></td>
+                        <td>
+                            <select class="table-input" id="edit-hist-tipo-${originalIndex}">
+                                <option value="Crédito" ${h.tipo === 'Crédito' ? 'selected' : ''}>Crédito</option>
+                                <option value="Débito" ${h.tipo === 'Débito' ? 'selected' : ''}>Débito</option>
+                            </select>
+                        </td>
+                        <td><input type="number" class="table-input" value="${h.valor}" step="0.01" id="edit-hist-valor-${originalIndex}"></td>
+                        <td style="display: flex; gap: 8px;">
+                            <button class="btn-primary" style="padding: 4px 8px; font-size: 0.8rem;" onclick="salvarEdicaoItemHistoricoCaixinha('${c.id}', ${originalIndex})">Salvar</button>
+                            <button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 1.1rem;" onclick="excluirItemHistoricoCaixinha('${c.id}', ${originalIndex})">✖</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            document.getElementById('modal-editar-historico-caixinha').classList.remove('hidden');
+        };
+
+        window.fecharModalEditarHistoricoCaixinha = () => document.getElementById('modal-editar-historico-caixinha').classList.add('hidden');
+
+        window.salvarEdicaoItemHistoricoCaixinha = async (idCaixinha, index) => {
+            const descNovo = document.getElementById(`edit-hist-desc-${index}`).value.trim();
+            const tipoNovo = document.getElementById(`edit-hist-tipo-${index}`).value;
+            const valorNovo = parseFloat(document.getElementById(`edit-hist-valor-${index}`).value);
+
+            if (!descNovo || isNaN(valorNovo) || valorNovo <= 0) { alert("Preencha corretamente!"); return; }
+
+            const cx = await DB.getCaixinhas();
+            const c = cx.find(x => x.id === idCaixinha);
+            if(!c) return;
+
+            // Desfaz impacto antigo, aplica novo para corrigir o saldo
+            const itemAntigo = c.historico[index];
+            if (itemAntigo.tipo === 'Crédito') c.saldo -= itemAntigo.valor;
+            else c.saldo += itemAntigo.valor;
+
+            if (tipoNovo === 'Crédito') c.saldo += valorNovo;
+            else c.saldo -= valorNovo;
+
+            c.historico[index].desc = descNovo;
+            c.historico[index].tipo = tipoNovo;
+            c.historico[index].valor = valorNovo;
+
+            await DB.setCaixinhas(cx);
+            abrirModalEditarHistoricoCaixinha(idCaixinha);
+            await renderizarCaixinhas();
+        };
+
+        window.excluirItemHistoricoCaixinha = async (idCaixinha, index) => {
+            if(!confirm("Remover este lançamento? O saldo será corrigido automaticamente.")) return;
+
+            const cx = await DB.getCaixinhas();
+            const c = cx.find(x => x.id === idCaixinha);
+            if(!c) return;
+
+            const item = c.historico[index];
+            if (item.tipo === 'Crédito') c.saldo -= item.valor;
+            else c.saldo += item.valor;
+
+            c.historico.splice(index, 1);
+
+            await DB.setCaixinhas(cx);
+            abrirModalEditarHistoricoCaixinha(idCaixinha);
+            await renderizarCaixinhas();
+        };
 
         // --- OBSERVAÇÕES DAS CAIXINHAS ---
         window.abrirModalObsCaixinha = async (id) => {
