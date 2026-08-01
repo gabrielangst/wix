@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Setlist Réveillon</title>
+
+    <meta name="theme-color" content="#c5a028">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+
     <style>
         :root {
             --bg-color: #f4f6f8; 
@@ -97,6 +103,45 @@
         .btn-secondary { background-color: var(--border); color: var(--text-main); }
         
         .loading { text-align: center; margin-top: 50px; color: var(--primary); display: none; }
+
+        /* Status Indicators (Leo e Gabriel) */
+        .status-indicators { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+            margin-right: 15px; 
+            justify-content: center; 
+        }
+        .status-icon { 
+            cursor: pointer; 
+            font-size: 1.1rem; 
+            width: 32px; 
+            height: 32px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 50%; 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Leve relevo */
+        }
+
+        /* Pendente - Amarelo Ouro bem vivo */
+        .status-icon.pending { 
+            background-color: #FFD700; 
+            border: 2px solid #E6C200;
+        }
+
+        /* Concluído - Verde Vibrante */
+        .status-icon.completed { 
+            background-color: #2ECC71; 
+            border: 2px solid #27AE60;
+        }
+
+        .status-icon:hover { 
+            transform: scale(1.15); 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Sombra aumenta no hover */
+        }
     </style>
 </head>
 <body>
@@ -326,9 +371,24 @@
                     }
                     titleHtml += `<span>${index + 1}. ${song.title}</span>`;
 
+                    // Verifica o status no banco (se não existir, é considerado falso/pendente)
+                    const leoStatus = song.learnedLeo ? 'completed' : 'pending';
+                    const gabiStatus = song.learnedGabi ? 'completed' : 'pending';
+
                     card.innerHTML = `
                         <div class="song-header">
                             <div class="drag-handle" title="Arraste para reordenar">☰</div>
+                            
+                            <!-- Nova Coluna de Status -->
+                            <div class="status-indicators">
+                                <div class="status-icon ${leoStatus}" 
+                                    title="Leonardo: ${song.learnedLeo ? 'Concluído' : 'Pendente'}" 
+                                    onclick="event.stopPropagation(); window.ui.toggleStatus('${song.id}', 'learnedLeo')">🎸</div>
+                                <div class="status-icon ${gabiStatus}" 
+                                    title="Gabriel: ${song.learnedGabi ? 'Concluído' : 'Pendente'}" 
+                                    onclick="event.stopPropagation(); window.ui.toggleStatus('${song.id}', 'learnedGabi')">🥁</div>
+                            </div>
+
                             <div class="song-info">
                                 <h2>${titleHtml}</h2>
                                 <p>${song.artist || 'Artista desconhecido'}</p>
@@ -380,6 +440,20 @@
                     });
 
                     this.container.appendChild(card);
+                });
+            }
+
+            async toggleStatus(songId, field) {
+                // Encontra a música atual
+                const song = currentSongs.find(s => s.id === songId);
+                if (!song) return;
+
+                // Pega o valor atual (se for undefined, vira false) e inverte
+                const currentVal = !!song[field];
+                
+                // Atualiza apenas o campo específico no Firebase
+                await this.dbService.updateSong(songId, { 
+                    [field]: !currentVal 
                 });
             }
 
@@ -514,6 +588,21 @@
                 document.getElementById('setlist-container').innerHTML = '';
             }
         });
+    </script>
+
+    <script>
+        // Registra o Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado com sucesso:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Falha ao registrar o Service Worker:', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
