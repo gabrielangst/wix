@@ -89,7 +89,37 @@
 
         .fab { position: fixed; bottom: 30px; right: 30px; background-color: var(--primary); color: #fff; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; border: none; z-index: 100; }
 
-        dialog { background-color: var(--surface); color: var(--text-main); border: 1px solid var(--primary); border-radius: var(--radius); padding: 20px; width: 90%; max-width: 500px; margin: auto; top: 50%; transform: translateY(-50%); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        dialog { 
+            background-color: var(--surface); 
+            color: var(--text-main); 
+            border: 1px solid var(--primary); 
+            border-radius: var(--radius); 
+            padding: 20px; 
+            width: 90%; 
+            max-width: 500px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            
+            /* Novo posicionamento e scroll */
+            margin: 5vh auto auto auto; /* Começa 5% abaixo do topo e centraliza horizontalmente */
+            top: 0;
+            transform: none; /* Remove a centralização forçada antiga */
+            
+            max-height: 85vh; /* Ocupa no máximo 85% da altura da tela */
+            overflow-y: auto; /* Cria barra de rolagem interna automaticamente se precisar */
+        }
+
+        /* Opcional: Para deixar a barra de rolagem mais fina e elegante no Chrome/Safari */
+        dialog::-webkit-scrollbar {
+            width: 8px;
+        }
+        dialog::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        dialog::-webkit-scrollbar-thumb {
+            background-color: var(--border); 
+            border-radius: 20px;
+        }
+
         dialog::backdrop { background-color: rgba(0, 0, 0, 0.5); }
         .form-group { margin-bottom: 15px; display: flex; flex-direction: column; text-align: left; }
         .form-group label { margin-bottom: 5px; color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
@@ -147,7 +177,7 @@
 <body>
 
     <header>
-        <h1>Setlist Réveillon v1.0</h1>
+        <h1>Setlist Réveillon v1.1 </h1>
         <div class="auth-container">
             <span class="user-info" id="userInfo"></span>
             <button class="auth-btn" id="logoutBtn">Sair</button>
