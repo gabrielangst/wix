@@ -134,27 +134,20 @@
         
         .loading { text-align: center; margin-top: 50px; color: var(--primary); display: none; }
 
-        /* Status Indicators (Leo e Gabriel) */
+        /* Status Indicators (Banda: L, G, K, J) */
         .status-indicators { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; /* Cria duas colunas */
+            gap: 6px; /* Espaço entre as bolinhas */
             margin-right: 15px; 
-            justify-content: center; 
-        }
-        /* Status Indicators (Leo e Gabriel) */
-        .status-indicators { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
-            margin-right: 15px; 
-            justify-content: center; 
+            align-items: center; 
         }
         .status-icon { 
             cursor: pointer; 
-            font-size: 1.1rem; 
-            width: 32px; 
-            height: 32px; 
+            font-size: 0.85rem; /* Fonte um pouco menor para as letras */
+            font-weight: bold; /* Letra em negrito */
+            width: 28px; /* Bolinha levemente menor */
+            height: 28px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
@@ -162,9 +155,10 @@
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
             user-select: none;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #333; /* Cor da letra */
         }
 
-        /* 1. Não começou - Cinza Neutro (Fica preto e branco) */
+        /* 1. Não começou - Cinza Neutro */
         .status-icon.unstarted { 
             background-color: #f0f0f0; 
             border: 2px solid #dcdcdc;
@@ -191,14 +185,14 @@
         .status-icon:hover { 
             transform: scale(1.15); 
             box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
-            opacity: 1; /* Acende o botão ao passar o mouse, mesmo se estiver cinza */
+            opacity: 1; 
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Setlist Réveillon v1.1 </h1>
+        <h1>Setlist Réveillon v1.3 </h1>
         <div class="auth-container">
             <span class="user-info" id="userInfo"></span>
             <button class="auth-btn" id="logoutBtn">Sair</button>
@@ -426,24 +420,33 @@
                     const getStatusInfo = (val) => {
                         if (val === 2 || val === true) return { class: 'completed', text: 'Concluído' };
                         if (val === 1) return { class: 'pending', text: 'Trabalhando' };
-                        return { class: 'unstarted', text: 'Não começou' }; // Trata 0, false ou undefined
+                        return { class: 'unstarted', text: 'Não começou' };
                     };
 
-                    const leoInfo = getStatusInfo(song.learnedLeo);
-                    const gabiInfo = getStatusInfo(song.learnedGabi);
+                    // Pega o status de cada integrante
+                    const lInfo = getStatusInfo(song.learnedL);
+                    const gInfo = getStatusInfo(song.learnedG);
+                    const kInfo = getStatusInfo(song.learnedK);
+                    const jInfo = getStatusInfo(song.learnedJ);
 
                     card.innerHTML = `
                         <div class="song-header">
                             <div class="drag-handle" title="Arraste para reordenar">☰</div>
                             
-                            <!-- Nova Coluna de Status (Três Estados) -->
+                            <!-- Grid de Status (L, G, K, J) -->
                             <div class="status-indicators">
-                                <div class="status-icon ${leoInfo.class}" 
-                                    title="Leonardo: ${leoInfo.text}" 
-                                    onclick="event.stopPropagation(); window.ui.toggleStatus('${song.id}', 'learnedLeo')">🎸</div>
-                                <div class="status-icon ${gabiInfo.class}" 
-                                    title="Gabriel: ${gabiInfo.text}" 
-                                    onclick="event.stopPropagation(); window.ui.toggleStatus('${song.id}', 'learnedGabi')">🥁</div>
+                                <div class="status-icon ${lInfo.class}" 
+                                    title="L: ${lInfo.text}" 
+                                    onclick="event.stopPropagation(); window.ui.toggleStatus('${song.id}', 'learnedL')">L</div>
+                                <div class="status-icon ${gInfo.class}" 
+                                    title="G: ${gInfo.text}" 
+                                    onclick="event.stopPropagation(); window.ui.toggleStatus('${song.id}', 'learnedG')">G</div>
+                                <div class="status-icon ${kInfo.class}" 
+                                    title="K: ${kInfo.text}" 
+                                    onclick="event.stopPropagation(); window.ui.toggleStatus('${song.id}', 'learnedK')">K</div>
+                                <div class="status-icon ${jInfo.class}" 
+                                    title="J: ${jInfo.text}" 
+                                    onclick="event.stopPropagation(); window.ui.toggleStatus('${song.id}', 'learnedJ')">J</div>
                             </div>
 
                             <div class="song-info">
