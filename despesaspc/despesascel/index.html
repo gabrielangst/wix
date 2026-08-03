@@ -693,9 +693,14 @@
       const password = document.getElementById('loginPassword').value.trim();
       
       if (email && password) {
-        auth.signInWithEmailAndPassword(email, password)
+        // 1. Força a persistência LOCAL antes de autenticar
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
           .then(() => {
-            // Sucesso! Fecha o modal de login e abre a lista de compras
+            // 2. Só então faz o login com as credenciais
+            return auth.signInWithEmailAndPassword(email, password);
+          })
+          .then(() => {
+            // 3. Sucesso!
             fecharLoginModal();
             openComprasModal(); 
           })
