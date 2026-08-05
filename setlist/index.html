@@ -134,20 +134,24 @@
         
         .loading { text-align: center; margin-top: 50px; color: var(--primary); display: none; }
 
-        /* Status Indicators (Banda: L, G, K, J) */
+        /* Ajuste do Grid Dinâmico de Status (quebra de 2 em 2) */
         .status-indicators { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; /* Cria duas colunas */
-            gap: 6px; /* Espaço entre as bolinhas */
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 6px; 
             margin-right: 15px; 
             align-items: center; 
+            justify-content: flex-start;
+            /* Aumentamos a largura total para comportar duas bolinhas de 42px + 6px de gap */
+            width: 90px; 
         }
+
         .status-icon { 
             cursor: pointer; 
-            font-size: 0.85rem; /* Fonte um pouco menor para as letras */
-            font-weight: bold; /* Letra em negrito */
-            width: 28px; /* Bolinha levemente menor */
-            height: 28px; 
+            font-size: 0.75rem; /* Fonte levemente menor para garantir que 3 caracteres caibam */
+            font-weight: bold; 
+            width: 42px; /* Aumentado de 28px para 42px */
+            height: 42px; /* Aumentado de 28px para 42px */
             display: flex; 
             align-items: center; 
             justify-content: center; 
@@ -155,7 +159,9 @@
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
             user-select: none;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            color: #333; /* Cor da letra */
+            color: #333; 
+            line-height: 1.1; /* Diminui o espaço entre o emoji e a letra caso o navegador quebre a linha */
+            text-align: center; /* Centraliza o texto se houver quebra de linha */
         }
 
         /* 1. Não começou - Cinza Neutro */
@@ -187,15 +193,63 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
             opacity: 1; 
         }
+
+        /* Dropdown Menu (Opções) */
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { 
+            display: none; 
+            position: absolute; 
+            right: 0; 
+            background-color: var(--surface); 
+            min-width: 200px; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1); 
+            z-index: 20; 
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .dropdown-content.show { display: block; }
+        .dropdown-content a { 
+            color: var(--text-main); 
+            padding: 12px 16px; 
+            text-decoration: none; 
+            display: block; 
+            font-size: 0.9rem;
+        }
+        .dropdown-content a:hover { background-color: #f4f6f8; color: var(--primary); }
+
+        /* Ajuste do Grid Dinâmico de Status (quebra de 2 em 2) */
+        .status-indicators { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 6px; 
+            margin-right: 15px; 
+            align-items: center; 
+            justify-content: flex-start;
+            width: 62px; /* 28px + 28px + 6px (gap) = Força 2 colunas */
+        }
+
+        /* Campos inline para adicionar participante */
+        .inline-form { display: flex; gap: 10px; margin-bottom: 15px; }
+        .inline-form input { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 4px; }
+        .inline-form input.short { flex: 0 0 60px; text-align: center; font-weight: bold; }
+        .participant-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); }
+
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Setlist Réveillon v1.3 </h1>
+        <h1>Setlist Réveillon v1.2</h1>
         <div class="auth-container">
             <span class="user-info" id="userInfo"></span>
-            <button class="auth-btn" id="logoutBtn">Sair</button>
+            <div class="dropdown" id="userMenu" style="display: none;">
+                <button class="auth-btn" id="optionsBtn" style="display: block;">Opções ▾</button>
+                <div id="dropdownContent" class="dropdown-content">
+                    <a href="#" onclick="event.preventDefault(); window.ui.openParticipantsModal()">Gerenciar Participantes</a>
+                    <a href="#" id="logoutBtn">Sair</a>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -255,6 +309,29 @@
         </form>
     </dialog>
 
+    <dialog id="participantsModal">
+        <h2 style="margin-bottom: 15px; color: var(--primary);">Participantes</h2>
+        
+        <form id="participantForm" class="inline-form">
+            <!-- Campo oculto para o ID na hora da edição -->
+            <input type="hidden" id="partId"> 
+            
+            <input type="text" id="partInitial" class="short" placeholder="Sigla" maxlength="4" required>
+            <input type="text" id="partName" placeholder="Nome (ex: Leonardo)" required>
+            
+            <button type="submit" id="partSubmitBtn" class="btn btn-save" style="width: auto;">Add</button>
+            <button type="button" id="partCancelBtn" class="btn btn-cancel" onclick="ui.resetParticipantForm()" style="display: none; padding: 10px; width: auto;" title="Cancelar edição">✖</button>
+        </form>
+
+        <div id="participantsList" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto;">
+            <!-- Lista injetada via JS -->
+        </div>
+
+        <div class="form-actions" style="width: auto;">
+            <button type="button" class="btn btn-cancel" onclick="ui.closeParticipantsModal()">Fechar</button>
+        </div>
+    </dialog>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -281,6 +358,37 @@
             constructor(db) { 
                 this.db = db;
                 this.basePath = 'setlist/songs'; 
+                this.participantsPath = 'setlist/participants'; // Novo caminho
+            }
+
+            // --- MÉTODOS DE PARTICIPANTES ---
+            listenToParticipants(callback) {
+                const partsRef = ref(this.db, this.participantsPath);
+                onValue(partsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    const parts = [];
+                    if (data) {
+                        for (const [id, partData] of Object.entries(data)) {
+                            parts.push({ id, ...partData });
+                        }
+                    }
+                    callback(parts);
+                });
+            }
+
+            async addParticipant(partData) {
+                const partsRef = ref(this.db, this.participantsPath);
+                await push(partsRef, partData);
+            }
+
+            async deleteParticipant(id) {
+                const partRef = ref(this.db, `${this.participantsPath}/${id}`);
+                await remove(partRef);
+            }
+
+            async updateParticipant(id, partData) {
+                const partRef = ref(this.db, `${this.participantsPath}/${id}`);
+                await update(partRef, partData);
             }
 
             listenToSongs(callback) {
@@ -322,6 +430,7 @@
         class UIController {
             constructor(dbService) {
                 this.dbService = dbService;
+                this.participants = []; // Guarda o estado dos participantes
                 this.container = document.getElementById('setlist-container');
                 this.modal = document.getElementById('songModal');
                 this.form = document.getElementById('songForm');
@@ -330,6 +439,86 @@
                 
                 this.setupEventListeners();
                 this.setupDragAndDrop();
+
+                // Listener do formulário de participantes
+                document.getElementById('participantForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const id = document.getElementById('partId').value;
+                    const initial = document.getElementById('partInitial').value.toUpperCase();
+                    const name = document.getElementById('partName').value;
+                    
+                    if (id) {
+                        // Se tem ID, é uma edição
+                        await this.dbService.updateParticipant(id, { initial, name });
+                    } else {
+                        // Se não tem ID, é um novo participante
+                        await this.dbService.addParticipant({ initial, name });
+                    }
+                    
+                    this.resetParticipantForm();
+                });
+            }
+
+            // --- MÉTODOS DOS PARTICIPANTES ---
+            openParticipantsModal() {
+                document.getElementById('dropdownContent').classList.remove('show');
+                this.resetParticipantForm(); // Limpa o form ao abrir
+                this.renderParticipantsList();
+                document.getElementById('participantsModal').showModal();
+            }
+
+            closeParticipantsModal() {
+                document.getElementById('participantsModal').close();
+            }
+
+            // Função para limpar e resetar o form para o modo "Adicionar"
+            resetParticipantForm() {
+                document.getElementById('participantForm').reset();
+                document.getElementById('partId').value = '';
+                document.getElementById('partSubmitBtn').textContent = 'Add';
+                document.getElementById('partCancelBtn').style.display = 'none';
+            }
+
+            // Preenche o formulário para edição
+            editParticipant(id) {
+                const part = this.participants.find(p => p.id === id);
+                if (!part) return;
+
+                document.getElementById('partId').value = part.id;
+                document.getElementById('partInitial').value = part.initial;
+                document.getElementById('partName').value = part.name;
+                
+                document.getElementById('partSubmitBtn').textContent = 'Salvar';
+                document.getElementById('partCancelBtn').style.display = 'inline-block';
+            }
+
+            renderParticipantsList() {
+                const list = document.getElementById('participantsList');
+                list.innerHTML = '';
+                
+                if (this.participants.length === 0) {
+                    list.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Nenhum participante cadastrado.</p>';
+                }
+                
+                this.participants.forEach(part => {
+                    list.innerHTML += `
+                        <div class="participant-item">
+                            <span><strong>${part.initial}</strong> - ${part.name}</span>
+                            <div class="song-actions">
+                                <button class="edit-btn" onclick="window.ui.editParticipant('${part.id}')" title="Editar">✎</button>
+                                <button class="delete-btn" onclick="window.ui.deleteParticipant('${part.id}')" title="Excluir">✖</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            async deleteParticipant(id) {
+                if (confirm('Remover este participante? O histórico dele nas músicas será mantido no banco de dados, mas o botão sumirá.')) {
+                    await this.dbService.deleteParticipant(id);
+                    this.resetParticipantForm(); // Garante que o form não fique "preso" num ID apagado
+                }
             }
 
             setupEventListeners() {
@@ -398,11 +587,19 @@
                     return;
                 }
 
+                // Função helper para converter o valor do banco nos 3 estados visuais
+                const getStatusInfo = (val) => {
+                    if (val === 2 || val === true) return { class: 'completed', text: 'Concluído' };
+                    if (val === 1) return { class: 'pending', text: 'Trabalhando' };
+                    return { class: 'unstarted', text: 'Não começou' };
+                };
+
                 songs.forEach((song, index) => {
                     const card = document.createElement('div');
                     card.className = 'song-card';
                     card.dataset.id = song.id;
                     
+                    // Monta as Badges (Notas, Cifra, Links Externos)
                     let badgesHtml = '<div class="song-badges">';
                     if (song.notes) badgesHtml += '<span class="badge" title="Possui anotações">📝 Notas</span>';
                     if (song.lyrics) badgesHtml += '<span class="badge" title="Possui cifra/letra">📄 Cifra</span>';
@@ -410,45 +607,35 @@
                     if (song.linkDrums) badgesHtml += `<a href="${song.linkDrums}" target="_blank" class="badge badge-link" onclick="event.stopPropagation()">🥁 Bateria</a>`;
                     badgesHtml += '</div>';
 
+                    // Monta o Título com ícone do YouTube
                     let titleHtml = '';
                     if (song.linkRehearsal) {
                         titleHtml += `<a href="${song.linkRehearsal}" target="_blank" class="yt-icon" onclick="event.stopPropagation()" title="Versão para ensaiar">${this.youtubeIcon}</a>`;
                     }
                     titleHtml += `<span>${index + 1}. ${song.title}</span>`;
 
-                    // Helper para converter o valor do banco nos 3 estados visuais
-                    const getStatusInfo = (val) => {
-                        if (val === 2 || val === true) return { class: 'completed', text: 'Concluído' };
-                        if (val === 1) return { class: 'pending', text: 'Trabalhando' };
-                        return { class: 'unstarted', text: 'Não começou' };
-                    };
+                    // --- GERAÇÃO DINÂMICA DOS BOTÕES DE PARTICIPANTES ---
+                    let indicatorsHtml = '<div class="status-indicators">';
+                    this.participants.forEach(part => {
+                        // A chave dinâmica no banco será status_ID, ex: status_XYZ123
+                        const dbKey = `status_${part.id}`;
+                        const info = getStatusInfo(song[dbKey]);
+                        
+                        indicatorsHtml += `
+                            <div class="status-icon ${info.class}" 
+                                title="${part.name}: ${info.text}" 
+                                onclick="event.stopPropagation(); window.ui.toggleStatus('${song.id}', '${dbKey}')">${part.initial}</div>
+                        `;
+                    });
+                    indicatorsHtml += '</div>';
 
-                    // Pega o status de cada integrante
-                    const lInfo = getStatusInfo(song.learnedL);
-                    const gInfo = getStatusInfo(song.learnedG);
-                    const kInfo = getStatusInfo(song.learnedK);
-                    const jInfo = getStatusInfo(song.learnedJ);
-
+                    // Monta o HTML final do card
                     card.innerHTML = `
                         <div class="song-header">
                             <div class="drag-handle" title="Arraste para reordenar">☰</div>
                             
-                            <!-- Grid de Status (L, G, K, J) -->
-                            <div class="status-indicators">
-                                <div class="status-icon ${lInfo.class}" 
-                                    title="L: ${lInfo.text}" 
-                                    onclick="event.stopPropagation(); window.ui.toggleStatus('${song.id}', 'learnedL')">L</div>
-                                <div class="status-icon ${gInfo.class}" 
-                                    title="G: ${gInfo.text}" 
-                                    onclick="event.stopPropagation(); window.ui.toggleStatus('${song.id}', 'learnedG')">G</div>
-                                <div class="status-icon ${kInfo.class}" 
-                                    title="K: ${kInfo.text}" 
-                                    onclick="event.stopPropagation(); window.ui.toggleStatus('${song.id}', 'learnedK')">K</div>
-                                <div class="status-icon ${jInfo.class}" 
-                                    title="J: ${jInfo.text}" 
-                                    onclick="event.stopPropagation(); window.ui.toggleStatus('${song.id}', 'learnedJ')">J</div>
-                            </div>
-
+                            ${indicatorsHtml}
+                            
                             <div class="song-info">
                                 <h2>${titleHtml}</h2>
                                 <p>${song.artist || 'Artista desconhecido'}</p>
@@ -473,7 +660,6 @@
                     
                     card.addEventListener('dragstart', (e) => {
                         card.classList.add('dragging');
-                        // Necessário para o drag funcionar bem no Firefox
                         if (e.dataTransfer) e.dataTransfer.setData('text/plain', song.id); 
                     });
                     
@@ -482,17 +668,18 @@
                         card.draggable = false;
                     });
 
-                    // Inteligência do Accordion (Header) para não atrapalhar seleção de texto
+                    // Inteligência do Accordion (Header) para expandir as cifras
                     const header = card.querySelector('.song-header');
                     header.addEventListener('click', (e) => {
                         // Se há texto selecionado, não faz nada (permite copiar)
                         if (window.getSelection().toString().length > 0) return;
                         
-                        // Não expande se o usuário clicou nos botões, ícones ou no arrastador
+                        // Não expande se o usuário clicou nos botões, ícones, drag, ou nas bolinhas de status
                         if (e.target.closest('.song-actions') || 
                             e.target.closest('.yt-icon') || 
                             e.target.closest('.drag-handle') ||
-                            e.target.closest('.badge-link')) {
+                            e.target.closest('.badge-link') ||
+                            e.target.closest('.status-icon')) {
                             return;
                         }
 
@@ -638,22 +825,48 @@
             if (user) {
                 authScreen.style.display = 'none';
                 appContent.style.display = 'block';
-                logoutBtn.style.display = 'block';
+                document.getElementById('userMenu').style.display = 'inline-block';
                 loadingState.style.display = 'block';
                 
                 emailInput.value = '';
                 passwordInput.value = '';
                 
+                // Ouve os participantes PRIMEIRO
+                dbService.listenToParticipants((parts) => {
+                    ui.participants = parts;
+                    // Atualiza a lista do modal se estiver aberto
+                    if (document.getElementById('participantsModal').open) ui.renderParticipantsList();
+                    // Re-renderiza o setlist com os novos botões (se já tiver músicas carregadas)
+                    if (currentSongs.length > 0) ui.renderSetlist(currentSongs);
+                });
+
+                // Ouve as músicas
                 dbService.listenToSongs((songs) => {
                     ui.renderSetlist(songs);
                 });
             } else {
                 authScreen.style.display = 'block';
                 appContent.style.display = 'none';
-                logoutBtn.style.display = 'none';
+                document.getElementById('userMenu').style.display = 'none';
                 document.getElementById('setlist-container').innerHTML = '';
             }
         });
+
+        // Toggle do Menu Dropdown
+        const optionsBtn = document.getElementById('optionsBtn');
+        const dropdownContent = document.getElementById('dropdownContent');
+        optionsBtn.addEventListener('click', () => {
+            dropdownContent.classList.toggle('show');
+        });
+
+        // Fecha o dropdown se clicar fora
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn') && !event.target.matches('#optionsBtn')) {
+                if (dropdownContent.classList.contains('show')) {
+                    dropdownContent.classList.remove('show');
+                }
+            }
+        }
     </script>
 
     <script>
