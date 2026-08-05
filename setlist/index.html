@@ -71,12 +71,34 @@
         .yt-icon { margin-right: 8px; display: flex; align-items: center; transition: transform 0.2s; }
         .yt-icon:hover { transform: scale(1.1); }
 
-        .song-badges { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+        /* Container para alinhar as badges à esquerda e os botões à direita */
+        .info-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 10px;
+            gap: 10px; 
+        }
+
+        /* Atualizamos as badges para remover a margem antiga */
+        .song-badges { 
+            margin-top: 0; 
+            display: flex; 
+            gap: 8px; 
+            flex-wrap: wrap; 
+            flex: 1; /* Permite que as badges ocupem o máximo de espaço à esquerda */
+        }
         .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; background: #eeeeee; padding: 3px 8px; border-radius: 12px; color: var(--text-muted); }
         .badge-link { cursor: pointer; color: var(--primary); background: #fdf5e6; text-decoration: none; border: 1px solid var(--primary); }
         .badge-link:hover { background: var(--primary); color: #fff; }
 
-        .song-actions { display: flex; align-items: center; margin-left: 10px; margin-top: 2px; }
+        /* Atualizamos as ações para ficarem sempre à direita */
+        .song-actions { 
+            display: flex; 
+            align-items: center; 
+            margin-left: auto; 
+            margin-top: 0; 
+        }
         .song-actions button { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 5px; margin-left: 5px; }
         .song-actions button.delete-btn:hover { color: var(--danger); }
         .song-actions button.edit-btn:hover { color: var(--primary); }
@@ -235,6 +257,55 @@
         .inline-form input.short { flex: 0 0 60px; text-align: center; font-weight: bold; }
         .participant-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); }
 
+        /* Botões de Ordenação de Participantes */
+        .participant-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); }
+        .participant-info { display: flex; align-items: center; flex: 1; }
+        .order-btns { display: flex; flex-direction: column; gap: 2px; margin-right: 12px; }
+        .order-btns button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.8rem; padding: 2px 5px; border-radius: 4px; }
+        .order-btns button:hover:not(:disabled) { background-color: #eee; color: var(--text-main); }
+        .order-btns button:disabled { opacity: 0.2; cursor: default; }
+        .participant-email { font-size: 0.8rem; color: var(--text-muted); display: block; margin-top: 2px; }
+
+        /* Toast Notification */
+        .toast {
+            visibility: hidden;
+            min-width: 280px;
+            background-color: #333333;
+            color: #ffffff;
+            text-align: center;
+            border-radius: var(--radius);
+            padding: 12px 20px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            top: -50px; /* Começa escondido fora da tela */
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s, top 0.3s, visibility 0.3s;
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+            top: 20px; /* Desce e fica visível */
+        }
+
+        /* Card Dourado de Lembrete */
+        .golden-card {
+            background: linear-gradient(135deg, #fffdf2 0%, #fff8d6 100%);
+            border: 1px solid #ffe8a1;
+            border-left: 5px solid var(--primary); /* Usa o seu dourado/mostarda padrão */
+            color: var(--text-main);
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: 0 4px 10px rgba(197, 160, 40, 0.1);
+        }
+
     </style>
 </head>
 <body>
@@ -312,15 +383,16 @@
     <dialog id="participantsModal">
         <h2 style="margin-bottom: 15px; color: var(--primary);">Participantes</h2>
         
-        <form id="participantForm" class="inline-form">
-            <!-- Campo oculto para o ID na hora da edição -->
+        <form id="participantForm" class="inline-form" style="flex-wrap: wrap; gap: 8px;">
             <input type="hidden" id="partId"> 
-            
             <input type="text" id="partInitial" class="short" placeholder="Sigla" maxlength="4" required>
-            <input type="text" id="partName" placeholder="Nome (ex: Leonardo)" required>
+            <input type="text" id="partName" placeholder="Nome" required style="flex: 1; min-width: 120px;">
+            <input type="email" id="partEmail" placeholder="E-mail vinculado (opcional)" style="flex: 100%; margin-bottom: 5px;">
             
-            <button type="submit" id="partSubmitBtn" class="btn btn-save" style="width: auto;">Add</button>
-            <button type="button" id="partCancelBtn" class="btn btn-cancel" onclick="ui.resetParticipantForm()" style="display: none; padding: 10px; width: auto;" title="Cancelar edição">✖</button>
+            <div style="width: 100%; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" id="partCancelBtn" class="btn btn-cancel" onclick="window.ui.resetParticipantForm()" style="display: none; padding: 10px; width: auto;" title="Cancelar edição">✖</button>
+                <button type="submit" id="partSubmitBtn" class="btn btn-save" style="width: auto;">Add</button>
+            </div>
         </form>
 
         <div id="participantsList" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto;">
@@ -331,6 +403,9 @@
             <button type="button" class="btn btn-cancel" onclick="ui.closeParticipantsModal()">Fechar</button>
         </div>
     </dialog>
+
+    <!-- Componente Toast -->
+    <div id="toast" class="toast"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -372,8 +447,15 @@
                             parts.push({ id, ...partData });
                         }
                     }
+                    // Ordena pelo campo 'order' (se não existir, usa 0)
+                    parts.sort((a, b) => (a.order || 0) - (b.order || 0));
                     callback(parts);
                 });
+            }
+
+            async updateParticipantsOrder(updates) {
+                const partsRef = ref(this.db, this.participantsPath);
+                await update(partsRef, updates);
             }
 
             async addParticipant(partData) {
@@ -443,19 +525,17 @@
                 // Listener do formulário de participantes
                 document.getElementById('participantForm').addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    
                     const id = document.getElementById('partId').value;
-                    const initial = document.getElementById('partInitial').value.toUpperCase();
+                    const initial = document.getElementById('partInitial').value;
                     const name = document.getElementById('partName').value;
+                    const email = document.getElementById('partEmail').value.trim();
                     
                     if (id) {
-                        // Se tem ID, é uma edição
-                        await this.dbService.updateParticipant(id, { initial, name });
+                        await this.dbService.updateParticipant(id, { initial, name, email });
                     } else {
-                        // Se não tem ID, é um novo participante
-                        await this.dbService.addParticipant({ initial, name });
+                        const order = this.participants.length; // Novo participante vai para o final
+                        await this.dbService.addParticipant({ initial, name, email, order });
                     }
-                    
                     this.resetParticipantForm();
                 });
             }
@@ -476,11 +556,11 @@
             resetParticipantForm() {
                 document.getElementById('participantForm').reset();
                 document.getElementById('partId').value = '';
+                document.getElementById('partEmail').value = ''; // Reseta o e-mail
                 document.getElementById('partSubmitBtn').textContent = 'Add';
                 document.getElementById('partCancelBtn').style.display = 'none';
             }
 
-            // Preenche o formulário para edição
             editParticipant(id) {
                 const part = this.participants.find(p => p.id === id);
                 if (!part) return;
@@ -488,6 +568,7 @@
                 document.getElementById('partId').value = part.id;
                 document.getElementById('partInitial').value = part.initial;
                 document.getElementById('partName').value = part.name;
+                document.getElementById('partEmail').value = part.email || '';
                 
                 document.getElementById('partSubmitBtn').textContent = 'Salvar';
                 document.getElementById('partCancelBtn').style.display = 'inline-block';
@@ -499,12 +580,25 @@
                 
                 if (this.participants.length === 0) {
                     list.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Nenhum participante cadastrado.</p>';
+                    return;
                 }
                 
-                this.participants.forEach(part => {
+                this.participants.forEach((part, index) => {
+                    const isFirst = index === 0;
+                    const isLast = index === this.participants.length - 1;
+
                     list.innerHTML += `
                         <div class="participant-item">
-                            <span><strong>${part.initial}</strong> - ${part.name}</span>
+                            <div class="participant-info">
+                                <div class="order-btns">
+                                    <button onclick="window.ui.moveParticipant('${part.id}', -1)" ${isFirst ? 'disabled' : ''} title="Subir">▲</button>
+                                    <button onclick="window.ui.moveParticipant('${part.id}', 1)" ${isLast ? 'disabled' : ''} title="Descer">▼</button>
+                                </div>
+                                <div>
+                                    <span><strong>${part.initial}</strong> - ${part.name}</span>
+                                    ${part.email ? `<span class="participant-email">Vinculado a: ${part.email}</span>` : ''}
+                                </div>
+                            </div>
                             <div class="song-actions">
                                 <button class="edit-btn" onclick="window.ui.editParticipant('${part.id}')" title="Editar">✎</button>
                                 <button class="delete-btn" onclick="window.ui.deleteParticipant('${part.id}')" title="Excluir">✖</button>
@@ -512,6 +606,26 @@
                         </div>
                     `;
                 });
+            }
+
+            // Nova função para reordenar participantes
+            async moveParticipant(id, direction) {
+                const index = this.participants.findIndex(p => p.id === id);
+                if (index < 0) return;
+                
+                const targetIndex = index + direction;
+                if (targetIndex < 0 || targetIndex >= this.participants.length) return;
+                
+                const currentPart = this.participants[index];
+                const targetPart = this.participants[targetIndex];
+                
+                // Inverte a ordem dos dois itens
+                const updates = {
+                    [`${currentPart.id}/order`]: targetIndex,
+                    [`${targetPart.id}/order`]: index
+                };
+                
+                await this.dbService.updateParticipantsOrder(updates);
             }
 
             async deleteParticipant(id) {
@@ -587,6 +701,13 @@
                     return;
                 }
 
+                // --- NOVO: CARD DOURADO DE LEMBRETE ---
+                const reminderCard = document.createElement('div');
+                reminderCard.className = 'golden-card';
+                reminderCard.innerHTML = '💡 <strong>Lembrete:</strong> Para simplificar, vamos treinar apenas as estrofes e o refrão das músicas abaixo. Clique na sua sigla para definir se já começou a treinar ela (cor amarela) ou se já concluiu e está conseguindo tocar/cantar (cor verde).';
+                this.container.appendChild(reminderCard);
+                // --------------------------------------
+
                 // Função helper para converter o valor do banco nos 3 estados visuais
                 const getStatusInfo = (val) => {
                     if (val === 2 || val === true) return { class: 'completed', text: 'Concluído' };
@@ -639,11 +760,16 @@
                             <div class="song-info">
                                 <h2>${titleHtml}</h2>
                                 <p>${song.artist || 'Artista desconhecido'}</p>
-                                ${badgesHtml}
-                            </div>
-                            <div class="song-actions">
-                                <button class="edit-btn" onclick="event.stopPropagation(); window.ui.editSong('${song.id}')" title="Editar">✎</button>
-                                <button class="delete-btn" onclick="event.stopPropagation(); window.ui.deleteSong('${song.id}')" title="Excluir">✖</button>
+                                
+                                <!-- Nova organização: Badges e Botões na mesma linha -->
+                                <div class="info-bottom">
+                                    ${badgesHtml}
+                                    <div class="song-actions">
+                                        <button class="edit-btn" onclick="event.stopPropagation(); window.ui.editSong('${song.id}')" title="Editar">✎</button>
+                                        <button class="delete-btn" onclick="event.stopPropagation(); window.ui.deleteSong('${song.id}')" title="Excluir">✖</button>
+                                    </div>
+                                </div>
+                                
                             </div>
                         </div>
                         <div class="song-details">
@@ -691,20 +817,34 @@
             }
 
             async toggleStatus(songId, field) {
-                // Encontra a música atual
+                if (!currentUser) return; // Segurança básica
+
+                // 1. Extrai o ID do participante baseado no campo (ex: "status_XYZ123")
+                const partId = field.replace('status_', '');
+                const part = this.participants.find(p => p.id === partId);
+
+                // 2. Verifica a autorização
+                const adminEmail = "gabriel.angst@hotmail.com";
+                if (part && part.email) {
+                    // Se o usuário logado não for o dono do botão E não for o Admin, bloqueia.
+                    //if (currentUser.email !== part.email && currentUser.email !== adminEmail) {
+                    if (currentUser.email !== part.email) {
+                        showToast(`Apenas ${part.name} pode alterar este status.`);
+                        return; // Interrompe a execução
+                    }
+                }
+
+                // 3. Executa a mudança de status caso autorizado
                 const song = currentSongs.find(s => s.id === songId);
                 if (!song) return;
 
                 let currentVal = song[field];
                 
-                // Tratamento de segurança: se o dado antigo for true/false, converte para número
                 if (currentVal === true) currentVal = 2;
-                else if (!currentVal) currentVal = 0; // Se for undefined ou false
+                else if (!currentVal) currentVal = 0; 
                 
-                // Cria o ciclo infinito: 0 -> 1 -> 2 -> 0 -> 1 ...
                 const nextVal = (currentVal + 1) % 3;
 
-                // Atualiza o banco de dados com o novo número
                 await this.dbService.updateSong(songId, { 
                     [field]: nextVal 
                 });
@@ -867,6 +1007,18 @@
                 }
             }
         }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            // Remove a classe após 3 segundos
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
     </script>
 
     <script>
