@@ -1,4 +1,4 @@
-const CACHE_NAME = 'setlist-cache-v121';
+const CACHE_NAME = 'setlist-cache-v130';
 const urlsToCache = [
   './',
   './index.html',
