@@ -462,7 +462,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças 1.9.0
+                <span>📊</span> Finanças v. 1.9.1
             </div>
             <nav>
                 <ul id="main-menu">
@@ -575,10 +575,10 @@
                                             <th>Link de Pagamento</th>
                                             <th>Valor Previsto</th>
                                             <th>Vencimento</th>
-                                            <th>Data de Pagamento</th>
                                             <th>Valor Pago (R$)</th>
-                                            <th>Diferença / Saldo</th>
+                                            <th>Diferença / Saldo</th>                                            
                                             <th>Observações</th>
+                                            <th>Data de Pagamento</th>
                                         </tr>
                                     </thead>
                                     <tbody id="table-body-mes-pagamentos-pendentes"></tbody>
@@ -595,11 +595,11 @@
                                             <th>Débito / Obrigação</th>
                                             <th>Link de Pagamento</th>
                                             <th>Valor Previsto</th>
-                                            <th>Vencimento</th>
-                                            <th>Data de Pagamento</th>
+                                            <th>Vencimento</th>                                            
                                             <th>Valor Pago (R$)</th>
                                             <th>Diferença / Saldo</th>
                                             <th>Observações</th>
+                                            <th>Data de Pagamento</th>
                                         </tr>
                                     </thead>
                                     <tbody id="table-body-mes-pagamentos-pagos"></tbody>
@@ -2183,10 +2183,10 @@
                     <td style="text-align: center;">${botaoLink}</td>
                     <td>R$ ${formatarReal(p.valor)}</td>
                     <td>Dia ${p.vencimento}</td>
-                    <td><input type="date" class="table-input" value="${p.dataPgto || ''}" onchange="atualizarDataPagamento(${index}, this.value)"></td>
                     <td><input type="number" class="table-input" value="${p.valorPago}" onchange="atualizarValorPagamento(${index}, this.value)"></td>
                     <td class="${classeSaldo}">R$ ${formatarReal(diferenca)}</td>
                     <td><input type="text" class="table-input" value="${p.obs || ''}" onchange="atualizarObsPagamento(${index}, this.value)"></td>
+                    <td><input type="date" class="table-input" value="${p.dataPgto || ''}" onchange="atualizarDataPagamento(${index}, this.value)"></td>
                 `;
                 
                 // Distribui para a tabela correta validando se existe 'dataPgto'
