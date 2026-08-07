@@ -57,7 +57,7 @@
         .btn-logout:hover { background: #c82333; }
         .btn-login { background: #007bff; padding: 10px 20px; width: auto; }
 
-        /* Modais (Login e Editar/Adicionar) */
+        /* Modais */
         .modal-overlay {
             display: none; 
             position: fixed;
@@ -90,7 +90,6 @@
         #btn-salvar-modal { background: #28a745; margin-top: 10px; font-weight: bold; }
         #btn-salvar-modal:hover { background: #218838; }
 
-        /* Campo de anotação do Modal com fundo bege */
         #modal-anotacao {
             background-color: #fff9e6;
             resize: vertical;
@@ -141,7 +140,6 @@
         }
         .btn-link:hover { background: #0056b3; }
         
-        /* Anotações no painel principal (sempre readonly e bege) */
         .notes-area {
             width: 100%; border: 1px solid #ddd; border-radius: 5px;
             padding: 8px; font-family: inherit; font-size: 0.9em;
@@ -153,12 +151,18 @@
         .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .btn-edit { background: #17a2b8; flex: 1; padding: 8px; font-size: 0.9em; }
         .btn-edit:hover { background: #138496; }
+        .btn-archive { background: #fd7e14; flex: 1; padding: 8px; font-size: 0.9em; }
+        .btn-archive:hover { background: #e86e10; }
         .btn-delete { background: #dc3545; flex: 1; padding: 8px; font-size: 0.9em; }
         .btn-delete:hover { background: #c82333; }
-        .btn-up, .btn-down { background: #d4ebff; flex: 0.3; padding: 8px; font-size: 1.1em; }
+        .btn-up, .btn-down { background: #6c757d; flex: 0.3; padding: 8px; font-size: 1.1em; }
         .btn-up:hover, .btn-down:hover { background: #5a6268; }
         
         .divisor { max-width: 1200px; margin: 40px auto; border: 0; border-top: 2px solid #ddd; }
+        
+        /* Opacidade para cards arquivados */
+        #lista-arquivados .card { opacity: 0.75; }
+        #lista-arquivados .card:hover { opacity: 1; }
     </style>
 </head>
 <body>
@@ -174,13 +178,18 @@
             </div>
         </div>
 
-        <h2>⭐ Imóveis Favoritos</h2>
+        <h2>⭐ Imóveis Preferenciais</h2>
         <div class="container" id="lista-preferenciais"></div>
 
         <hr class="divisor">
 
         <h2>Outros Imóveis</h2>
         <div class="container" id="lista-outros"></div>
+
+        <hr class="divisor">
+
+        <h2>📁 Imóveis Arquivados</h2>
+        <div class="container" id="lista-arquivados"></div>
     </div>
 
     <!-- Modal de Login -->
@@ -206,7 +215,8 @@
             <input type="number" id="modal-preco" placeholder="Preço (Ex: 2500000)">
             <select id="modal-status">
                 <option value="outros" selected>Outros</option>
-                <option value="preferencial">⭐ Favorito</option>
+                <option value="preferencial">⭐ Preferencial</option>
+                <option value="arquivados">📁 Arquivado</option>
             </select>
             <input type="url" id="modal-imagem" placeholder="URL da Imagem">
             <input type="url" id="modal-link" placeholder="Link do Anúncio">
@@ -238,10 +248,11 @@
 
         // Estado Global
         let isLoggedIn = false;
-        let imoveisData = { preferencial: [], outros: [] };
+        let imoveisData = { preferencial: [], outros: [], arquivados: [] };
 
         const listaPreferenciais = document.getElementById('lista-preferenciais');
         const listaOutros = document.getElementById('lista-outros');
+        const listaArquivados = document.getElementById('lista-arquivados');
         
         const modalImovel = document.getElementById('modal-imovel');
         const modalLogin = document.getElementById('modal-login');
@@ -277,6 +288,7 @@
         onValue(ref(db, 'imoveis'), (snapshot) => {
             let prefs = [];
             let outros = [];
+            let arquivados = [];
 
             snapshot.forEach((childSnapshot) => {
                 const item = childSnapshot.val();
@@ -284,13 +296,15 @@
                 item.ordem = item.ordem !== undefined ? item.ordem : Date.now();
                 
                 if (item.status === 'preferencial') prefs.push(item);
+                else if (item.status === 'arquivados') arquivados.push(item);
                 else outros.push(item);
             });
 
             prefs.sort((a, b) => a.ordem - b.ordem);
             outros.sort((a, b) => a.ordem - b.ordem);
+            arquivados.sort((a, b) => a.ordem - b.ordem);
 
-            imoveisData = { preferencial: prefs, outros: outros };
+            imoveisData = { preferencial: prefs, outros: outros, arquivados: arquivados };
             renderizarTela();
         });
 
@@ -299,6 +313,7 @@
         function renderizarTela() {
             listaPreferenciais.innerHTML = '';
             listaOutros.innerHTML = '';
+            listaArquivados.innerHTML = '';
 
             const renderCard = (imovel, container) => {
                 const card = document.createElement('div');
@@ -308,11 +323,14 @@
                     ? `<span class="star-btn" data-id="${imovel.id}" data-atual="${imovel.status}" title="Mover categoria">${imovel.status === 'preferencial' ? '⭐' : '☆'}</span>`
                     : `<span class="star-guest">${imovel.status === 'preferencial' ? '⭐' : ''}</span>`;
                 
+                const textoArquivar = imovel.status === 'arquivados' ? 'Restaurar' : 'Arquivar';
+                
                 const botoesAcao = isLoggedIn ? `
                     <div class="card-actions">
                         <button class="btn-up" data-id="${imovel.id}" data-status="${imovel.status}" title="Mover para cima">⬆️</button>
                         <button class="btn-down" data-id="${imovel.id}" data-status="${imovel.status}" title="Mover para baixo">⬇️</button>
                         <button class="btn-edit" data-id="${imovel.id}">Editar</button>
+                        <button class="btn-archive" data-id="${imovel.id}" data-atual="${imovel.status}">${textoArquivar}</button>
                         <button class="btn-delete" data-id="${imovel.id}">Excluir</button>
                     </div>
                 ` : '';
@@ -335,6 +353,7 @@
 
             imoveisData.preferencial.forEach(imovel => renderCard(imovel, listaPreferenciais));
             imoveisData.outros.forEach(imovel => renderCard(imovel, listaOutros));
+            imoveisData.arquivados.forEach(imovel => renderCard(imovel, listaArquivados));
         }
 
         // ==== CONTROLES DO MODAL DE IMÓVEIS ====
@@ -407,20 +426,35 @@
         document.addEventListener('click', (e) => {
             if (!isLoggedIn) return;
 
+            // Excluir
             if (e.target.classList.contains('btn-delete')) {
                 if (confirm('Tem certeza que deseja excluir este imóvel?')) {
                     remove(ref(db, `imoveis/${e.target.getAttribute('data-id')}`));
                 }
             }
+            
+            // Editar Modal
             if (e.target.classList.contains('btn-edit')) {
                 abrirModal('editar', e.target.getAttribute('data-id'));
             }
+            
+            // Arquivar/Restaurar
+            if (e.target.classList.contains('btn-archive')) {
+                const id = e.target.getAttribute('data-id');
+                const statusAtual = e.target.getAttribute('data-atual');
+                // Se já estiver arquivado, volta para 'outros', senão, vai para 'arquivados'
+                const novoStatus = statusAtual === 'arquivados' ? 'outros' : 'arquivados';
+                update(ref(db, `imoveis/${id}`), { status: novoStatus, ordem: Date.now() });
+            }
+
+            // Estrela (Favoritar)
             if (e.target.classList.contains('star-btn')) {
                 const id = e.target.getAttribute('data-id');
                 const novoStatus = e.target.getAttribute('data-atual') === 'preferencial' ? 'outros' : 'preferencial';
                 update(ref(db, `imoveis/${id}`), { status: novoStatus, ordem: Date.now() });
             }
 
+            // Reordenar
             const isUp = e.target.classList.contains('btn-up');
             const isDown = e.target.classList.contains('btn-down');
             if (isUp || isDown) {
