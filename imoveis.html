@@ -15,17 +15,7 @@
             text-align: center;
             color: #333;
         }
-        /* Telas */
-        #app-screen { display: none; }
-        #login-screen {
-            max-width: 400px;
-            margin: 100px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            text-align: center;
-        }
+        
         input, select, textarea {
             width: 100%;
             padding: 10px;
@@ -63,10 +53,11 @@
         }
         .btn-incluir { background: #28a745; padding: 10px 20px; width: auto; font-weight: bold; }
         .btn-incluir:hover { background: #218838; }
-        .btn-logout { background: #6c757d; padding: 10px 20px; width: auto; }
-        .btn-logout:hover { background: #5a6268; }
+        .btn-logout { background: #dc3545; padding: 10px 20px; width: auto; }
+        .btn-logout:hover { background: #c82333; }
+        .btn-login { background: #007bff; padding: 10px 20px; width: auto; }
 
-        /* Modal */
+        /* Modais (Login e Editar/Adicionar) */
         .modal-overlay {
             display: none; 
             position: fixed;
@@ -81,7 +72,7 @@
             padding: 25px;
             border-radius: 10px;
             width: 90%;
-            max-width: 500px;
+            max-width: 400px;
             position: relative;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             max-height: 90vh;
@@ -98,6 +89,12 @@
         .close-btn:hover { color: #333; }
         #btn-salvar-modal { background: #28a745; margin-top: 10px; font-weight: bold; }
         #btn-salvar-modal:hover { background: #218838; }
+
+        /* Campo de anotação do Modal com fundo bege */
+        #modal-anotacao {
+            background-color: #fff9e6;
+            resize: vertical;
+        }
 
         /* Cards */
         .container {
@@ -124,7 +121,6 @@
         }
         .card-content { padding: 10px 0; flex-grow: 1; }
         
-        /* Cabeçalho do Card (Título + Estrela) */
         .card-header {
             display: flex;
             justify-content: space-between;
@@ -132,13 +128,10 @@
             margin: 10px 0 5px;
         }
         .card-header h3 { margin: 0; font-size: 1.2em; }
-        .star-btn {
-            cursor: pointer;
-            font-size: 1.5em;
-            user-select: none;
-            transition: transform 0.2s;
-        }
+        
+        .star-btn { cursor: pointer; font-size: 1.5em; user-select: none; transition: transform 0.2s; }
         .star-btn:hover { transform: scale(1.2); }
+        .star-guest { font-size: 1.5em; user-select: none; color: #555; } 
 
         .price { color: #27ae60; font-weight: bold; font-size: 1.1em; margin-bottom: 10px; }
         .btn-link {
@@ -148,20 +141,21 @@
         }
         .btn-link:hover { background: #0056b3; }
         
+        /* Anotações no painel principal (sempre readonly e bege) */
         .notes-area {
             width: 100%; border: 1px solid #ddd; border-radius: 5px;
             padding: 8px; font-family: inherit; font-size: 0.9em;
             resize: none; box-sizing: border-box;
             background-color: #fff9e6; margin-bottom: 10px;
+            cursor: default;
         }
+        
         .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .btn-edit { background: #17a2b8; flex: 1; padding: 8px; font-size: 0.9em; }
         .btn-edit:hover { background: #138496; }
         .btn-delete { background: #dc3545; flex: 1; padding: 8px; font-size: 0.9em; }
         .btn-delete:hover { background: #c82333; }
-        
-        /* Botões de Ordenação */
-        .btn-up, .btn-down { background: #6c757d; flex: 0.3; padding: 8px; font-size: 1.1em; }
+        .btn-up, .btn-down { background: #d4ebff; flex: 0.3; padding: 8px; font-size: 1.1em; }
         .btn-up:hover, .btn-down:hover { background: #5a6268; }
         
         .divisor { max-width: 1200px; margin: 40px auto; border: 0; border-top: 2px solid #ddd; }
@@ -169,24 +163,18 @@
 </head>
 <body>
 
-    <div id="login-screen">
-        <h2>Entrar no Sistema</h2>
-        <input type="email" id="email" placeholder="Seu E-mail">
-        <input type="password" id="senha" placeholder="Sua Senha">
-        <button id="btn-login">Entrar</button>
-        <p id="login-erro" style="color: red; display: none; margin-top: 10px;">Erro ao fazer login.</p>
-    </div>
-
+    <!-- Tela Principal do App -->
     <div id="app-screen">
         <div class="top-bar">
             <h1>Imóveis Selecionados</h1>
             <div class="top-actions">
-                <button id="btn-abrir-incluir" class="btn-incluir">+ Incluir Imóvel</button>
-                <button id="btn-logout" class="btn-logout">Sair</button>
+                <button id="btn-abrir-login" class="btn-login">Login Restrito</button>
+                <button id="btn-abrir-incluir" class="btn-incluir" style="display: none;">+ Incluir Imóvel</button>
+                <button id="btn-logout" class="btn-logout" style="display: none;">Sair</button>
             </div>
         </div>
 
-        <h2>⭐ Imóveis Preferenciais</h2>
+        <h2>⭐ Imóveis Favoritos</h2>
         <div class="container" id="lista-preferenciais"></div>
 
         <hr class="divisor">
@@ -195,19 +183,30 @@
         <div class="container" id="lista-outros"></div>
     </div>
 
+    <!-- Modal de Login -->
+    <div id="modal-login" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" id="btn-fechar-login">&times;</span>
+            <h2>Entrar no Sistema</h2>
+            <input type="email" id="email" placeholder="Seu E-mail">
+            <input type="password" id="senha" placeholder="Sua Senha">
+            <button id="btn-login">Entrar</button>
+            <p id="login-erro" style="color: red; display: none; margin-top: 10px;">Erro ao fazer login.</p>
+        </div>
+    </div>
+
     <!-- Modal Único para Adicionar/Editar -->
     <div id="modal-imovel" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 500px;">
             <span class="close-btn" id="btn-fechar-modal">&times;</span>
             <h2 id="modal-titulo-texto">Adicionar Imóvel</h2>
             
             <input type="hidden" id="modal-id"> 
-            
             <input type="text" id="modal-titulo" placeholder="Nome (Ex: Jardins do Lago Q9)">
             <input type="number" id="modal-preco" placeholder="Preço (Ex: 2500000)">
             <select id="modal-status">
                 <option value="outros" selected>Outros</option>
-                <option value="preferencial">⭐ Preferencial</option>
+                <option value="preferencial">⭐ Favorito</option>
             </select>
             <input type="url" id="modal-imagem" placeholder="URL da Imagem">
             <input type="url" id="modal-link" placeholder="Link do Anúncio">
@@ -237,13 +236,108 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        const loginScreen = document.getElementById('login-screen');
-        const appScreen = document.getElementById('app-screen');
+        // Estado Global
+        let isLoggedIn = false;
+        let imoveisData = { preferencial: [], outros: [] };
+
         const listaPreferenciais = document.getElementById('lista-preferenciais');
         const listaOutros = document.getElementById('lista-outros');
         
-        const modal = document.getElementById('modal-imovel');
-        const tituloTexto = document.getElementById('modal-titulo-texto');
+        const modalImovel = document.getElementById('modal-imovel');
+        const modalLogin = document.getElementById('modal-login');
+        
+        // ==== AUTENTICAÇÃO ====
+        onAuthStateChanged(auth, (user) => {
+            isLoggedIn = !!user;
+            
+            document.getElementById('btn-abrir-login').style.display = isLoggedIn ? 'none' : 'inline-block';
+            document.getElementById('btn-abrir-incluir').style.display = isLoggedIn ? 'inline-block' : 'none';
+            document.getElementById('btn-logout').style.display = isLoggedIn ? 'inline-block' : 'none';
+            
+            if (isLoggedIn) {
+                modalLogin.style.display = 'none'; 
+                document.getElementById('email').value = '';
+                document.getElementById('senha').value = '';
+                document.getElementById('login-erro').style.display = 'none';
+            }
+            
+            renderizarTela();
+        });
+
+        document.getElementById('btn-abrir-login').addEventListener('click', () => modalLogin.style.display = 'flex');
+        document.getElementById('btn-fechar-login').addEventListener('click', () => modalLogin.style.display = 'none');
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+        
+        document.getElementById('btn-login').addEventListener('click', () => {
+            signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('senha').value)
+                .catch(() => document.getElementById('login-erro').style.display = 'block');
+        });
+
+        // ==== REALTIME DATABASE (Leitura) ====
+        onValue(ref(db, 'imoveis'), (snapshot) => {
+            let prefs = [];
+            let outros = [];
+
+            snapshot.forEach((childSnapshot) => {
+                const item = childSnapshot.val();
+                item.id = childSnapshot.key;
+                item.ordem = item.ordem !== undefined ? item.ordem : Date.now();
+                
+                if (item.status === 'preferencial') prefs.push(item);
+                else outros.push(item);
+            });
+
+            prefs.sort((a, b) => a.ordem - b.ordem);
+            outros.sort((a, b) => a.ordem - b.ordem);
+
+            imoveisData = { preferencial: prefs, outros: outros };
+            renderizarTela();
+        });
+
+        const formatarPreco = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        function renderizarTela() {
+            listaPreferenciais.innerHTML = '';
+            listaOutros.innerHTML = '';
+
+            const renderCard = (imovel, container) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                const estrelaHTML = isLoggedIn 
+                    ? `<span class="star-btn" data-id="${imovel.id}" data-atual="${imovel.status}" title="Mover categoria">${imovel.status === 'preferencial' ? '⭐' : '☆'}</span>`
+                    : `<span class="star-guest">${imovel.status === 'preferencial' ? '⭐' : ''}</span>`;
+                
+                const botoesAcao = isLoggedIn ? `
+                    <div class="card-actions">
+                        <button class="btn-up" data-id="${imovel.id}" data-status="${imovel.status}" title="Mover para cima">⬆️</button>
+                        <button class="btn-down" data-id="${imovel.id}" data-status="${imovel.status}" title="Mover para baixo">⬇️</button>
+                        <button class="btn-edit" data-id="${imovel.id}">Editar</button>
+                        <button class="btn-delete" data-id="${imovel.id}">Excluir</button>
+                    </div>
+                ` : '';
+
+                card.innerHTML = `
+                    <img src="${imovel.imagem}" alt="Foto da Casa" onerror="this.src='https://via.placeholder.com/400x200?text=Sem+Imagem'">
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h3>${imovel.titulo}</h3>
+                            ${estrelaHTML}
+                        </div>
+                        <p class="price">${formatarPreco(imovel.preco)}</p>
+                        <a href="${imovel.link}" class="btn-link" target="_blank">Ver Anúncio</a>
+                    </div>
+                    <textarea class="notes-area" rows="3" readonly placeholder="${imovel.anotacoes ? '' : 'Sem anotações no momento.'}">${imovel.anotacoes || ''}</textarea>
+                    ${botoesAcao}
+                `;
+                container.appendChild(card);
+            };
+
+            imoveisData.preferencial.forEach(imovel => renderCard(imovel, listaPreferenciais));
+            imoveisData.outros.forEach(imovel => renderCard(imovel, listaOutros));
+        }
+
+        // ==== CONTROLES DO MODAL DE IMÓVEIS ====
         const inputId = document.getElementById('modal-id');
         const inputTitulo = document.getElementById('modal-titulo');
         const inputPreco = document.getElementById('modal-preco');
@@ -252,28 +346,12 @@
         const inputLink = document.getElementById('modal-link');
         const inputAnotacao = document.getElementById('modal-anotacao');
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                loginScreen.style.display = 'none';
-                appScreen.style.display = 'block';
-                carregarImoveis();
-            } else {
-                loginScreen.style.display = 'block';
-                appScreen.style.display = 'none';
-            }
-        });
-
-        document.getElementById('btn-login').addEventListener('click', () => {
-            signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('senha').value)
-                .catch(() => document.getElementById('login-erro').style.display = 'block');
-        });
-
-        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
-
         function abrirModal(modo, id = null) {
-            modal.style.display = 'flex'; 
+            if (!isLoggedIn) return; 
+            
+            modalImovel.style.display = 'flex'; 
             if (modo === 'incluir') {
-                tituloTexto.innerText = 'Adicionar Novo Imóvel';
+                document.getElementById('modal-titulo-texto').innerText = 'Adicionar Novo Imóvel';
                 inputId.value = ''; 
                 inputTitulo.value = '';
                 inputPreco.value = '';
@@ -282,7 +360,7 @@
                 inputLink.value = '';
                 inputAnotacao.value = '';
             } else if (modo === 'editar' && id) {
-                tituloTexto.innerText = 'Editar Imóvel';
+                document.getElementById('modal-titulo-texto').innerText = 'Editar Imóvel';
                 inputId.value = id; 
                 get(ref(db, `imoveis/${id}`)).then((snapshot) => {
                     if (snapshot.exists()) {
@@ -298,70 +376,17 @@
             }
         }
 
-        function fecharModal() { modal.style.display = 'none'; }
         document.getElementById('btn-abrir-incluir').addEventListener('click', () => abrirModal('incluir'));
-        document.getElementById('btn-fechar-modal').addEventListener('click', fecharModal);
-        window.addEventListener('click', (e) => { if (e.target === modal) fecharModal(); });
-
-        const formatarPreco = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-        function carregarImoveis() {
-            onValue(ref(db, 'imoveis'), (snapshot) => {
-                listaPreferenciais.innerHTML = '';
-                listaOutros.innerHTML = '';
-
-                let prefs = [];
-                let outros = [];
-
-                snapshot.forEach((childSnapshot) => {
-                    const item = childSnapshot.val();
-                    item.id = childSnapshot.key;
-                    // Se não tiver ordem salva (imóveis antigos), usa o Timestamp para jogar pro final
-                    item.ordem = item.ordem !== undefined ? item.ordem : Date.now();
-                    
-                    if (item.status === 'preferencial') prefs.push(item);
-                    else outros.push(item);
-                });
-
-                // Ordena os arrays baseado na numeração
-                prefs.sort((a, b) => a.ordem - b.ordem);
-                outros.sort((a, b) => a.ordem - b.ordem);
-
-                // Guarda globalmente para a função de reordenar usar
-                window.imoveisData = { preferencial: prefs, outros: outros };
-
-                const renderCard = (imovel, container) => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.innerHTML = `
-                        <img src="${imovel.imagem}" alt="Foto da Casa" onerror="this.src='https://via.placeholder.com/400x200?text=Sem+Imagem'">
-                        <div class="card-content">
-                            <div class="card-header">
-                                <h3>${imovel.titulo}</h3>
-                                <span class="star-btn" data-id="${imovel.id}" data-atual="${imovel.status}" title="Mover categoria">
-                                    ${imovel.status === 'preferencial' ? '⭐' : '☆'}
-                                </span>
-                            </div>
-                            <p class="price">${formatarPreco(imovel.preco)}</p>
-                            <a href="${imovel.link}" class="btn-link" target="_blank">Ver Anúncio</a>
-                        </div>
-                        <textarea class="notes-area" rows="3" data-id="${imovel.id}" placeholder="Escreva suas anotações...">${imovel.anotacoes || ''}</textarea>
-                        <div class="card-actions">
-                            <button class="btn-up" data-id="${imovel.id}" data-status="${imovel.status}" title="Mover para cima">⬆️</button>
-                            <button class="btn-down" data-id="${imovel.id}" data-status="${imovel.status}" title="Mover para baixo">⬇️</button>
-                            <button class="btn-edit" data-id="${imovel.id}">Editar</button>
-                            <button class="btn-delete" data-id="${imovel.id}">Excluir</button>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                };
-
-                prefs.forEach(imovel => renderCard(imovel, listaPreferenciais));
-                outros.forEach(imovel => renderCard(imovel, listaOutros));
-            });
-        }
+        document.getElementById('btn-fechar-modal').addEventListener('click', () => modalImovel.style.display = 'none');
+        
+        window.addEventListener('click', (e) => { 
+            if (e.target === modalImovel) modalImovel.style.display = 'none'; 
+            if (e.target === modalLogin) modalLogin.style.display = 'none';
+        });
 
         document.getElementById('btn-salvar-modal').addEventListener('click', () => {
+            if (!isLoggedIn) return;
+            
             const id = inputId.value; 
             const dadosImovel = {
                 titulo: inputTitulo.value,
@@ -370,52 +395,41 @@
                 imagem: inputImagem.value,
                 link: inputLink.value,
                 anotacoes: inputAnotacao.value,
-                ordem: Date.now() // Garante que novos imóveis vão para o final da lista
+                ordem: Date.now() 
             };
 
-            if (!dadosImovel.titulo || !dadosImovel.preco) {
-                alert("Preencha ao menos o Título e o Preço.");
-                return;
-            }
+            if (!dadosImovel.titulo || !dadosImovel.preco) return alert("Preencha Título e Preço.");
 
-            if (id) update(ref(db, `imoveis/${id}`), dadosImovel).then(fecharModal);
-            else push(ref(db, 'imoveis'), dadosImovel).then(fecharModal);
+            if (id) update(ref(db, `imoveis/${id}`), dadosImovel).then(() => modalImovel.style.display = 'none');
+            else push(ref(db, 'imoveis'), dadosImovel).then(() => modalImovel.style.display = 'none');
         });
 
-        // Delegação Geral de Cliques (Deletar, Estrela de Categoria e Reordenar)
         document.addEventListener('click', (e) => {
-            // Excluir
+            if (!isLoggedIn) return;
+
             if (e.target.classList.contains('btn-delete')) {
                 if (confirm('Tem certeza que deseja excluir este imóvel?')) {
                     remove(ref(db, `imoveis/${e.target.getAttribute('data-id')}`));
                 }
             }
-            
-            // Editar Modal
             if (e.target.classList.contains('btn-edit')) {
                 abrirModal('editar', e.target.getAttribute('data-id'));
             }
-
-            // Mover Categoria (Estrela)
             if (e.target.classList.contains('star-btn')) {
                 const id = e.target.getAttribute('data-id');
                 const novoStatus = e.target.getAttribute('data-atual') === 'preferencial' ? 'outros' : 'preferencial';
-                // Move para a nova categoria jogando pro final dela
                 update(ref(db, `imoveis/${id}`), { status: novoStatus, ordem: Date.now() });
             }
 
-            // Reordenar (Setas)
             const isUp = e.target.classList.contains('btn-up');
             const isDown = e.target.classList.contains('btn-down');
             if (isUp || isDown) {
                 const id = e.target.getAttribute('data-id');
                 const status = e.target.getAttribute('data-status');
                 
-                // Puxa a lista global salva na leitura
-                let lista = window.imoveisData[status];
+                let lista = imoveisData[status];
                 const index = lista.findIndex(i => i.id === id);
                 
-                // Lógica para inverter as posições na lista local
                 if (isUp && index > 0) {
                     const temp = lista[index];
                     lista[index] = lista[index - 1];
@@ -424,25 +438,14 @@
                     const temp = lista[index];
                     lista[index] = lista[index + 1];
                     lista[index + 1] = temp;
-                } else {
-                    return; // Já está no limite, não faz nada
-                }
+                } else return; 
 
-                // Salva a nova ordem de todos os cards dessa categoria no Firebase de uma só vez
                 const updates = {};
-                lista.forEach((item, idx) => {
-                    updates[`imoveis/${item.id}/ordem`] = idx;
-                });
+                lista.forEach((item, idx) => updates[`imoveis/${item.id}/ordem`] = idx);
                 update(ref(db), updates);
             }
         });
 
-        // Salvar anotação rápida
-        document.addEventListener('focusout', (e) => {
-            if (e.target.classList.contains('notes-area')) {
-                update(ref(db, `imoveis/${e.target.getAttribute('data-id')}`), { anotacoes: e.target.value });
-            }
-        });
     </script>
 </body>
 </html>
