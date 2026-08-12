@@ -418,10 +418,9 @@
         document.getElementById('btn-fechar-modal').addEventListener('click', () => modalImovel.style.display = 'none');
         
         window.addEventListener('click', (e) => { 
-            if (e.target === modalImovel) modalImovel.style.display = 'none'; 
+            // Removi a linha do modalImovel daqui!
             if (e.target === modalLogin) modalLogin.style.display = 'none';
         });
-
         document.getElementById('btn-salvar-modal').addEventListener('click', () => {
             if (!isLoggedIn) return;
             
