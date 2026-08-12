@@ -462,7 +462,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças v. 1.9.1
+                <span>📊</span> Finanças v. 1.9.2
             </div>
             <nav>
                 <ul id="main-menu">
@@ -496,6 +496,10 @@
                     <li class="menu-separator"></li>
                    
                     <li><button data-target="view-aumentos">📈 Próximos Aumentos</button></li>
+                    <li><button data-target="view-alocacoes">🚀 Próximas Alocações</button></li>
+
+                    <li class="menu-separator"></li>
+
                     <li><button data-target="view-dividas">📉 Quitação de Dívidas</button></li>
                     <li><button data-target="view-taxas">🏦 Taxas Bancárias</button></li>
                     <li><button data-target="view-financiamento">🏠 Novo Financiamento (Casa)</button></li>
@@ -727,6 +731,29 @@
                     <button class="btn-primary" onclick="abrirModalAumento()">+ Novo Aumento</button>
                 </div>
                 <div id="grid-aumentos" class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 24px;"></div>
+            </section>
+
+            <section id="view-alocacoes" class="view-section">
+                <div class="view-header">
+                    <h1>Próximas Alocações (Fila)</h1>
+                    <button class="btn-primary" onclick="abrirModalAlocacao()">+ Nova Alocação</button>
+                </div>
+                <p class="text-muted" style="margin-bottom: 24px;">Organize a fila de quotas que precisam ser reajustadas. Suba ou desça os itens conforme sua prioridade.</p>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome / Quota-Alvo</th>
+                                <th>Valor Atual (X)</th>
+                                <th>Meta (Y)</th>
+                                <th>Aumento Total (Y - X)</th>
+                                <th>Observações</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-alocacoes"></tbody>
+                    </table>
+                </div>
             </section>
 
             <!-- OUTRAS VIEWS ESTÁTICAS -->          
@@ -1557,6 +1584,45 @@
         </div>
     </div>
 
+    <!-- MODAL ALOCAÇÕES (FILA) -->
+    <div id="modal-alocacao" class="modal-overlay hidden" style="z-index: 1125;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 id="titulo-modal-alocacao" style="font-size: 1.2rem;">Nova Alocação</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalAlocacao()">✖</button>
+            </div>
+            <input type="hidden" id="alocacao-id">
+            
+            <div class="form-group">
+                <label>Nome / Quota-Alvo</label>
+                <input type="text" id="alocacao-nome" class="form-control" placeholder="Ex: Mercado, Lazer, Viagens...">
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Valor Atual (R$)</label>
+                    <input type="number" id="alocacao-atual" class="form-control" step="0.01" oninput="calcularDiferencaAlocacao()">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Meta Desejada (R$)</label>
+                    <input type="number" id="alocacao-meta" class="form-control" step="0.01" oninput="calcularDiferencaAlocacao()">
+                </div>
+            </div>
+            <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <label style="color: var(--sidebar-active); margin: 0; font-weight: 600;">Aumento Necessário:</label>
+                <strong id="alocacao-diff" style="font-size: 1.3rem; color: var(--text-main);">R$ 0,00</strong>
+            </div>
+            <div class="form-group">
+                <label>Observações</label>
+                <input type="text" id="alocacao-obs" class="form-control" placeholder="Ex: Aguardar dissídio, prioridade alta...">
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button class="btn-secondary" onclick="fecharModalAlocacao()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarAlocacao()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL OBSERVAÇÕES DA QUOTA GLOBAL -->
     <div id="modal-ver-obs-quota" class="modal-overlay hidden" style="z-index: 1130;">
         <div class="modal-content" style="max-width: 500px;">
@@ -1815,7 +1881,9 @@
             getTercos: () => DB.get('fin_tercos', []),
             setTercos: (data) => DB.set('fin_tercos', data),
             getDecimo: () => DB.get('fin_13', []),
-            setDecimo: (data) => DB.set('fin_13', data)
+            setDecimo: (data) => DB.set('fin_13', data),
+            getAlocacoes: () => DB.get('fin_alocacoes', []),
+            setAlocacoes: (data) => DB.set('fin_alocacoes', data)
         };
 
         // --- SISTEMA DE ROTEAMENTO DAS SEÇÕES ---
@@ -1863,6 +1931,7 @@
             await renderizarRemuneracaoLiquida();
             await renderizarTercos(); 
             await renderizarDecimo();
+            await renderizarAlocacoes();
         }
 
         // --- MESES ---
@@ -5082,6 +5151,130 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
             dataFC.despesas = dataFC.despesas.filter(x => x.id !== id);
             await DB.setDescontosFC(dataFC);
             await renderizarDescontosFC();
+        };
+
+        // ==========================================
+        // LÓGICA DA FILA DE PRÓXIMAS ALOCAÇÕES
+        // ==========================================
+        window.renderizarAlocacoes = async () => {
+            const alocacoes = await DB.getAlocacoes();
+            const tbody = document.getElementById('table-alocacoes');
+            tbody.innerHTML = '';
+
+            if (alocacoes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-muted" style="text-align:center; padding: 20px;">Nenhuma alocação na fila de prioridades.</td></tr>';
+                return;
+            }
+
+            alocacoes.forEach((a, index) => {
+                const diff = (parseFloat(a.meta) || 0) - (parseFloat(a.atual) || 0);
+                const corDiff = diff > 0 ? 'var(--accent-success)' : 'var(--text-main)';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${a.nome}</strong></td>
+                    <td>R$ ${formatarReal(a.atual)}</td>
+                    <td>R$ ${formatarReal(a.meta)}</td>
+                    <td style="color: ${corDiff}; font-weight: 800;">+ R$ ${formatarReal(diff)}</td>
+                    <td class="text-muted">${a.obs || '-'}</td>
+                    <td style="display: flex; gap: 8px; align-items: center;">
+                        <button onclick="moverAlocacao(${index}, -1)" title="Aumentar Prioridade (Subir)" style="cursor:pointer; background:none; border:none; font-size:1.2rem;">⬆️</button>
+                        <button onclick="moverAlocacao(${index}, 1)" title="Diminuir Prioridade (Descer)" style="cursor:pointer; background:none; border:none; font-size:1.2rem;">⬇️</button>
+                        <div style="width: 1px; background: var(--border-color); height: 20px; margin: 0 4px;"></div>
+                        <button class="text-muted" onclick="abrirModalAlocacao('${a.id}')" style="background:none; border:none; cursor:pointer; font-size: 1.1rem;" title="Editar">✏️</button>
+                        <button class="text-danger" onclick="excluirAlocacao('${a.id}')" style="background:none; border:none; cursor:pointer; font-size: 1.1rem;" title="Remover">✖</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.abrirModalAlocacao = async (id = null) => {
+            document.getElementById('titulo-modal-alocacao').innerText = id ? "Editar Alocação" : "Nova Alocação";
+            document.getElementById('alocacao-id').value = id || '';
+
+            if (id) {
+                const alocacoes = await DB.getAlocacoes();
+                const a = alocacoes.find(x => x.id === id);
+                if (a) {
+                    document.getElementById('alocacao-nome').value = a.nome || '';
+                    document.getElementById('alocacao-atual').value = a.atual || 0;
+                    document.getElementById('alocacao-meta').value = a.meta || 0;
+                    document.getElementById('alocacao-obs').value = a.obs || '';
+                }
+            } else {
+                document.getElementById('alocacao-nome').value = '';
+                document.getElementById('alocacao-atual').value = '';
+                document.getElementById('alocacao-meta').value = '';
+                document.getElementById('alocacao-obs').value = '';
+            }
+            
+            window.calcularDiferencaAlocacao();
+            document.getElementById('modal-alocacao').classList.remove('hidden');
+        };
+
+        window.fecharModalAlocacao = () => {
+            document.getElementById('modal-alocacao').classList.add('hidden');
+        };
+
+        window.calcularDiferencaAlocacao = () => {
+            const atual = parseFloat(document.getElementById('alocacao-atual').value) || 0;
+            const meta = parseFloat(document.getElementById('alocacao-meta').value) || 0;
+            const diff = meta - atual;
+            
+            const txtDiff = document.getElementById('alocacao-diff');
+            txtDiff.innerText = `R$ ${formatarReal(diff)}`;
+            txtDiff.style.color = diff > 0 ? 'var(--accent-success)' : 'var(--text-main)';
+        };
+
+        window.salvarAlocacao = async () => {
+            const id = document.getElementById('alocacao-id').value;
+            const nome = document.getElementById('alocacao-nome').value.trim();
+            const atual = parseFloat(document.getElementById('alocacao-atual').value) || 0;
+            const meta = parseFloat(document.getElementById('alocacao-meta').value) || 0;
+            const obs = document.getElementById('alocacao-obs').value.trim();
+
+            if (!nome) {
+                alert("Informe o nome ou quota-alvo desta alocação!");
+                return;
+            }
+
+            const alocacoes = await DB.getAlocacoes();
+
+            if (id) {
+                const idx = alocacoes.findIndex(x => x.id === id);
+                if (idx !== -1) {
+                    alocacoes[idx] = { ...alocacoes[idx], nome, atual, meta, obs };
+                }
+            } else {
+                // Ao criar um novo, insere no final da fila
+                alocacoes.push({ id: 'aloc_' + Date.now(), nome, atual, meta, obs });
+            }
+
+            await DB.setAlocacoes(alocacoes);
+            fecharModalAlocacao();
+            await renderizarAlocacoes();
+        };
+
+        window.excluirAlocacao = async (id) => {
+            if (!confirm("Tem certeza que deseja remover esta alocação da fila de planejamento?")) return;
+            let alocacoes = await DB.getAlocacoes();
+            alocacoes = alocacoes.filter(x => x.id !== id);
+            await DB.setAlocacoes(alocacoes);
+            await renderizarAlocacoes();
+        };
+
+        window.moverAlocacao = async (index, dir) => {
+            const alocacoes = await DB.getAlocacoes();
+            if (index + dir < 0 || index + dir >= alocacoes.length) return;
+            
+            // Lógica de swap (inversão de posição) para reordenar a prioridade na fila
+            const temp = alocacoes[index];
+            alocacoes[index] = alocacoes[index + dir];
+            alocacoes[index + dir] = temp;
+            
+            await DB.setAlocacoes(alocacoes);
+            await renderizarAlocacoes();
         };
 
     </script>
