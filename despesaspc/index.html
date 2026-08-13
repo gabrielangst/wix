@@ -462,7 +462,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças v. 1.9.2
+                <span>📊</span> Finanças v. 1.9.4
             </div>
             <nav>
                 <ul id="main-menu">
@@ -5166,8 +5166,14 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 return;
             }
 
+            let totalAumentoFila = 0; // Variável para acumular o total de aumento necessário
+
             alocacoes.forEach((a, index) => {
                 const diff = (parseFloat(a.meta) || 0) - (parseFloat(a.atual) || 0);
+                
+                // Soma o aumento desta linha ao total geral
+                totalAumentoFila += diff; 
+                
                 const corDiff = diff > 0 ? 'var(--accent-success)' : 'var(--text-main)';
 
                 const tr = document.createElement('tr');
@@ -5187,6 +5193,17 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 `;
                 tbody.appendChild(tr);
             });
+
+            // Adiciona a linha de totalizador ao final da tabela
+            const trTotal = document.createElement('tr');
+            trTotal.style.backgroundColor = '#f8fafc';
+            trTotal.style.borderTop = '2px solid var(--sidebar-active)';
+            trTotal.innerHTML = `
+                <td colspan="3" style="text-align: right; font-weight: 800; color: var(--sidebar-active); text-transform: uppercase;">Total Planejado na Fila:</td>
+                <td style="font-weight: 900; color: var(--accent-success); font-size: 1.1rem;">+ R$ ${formatarReal(totalAumentoFila)}</td>
+                <td colspan="2"></td>
+            `;
+            tbody.appendChild(trTotal);
         };
 
         window.abrirModalAlocacao = async (id = null) => {
