@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="favicon.png">
     <link rel="manifest" href="./manifest.json">
-    <title>Finanças - Controle Mensal</title> 
+    <title>Finanças - Controle Mensal</title>
     <style>
 
     /* --- RESPONSIVIDADE PARA MOBILE --- */
@@ -462,7 +462,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças v. 1.9.4
+                <span>📊</span> Finanças v. 1.9.5
             </div>
             <nav>
                 <ul id="main-menu">
@@ -500,7 +500,8 @@
 
                     <li class="menu-separator"></li>
 
-                    <li><button data-target="view-dividas">📉 Quitação de Dívidas</button></li>
+                    <li><button data-target="view-dividas">📉 Dívidas de Longo Prazo</button></li>
+                    <li><button data-target="view-dividas-temp">⏱️ Dívidas Temporárias</button></li>
                     <li><button data-target="view-taxas">🏦 Taxas Bancárias</button></li>
                     <li><button data-target="view-financiamento">🏠 Novo Financiamento (Casa)</button></li>
 
@@ -762,7 +763,7 @@
                 <!-- PAINEL LISTA DE DÍVIDAS -->
                 <div id="panel-lista-dividas">
                     <div class="view-header">
-                        <h1>Quitação de Dívidas</h1>
+                        <h1>Dívidas de Longo Prazo</h1>
                         <button class="btn-primary" onclick="adicionarNovaDivida()">+ Nova Dívida</button>
                     </div>
                     <p class="text-muted" style="margin-bottom: 20px;">Acompanhamento de amortizações de passivos a longo prazo.</p>
@@ -797,6 +798,66 @@
                         
                         <div style="display: flex; justify-content: flex-end;">
                             <button class="btn-primary" onclick="salvarDividaAtual(this)">Salvar Anotações</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-dividas-temp" class="view-section">
+                <!-- PAINEL LISTA DE DÍVIDAS TEMPORÁRIAS -->
+                <div id="panel-lista-dividas-temp">
+                    <div class="view-header">
+                        <h1>Dívidas Temporárias</h1>
+                        <button class="btn-primary" onclick="criarNovaDividaTemp()">+ Nova Dívida Temp.</button>
+                    </div>
+                    <p class="text-muted" style="margin-bottom: 20px;">Controle de passivos de curto prazo com histórico de abatimentos.</p>
+                    <div id="grid-dividas-temp" class="card-grid"></div>
+                </div>
+
+                <!-- PAINEL DETALHE DA DÍVIDA TEMPORÁRIA -->
+                <div id="panel-detalhe-dividas-temp" class="hidden">
+                    <div class="view-header">
+                        <div>
+                            <button class="btn-secondary" onclick="fecharDetalheDividaTemp()" style="margin-bottom: 8px;">← Voltar às Dívidas Temporárias</button>
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                <h1 id="txt-titulo-divida-temp" style="margin: 0;">Nome da Dívida</h1>
+                                <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem; display: flex; align-items: center;" onclick="renomearDividaTempAtual()">✏️ Renomear</button>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button id="btn-quitar-divida-temp" class="btn-secondary" style="color: var(--accent-success); border-color: var(--accent-success);" onclick="alternarStatusDividaTemp()">✅ Quitar Dívida</button>
+                            <button class="btn-secondary text-danger" onclick="excluirDividaTempAtual()">🗑️ Excluir</button>
+                        </div>
+                    </div>
+
+                    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <input type="hidden" id="divida-temp-id-atual">
+
+                        <!-- HEADER DA DÍVIDA -->
+                        <div style="display: flex; gap: 12px; margin-bottom: 24px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <div class="form-group" style="flex: 1; margin: 0;">
+                                <label style="font-size: 0.8rem; margin-bottom: 4px;">Data de Início da Apuração</label>
+                                <input type="date" id="divida-temp-data-inicio" class="form-control" onchange="salvarDataInicioDividaTemp(this.value)" style="padding: 8px;">
+                            </div>
+                        </div>
+
+                        <!-- LISTA DE ITENS -->
+                        <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="font-size: 1rem; color: var(--text-muted); margin: 0;">Despesas e Pagamentos</h3>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; font-weight: 600; color: var(--accent-danger); border-color: var(--accent-danger);" onclick="abrirModalItemDividaTemp('despesa')">+ Incluir Despesa</button>
+                                <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; font-weight: 600; color: var(--accent-success); border-color: var(--accent-success);" onclick="abrirModalItemDividaTemp('pagamento')">+ Incluir Pagamento</button>
+                            </div>
+                        </div>
+                        
+                        <div style="min-height: 120px; max-height: 350px; overflow-y: auto; margin-bottom: 20px;">
+                            <ul id="lista-pagamentos-divida-temp" style="list-style: none; padding: 0; margin: 0;"></ul>
+                        </div>
+
+                        <!-- TOTALIZADOR -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 2px solid var(--border-color); padding-top: 16px;">
+                            <span style="font-weight: 700; color: var(--text-main); font-size: 1.1rem;">Saldo Devedor Atual:</span>
+                            <span id="txt-saldo-divida-temp" style="font-size: 1.5rem; font-weight: 900;">R$ 0,00</span>
                         </div>
                     </div>
                 </div>
@@ -1770,6 +1831,37 @@
         </div>
     </div>
 
+    <!-- MODAL ITEM DÍVIDA TEMPORÁRIA -->
+    <div id="modal-item-divida-temp" class="modal-overlay hidden" style="z-index: 1180;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="view-header" style="margin-bottom: 20px;">
+                <h2 id="titulo-modal-item-div-temp" style="font-size: 1.2rem;">Nova Movimentação</h2>
+                <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalItemDividaTemp()">✖</button>
+            </div>
+            
+            <input type="hidden" id="item-div-temp-id">
+            <input type="hidden" id="item-div-temp-tipo">
+            
+            <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="item-div-temp-desc" class="form-control" placeholder="Ex: Mercado, Lanche, Pix...">
+            </div>
+            <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="item-div-temp-valor" class="form-control" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Data</label>
+                <input type="date" id="item-div-temp-data" class="form-control">
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button class="btn-secondary" onclick="fecharModalItemDividaTemp()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarItemDividaTemp()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -1870,6 +1962,8 @@
                 return Array.isArray(res) ? res : (res && res.texto ? [{ id: 'div_antiga', titulo: 'Dívida Migrada', texto: res.texto }] : []);
             },
             setDividas: (data) => DB.set('fin_dividas', data),
+            getDividasTemp: () => DB.get('fin_dividas_temp', []),
+            setDividasTemp: (data) => DB.set('fin_dividas_temp', data),
             getTaxas: () => DB.get('fin_taxas', { texto: '' }),
             setTaxas: (data) => DB.set('fin_taxas', data),
             getFinanciamento: () => DB.get('fin_financiamento', { texto: '' }),
@@ -1932,6 +2026,7 @@
             await renderizarTercos(); 
             await renderizarDecimo();
             await renderizarAlocacoes();
+            await renderizarDividasTemporarias();
         }
 
         // --- MESES ---
@@ -5292,6 +5387,318 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
             
             await DB.setAlocacoes(alocacoes);
             await renderizarAlocacoes();
+        };
+
+        // ==========================================
+        // LÓGICA DE DÍVIDAS TEMPORÁRIAS
+        // ==========================================
+        window.renderizarDividasTemporarias = async () => {
+            const dividas = await DB.getDividasTemp();
+            const grid = document.getElementById('grid-dividas-temp');
+            grid.innerHTML = '';
+            
+            if (dividas.length === 0) {
+                grid.innerHTML = '<p class="text-muted" style="grid-column: 1/-1;">Nenhuma dívida temporária cadastrada. Clique em "+ Nova Dívida Temp." para iniciar.</p>';
+                return;
+            }
+            
+            // Filtra os status (itens antigos sem status caem em "Em Aberto")
+            const abertas = dividas.filter(d => d.status !== 'quitada');
+            const quitadas = dividas.filter(d => d.status === 'quitada');
+
+            // Função auxiliar para desenhar o card
+            const criarCard = (d) => {
+                let totalDespesas = 0;
+                let totalPagamentos = 0;
+                (d.pagamentos || []).forEach(p => {
+                    if (p.tipo === 'pagamento') totalPagamentos += parseFloat(p.valor);
+                    else totalDespesas += parseFloat(p.valor);
+                });
+                
+                const saldo = totalDespesas - totalPagamentos;
+                const corSaldo = saldo > 0 ? 'var(--accent-danger)' : 'var(--accent-success)';
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                // Dá uma leve transparência para itens quitados
+                if(d.status === 'quitada') card.style.opacity = '0.7';
+
+                card.onclick = () => abrirDetalheDividaTemp(d.id);
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 38px; height: 38px; border-radius: 8px; background-color: ${d.status === 'quitada' ? '#dcfce7' : '#fef2f2'}; display: flex; justify-content: center; align-items: center; font-size: 1.2rem;">${d.status === 'quitada' ? '✅' : '⏱️'}</div>
+                        <h3 style="margin: 0; font-size: 1.15rem;">${d.nome}</h3>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.95rem; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span class="text-muted">Saldo Devedor:</span>
+                        <strong style="color: ${corSaldo};">R$ ${formatarReal(saldo)}</strong>
+                    </div>
+                `;
+                return card;
+            };
+
+            // Desenha o bloco Em Aberto
+            if (abertas.length > 0) {
+                const sepAbertas = document.createElement('div');
+                sepAbertas.className = 'year-separator';
+                sepAbertas.innerText = 'Em Aberto';
+                grid.appendChild(sepAbertas);
+                abertas.forEach(d => grid.appendChild(criarCard(d)));
+            }
+
+            // Desenha o bloco Quitadas
+            if (quitadas.length > 0) {
+                const sepQuitadas = document.createElement('div');
+                sepQuitadas.className = 'year-separator';
+                sepQuitadas.style.marginTop = abertas.length > 0 ? '32px' : '0';
+                sepQuitadas.innerText = 'Quitadas / Histórico';
+                grid.appendChild(sepQuitadas);
+                quitadas.forEach(d => grid.appendChild(criarCard(d)));
+            }
+        };
+
+        window.criarNovaDividaTemp = async () => {
+            const nome = prompt("Digite o nome ou credor da Dívida Temporária:");
+            if (!nome || nome.trim() === "") return;
+            const dividas = await DB.getDividasTemp();
+            dividas.push({ 
+                id: 'div_temp_' + Date.now(), 
+                nome: nome.trim(), 
+                dataInicio: '', 
+                pagamentos: [], 
+                status: 'aberta' // Inicializa como aberta
+            });
+            await DB.setDividasTemp(dividas);
+            await renderizarDividasTemporarias();
+        };
+
+        window.abrirDetalheDividaTemp = async (id) => {
+            const dividas = await DB.getDividasTemp();
+            const d = dividas.find(x => x.id === id);
+            if (!d) return;
+
+            document.getElementById('txt-titulo-divida-temp').innerText = d.nome;
+            document.getElementById('divida-temp-id-atual').value = d.id;
+            document.getElementById('divida-temp-data-inicio').value = d.dataInicio || '';
+            
+            // Atualiza visualmente o botão Quitar/Reabrir dependendo do status atual
+            const btnQuitar = document.getElementById('btn-quitar-divida-temp');
+            if (d.status === 'quitada') {
+                btnQuitar.innerHTML = '🔄 Reabrir Dívida';
+                btnQuitar.style.color = 'var(--sidebar-active)';
+                btnQuitar.style.borderColor = 'var(--sidebar-active)';
+            } else {
+                btnQuitar.innerHTML = '✅ Quitar Dívida';
+                btnQuitar.style.color = 'var(--accent-success)';
+                btnQuitar.style.borderColor = 'var(--accent-success)';
+            }
+
+            renderizarPagamentosDividaTemp(d);
+
+            document.getElementById('panel-lista-dividas-temp').classList.add('hidden');
+            document.getElementById('panel-detalhe-dividas-temp').classList.remove('hidden');
+        };
+
+        window.alternarStatusDividaTemp = async () => {
+            const id = document.getElementById('divida-temp-id-atual').value;
+            const dividas = await DB.getDividasTemp();
+            const d = dividas.find(x => x.id === id);
+            
+            if (d) {
+                if (d.status === 'quitada') {
+                    d.status = 'aberta';
+                } else {
+                    if(!confirm("Deseja marcar esta dívida como Quitada? Ela será movida para o Histórico de Quitadas.")) return;
+                    d.status = 'quitada';
+                }
+                
+                await DB.setDividasTemp(dividas);
+                fecharDetalheDividaTemp(); // Fecha o detalhe para o usuário ver o card mudando de sessão
+            }
+        };
+
+        window.renderizarPagamentosDividaTemp = (d) => {
+            const ul = document.getElementById('lista-pagamentos-divida-temp');
+            ul.innerHTML = '';
+            
+            let totalDespesas = 0;
+            let totalPagamentos = 0;
+            
+            if (d.pagamentos && d.pagamentos.length > 0) {
+                d.pagamentos.forEach(p => {
+                    const isPagamento = p.tipo === 'pagamento';
+                    if (isPagamento) totalPagamentos += parseFloat(p.valor);
+                    else totalDespesas += parseFloat(p.valor);
+
+                    const corValor = isPagamento ? 'text-success' : 'text-danger';
+                    const sinal = isPagamento ? '- R$' : '+ R$';
+                    const icone = isPagamento ? '✅' : '🛒';
+
+                    // Converte data de YYYY-MM-DD para o padrão brasileiro visual
+                    let dataExibicao = p.data;
+                    if (dataExibicao && dataExibicao.includes('-')) {
+                        const [y, m, dia] = dataExibicao.split('-');
+                        dataExibicao = `${dia}/${m}/${y}`;
+                    }
+
+                    const li = document.createElement('li');
+                    li.style.cssText = "display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 0.95rem;";
+                    li.innerHTML = `
+                        <span>${icone} ${p.desc} <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;">(${dataExibicao || '-'})</span></span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <strong class="${corValor}" style="margin-right: 8px;">${sinal} ${formatarReal(p.valor)}</strong>
+                            <button class="text-muted" style="background: none; border: none; cursor: pointer; font-size: 1.1rem;" onclick="abrirModalItemDividaTemp('${p.tipo}', '${p.id}')" title="Editar">✏️</button>
+                            <button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 1.1rem;" onclick="excluirPagamentoDividaTemp('${p.id}')" title="Excluir">✖</button>
+                        </div>
+                    `;
+                    ul.appendChild(li);
+                });
+            } else {
+                ul.innerHTML = '<li class="text-muted" style="font-size: 0.85rem; padding: 4px 0;">Nenhuma despesa ou pagamento registrado.</li>';
+            }
+
+            const saldo = totalDespesas - totalPagamentos;
+            const elSaldo = document.getElementById('txt-saldo-divida-temp');
+            elSaldo.innerText = `R$ ${formatarReal(saldo)}`;
+            elSaldo.style.color = saldo > 0 ? 'var(--accent-danger)' : 'var(--accent-success)';
+        };
+
+        window.abrirModalItemDividaTemp = async (tipo, idItem = null) => {
+            document.getElementById('item-div-temp-id').value = idItem || '';
+            document.getElementById('item-div-temp-tipo').value = tipo;
+            
+            const titulo = tipo === 'despesa' ? 'Despesa' : 'Pagamento';
+            document.getElementById('titulo-modal-item-div-temp').innerText = idItem ? `Editar ${titulo}` : `Novo ${titulo}`;
+
+            if (idItem) {
+                const idDivida = document.getElementById('divida-temp-id-atual').value;
+                const dividas = await DB.getDividasTemp();
+                const d = dividas.find(x => x.id === idDivida);
+                if (d) {
+                    const item = d.pagamentos.find(p => p.id === idItem);
+                    if (item) {
+                        document.getElementById('item-div-temp-desc').value = item.desc;
+                        document.getElementById('item-div-temp-valor').value = item.valor;
+                        
+                        // Garante conversão de datas antigas DD/MM/YYYY para o input YYYY-MM-DD
+                        let dataInput = item.data;
+                        if (dataInput && dataInput.includes('/')) {
+                            const [dia, mes, ano] = dataInput.split('/');
+                            dataInput = `${ano}-${mes}-${dia}`;
+                        }
+                        document.getElementById('item-div-temp-data').value = dataInput || '';
+                    }
+                }
+            } else {
+                document.getElementById('item-div-temp-desc').value = '';
+                document.getElementById('item-div-temp-valor').value = '';
+                
+                // Formata data atual (Hoje) para YYYY-MM-DD respeitando o fuso local
+                const hoje = new Date();
+                const ano = hoje.getFullYear();
+                const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+                const dia = String(hoje.getDate()).padStart(2, '0');
+                document.getElementById('item-div-temp-data').value = `${ano}-${mes}-${dia}`;
+            }
+
+            document.getElementById('modal-item-divida-temp').classList.remove('hidden');
+        };
+
+        window.fecharModalItemDividaTemp = () => {
+            document.getElementById('modal-item-divida-temp').classList.add('hidden');
+        };
+
+        window.salvarItemDividaTemp = async () => {
+            const idDivida = document.getElementById('divida-temp-id-atual').value;
+            const idItem = document.getElementById('item-div-temp-id').value;
+            const tipo = document.getElementById('item-div-temp-tipo').value;
+            const desc = document.getElementById('item-div-temp-desc').value.trim();
+            const valor = parseFloat(document.getElementById('item-div-temp-valor').value);
+            const data = document.getElementById('item-div-temp-data').value;
+
+            if (!desc || isNaN(valor) || valor <= 0) {
+                alert("Preencha descrição e um valor numérico válido (maior que zero).");
+                return;
+            }
+
+            const dividas = await DB.getDividasTemp();
+            const d = dividas.find(x => x.id === idDivida);
+            
+            if (d) {
+                if (!d.pagamentos) d.pagamentos = [];
+
+                if (idItem) {
+                    const idx = d.pagamentos.findIndex(p => p.id === idItem);
+                    if (idx !== -1) {
+                        d.pagamentos[idx].desc = desc;
+                        d.pagamentos[idx].valor = valor;
+                        d.pagamentos[idx].data = data;
+                    }
+                } else {
+                    d.pagamentos.push({
+                        id: 'item_temp_' + Date.now(),
+                        tipo: tipo,
+                        desc: desc,
+                        valor: valor,
+                        data: data
+                    });
+                }
+                
+                await DB.setDividasTemp(dividas);
+                renderizarPagamentosDividaTemp(d);
+                fecharModalItemDividaTemp();
+            }
+        };             
+
+        window.fecharDetalheDividaTemp = async () => {
+            document.getElementById('panel-detalhe-dividas-temp').classList.add('hidden');
+            document.getElementById('panel-lista-dividas-temp').classList.remove('hidden');
+            await renderizarDividasTemporarias();
+        };
+
+        window.renomearDividaTempAtual = async () => {
+            const id = document.getElementById('divida-temp-id-atual').value;
+            const dividas = await DB.getDividasTemp();
+            const d = dividas.find(x => x.id === id);
+            if (!d) return;
+            const novoNome = prompt("Novo nome:", d.nome);
+            if (novoNome && novoNome.trim() !== "") {
+                d.nome = novoNome.trim();
+                await DB.setDividasTemp(dividas);
+                document.getElementById('txt-titulo-divida-temp').innerText = d.nome;
+            }
+        };
+
+        window.excluirDividaTempAtual = async () => {
+            if(!confirm("Tem certeza que deseja excluir esta dívida temporária inteira? O histórico será apagado.")) return;
+            const id = document.getElementById('divida-temp-id-atual').value;
+            let dividas = await DB.getDividasTemp();
+            dividas = dividas.filter(x => x.id !== id);
+            await DB.setDividasTemp(dividas);
+            fecharDetalheDividaTemp();
+        };        
+
+        window.salvarDataInicioDividaTemp = async (dataStr) => {
+            const id = document.getElementById('divida-temp-id-atual').value;
+            const dividas = await DB.getDividasTemp();
+            const d = dividas.find(x => x.id === id);
+            if (d) {
+                d.dataInicio = dataStr;
+                await DB.setDividasTemp(dividas);
+            }
+        };     
+            
+        window.excluirPagamentoDividaTemp = async (idPagamento) => {
+            if(!confirm("Tem certeza que deseja remover este pagamento? O saldo devedor será recalculado.")) return;
+            const idDivida = document.getElementById('divida-temp-id-atual').value;
+            const dividas = await DB.getDividasTemp();
+            const d = dividas.find(x => x.id === idDivida);
+            
+            if (d) {
+                d.pagamentos = d.pagamentos.filter(p => p.id !== idPagamento);
+                await DB.setDividasTemp(dividas);
+                renderizarPagamentosDividaTemp(d);
+            }
         };
 
     </script>
