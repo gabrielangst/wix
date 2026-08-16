@@ -2662,7 +2662,7 @@
                         ${c.obs ? `<div style="margin-bottom: 12px; font-size: 0.85rem; color: var(--text-muted); font-style: italic; white-space: pre-wrap;">${c.obs}</div>` : ''}
                         
                         <div style="display:flex; gap:8px;" class="mt-4">
-                            <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="abrirModalTransacaoCaixinha('${c.id}')">+/- Movimentar</button>
+                            <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="abrirModalTransacaoCaixinha('${c.id}')">+/- Movi-mentar</button>
                             <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem; margin-left: auto;" onclick="toggleHistoricoCaixinha('${c.id}')">⏳ Histórico</button>
                             <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="abrirModalEditarHistoricoCaixinha('${c.id}')">✏️ Editar</button>                            
                         </div>
@@ -4906,9 +4906,6 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 });
 
                 // CONSTANTES PARA CONTROLE DE EXIBIÇÃO
-                const isMesPassado = absMonthCard < absMonthAtual;
-                const deveExibirAlerta = isMesPassado || (absMonthCard === absMonthAtual && hoje.getDate() >= 22);
-
                 const card = document.createElement('div');
                 const isMesAtualReal = (mesCard === mesAtual && anoCard === anoAtual);
                 const isMesAnterior = (mesCard === (mesAtual === 0 ? 11 : mesAtual - 1) && anoCard === (mesAtual === 0 ? anoAtual - 1 : anoAtual));
@@ -4917,10 +4914,7 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 card.style.display = 'flex';
                 card.style.flexDirection = 'column';
                 
-                // Ajusta o padding dinamicamente dependendo se ele começa minimizado
-                card.style.padding = isMesPassado ? '12px 24px' : '24px';
-                
-                // FORÇA o card a não esticar na grade e respeitar apenas o conteúdo visível
+                // Mantém a altura correta do card sem esticar
                 card.style.alignSelf = 'start'; 
                 card.style.height = 'max-content';
                 
@@ -4930,20 +4924,12 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 
                 const corTextoFooter = isMesAnterior ? 'var(--accent-success)' : 'var(--accent-danger)';
 
-                // --- FIM DA LÓGICA ---
-
                 card.innerHTML = `
-                    <!-- Cabeçalho (Clicável para expandir/recolher) -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding-bottom: ${isMesPassado ? '0' : '8px'}; border-bottom: ${isMesPassado ? 'none' : '1px solid var(--border-color)'}; margin-bottom: ${isMesPassado ? '0' : '16px'};" 
-                         onclick="const body = this.nextElementSibling; const isHidden = body.classList.toggle('hidden'); this.style.borderBottom = isHidden ? 'none' : '1px solid var(--border-color)'; this.style.marginBottom = isHidden ? '0' : '16px'; this.style.paddingBottom = isHidden ? '0' : '8px'; this.querySelector('.seta-toggle').innerText = isHidden ? '▶' : '▼'; this.parentElement.style.padding = isHidden ? '12px 24px' : '24px';">
-                        
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                         <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-                            ${isMesAtualReal ? '📅' : '🗓️'} ${mesesNomeArray[mesCard]} 
-                            <span class="seta-toggle" style="font-size: 0.8rem; color: var(--text-muted); margin-left: 4px;">${isMesPassado ? '▶' : '▼'}</span>
+                            ${isMesAtualReal ? '📅' : '🗓️'} ${mesesNomeArray[mesCard]} de ${anoCard}
                         </h3>
-                        
-                        <!-- event.stopPropagation() impede que o clique no botão ative o abrir/fechar da div pai -->
-                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;" onclick="event.stopPropagation(); ${deveExibirAlerta ? `if(confirm('Este mês provavelmente já foi reembolsado no dia 22. Você deseja ainda assim adicionar essa despesa aqui?')) abrirModalDespesaFC(null, ${mesCard}, ${anoCard})` : `abrirModalDespesaFC(null, ${mesCard}, ${anoCard})`} ">+ Despesa</button>
+                        <span style="font-size: 0.8rem; background: var(--border-color); padding: 2px 8px; border-radius: 12px; font-weight: 600;">Dia 22</span>
                     </div>
 
                     <ul style="list-style: none; padding: 0; margin: 0; flex-grow: 1; min-height: 80px;">
