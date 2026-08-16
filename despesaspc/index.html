@@ -462,7 +462,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças v. 1.9.6
+                <span>📊</span> Finanças v. 1.9.7
             </div>
             <nav>
                 <ul id="main-menu">
@@ -5117,9 +5117,20 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 const totalDespesas = despesasDoMes.reduce((acc, curr) => acc + curr.valor, 0);
                 const saldoMes = valorBaseQuota - totalDespesas;
 
-                let htmlItens = '';
+                // NOVO: Objeto para somar as despesas agrupadas por autor e vai até o final da declaração do card.innerHTML.  Como deve ficarSubstitua esse trecho inteiro pelo código abaixo:  JavaScript                // Agrupa as despesas por autor, já assumindo 'Gabriel' para despesas antigas sem autor
+                const despesasAgrupadas = {};
+
                 despesasDoMes.forEach(d => {
-                    htmlItens += `
+                    const nomeAutor = d.autor || 'Gabriel'; // Aplica Gabriel aos dados antigos
+                    
+                    if (!despesasAgrupadas[nomeAutor]) {
+                        despesasAgrupadas[nomeAutor] = { total: 0, itensHtml: '' };
+                    }
+                    
+                    despesasAgrupadas[nomeAutor].total += d.valor;
+
+                    // Removemos a tag de autor pequenininha da frente da descrição, já que agora ficarão em listas separadas
+                    despesasAgrupadas[nomeAutor].itensHtml += `
                         <li style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding: 8px 0; font-size: 0.9rem;">
                             <span>${d.desc}</span>
                             <div style="display: flex; align-items: center; gap: 8px;">
@@ -5131,6 +5142,28 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                     `;
                 });
 
+                // Monta o HTML dinâmico criando blocos separados para cada autor
+                let htmlListasPorAutor = '';
+                
+                if (Object.keys(despesasAgrupadas).length === 0) {
+                    htmlListasPorAutor = '<p class="text-muted" style="font-size: 0.85rem; padding: 8px 0; margin: 0;">Nenhuma despesa lançada.</p>';
+                } else {
+                    for (const [autor, dados] of Object.entries(despesasAgrupadas)) {
+                        htmlListasPorAutor += `
+                            <div style="margin-bottom: 16px; background: #fdfdfd; padding: 8px 12px; border-radius: 8px; border: 1px solid #f1f5f9;">
+                                <h4 style="font-size: 0.8rem; color: var(--sidebar-active); margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">👤 ${autor}</h4>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    ${dados.itensHtml}
+                                </ul>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-main); margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border-color); font-weight: 600;">
+                                    <span>Subtotal ${autor}:</span>
+                                    <span>R$ ${formatarReal(dados.total)}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
                 const card = document.createElement('div');
                 const isMesAtualReal = (mesCard === mesAtual && anoCard === anoAtual);
                 const isMesAnterior = (mesCard === (mesAtual === 0 ? 11 : mesAtual - 1) && anoCard === (mesAtual === 0 ? anoAtual - 1 : anoAtual));
@@ -5139,42 +5172,49 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 card.style.display = 'flex';
                 card.style.flexDirection = 'column';
                 
+                // CONSTANTES PARA CONTROLE DE EXIBIÇÃO
+                const isMesPassado = absMonthCard < absMonthAtual;
+                const deveExibirAlerta = isMesPassado || (absMonthCard === absMonthAtual && hoje.getDate() >= 22);
+
+                card.style.padding = isMesPassado ? '12px 24px' : '24px';
+                card.style.alignSelf = 'start'; 
+                card.style.height = 'max-content';
+                
                 const estiloFooter = isMesAnterior ? 'background: #dcfce7; border: 1px solid #bbf7d0;' : 'background: #f8fafc; border: 1px solid var(--border-color);';
                 const corTextoFooter = isMesAnterior ? 'var(--accent-success)' : 'var(--text-main)';
                 const corTextoValor = saldoMes < 0 ? 'var(--accent-danger)' : (isMesAnterior ? 'var(--accent-success)' : 'var(--sidebar-active)');
 
-                // CONSTANTES NOVAS PARA CONTROLE DE EXIBIÇÃO
-                const isMesPassado = absMonthCard < absMonthAtual;
-                const deveExibirAlerta = isMesPassado || (absMonthCard === absMonthAtual && hoje.getDate() >= 22);
-
                 card.innerHTML = `
                     <!-- Cabeçalho (Clicável para expandir/recolher) -->
                     <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding-bottom: ${isMesPassado ? '0' : '8px'}; border-bottom: ${isMesPassado ? 'none' : '1px solid var(--border-color)'}; margin-bottom: ${isMesPassado ? '0' : '16px'};" 
-                         onclick="const body = this.nextElementSibling; const isHidden = body.classList.toggle('hidden'); this.style.borderBottom = isHidden ? 'none' : '1px solid var(--border-color)'; this.style.marginBottom = isHidden ? '0' : '16px'; this.style.paddingBottom = isHidden ? '0' : '8px'; this.querySelector('.seta-toggle').innerText = isHidden ? '▶' : '▼';">
+                         onclick="const body = this.nextElementSibling; const isHidden = body.classList.toggle('hidden'); this.style.borderBottom = isHidden ? 'none' : '1px solid var(--border-color)'; this.style.marginBottom = isHidden ? '0' : '16px'; this.style.paddingBottom = isHidden ? '0' : '8px'; this.querySelector('.seta-toggle').innerText = isHidden ? '▶' : '▼'; this.parentElement.style.padding = isHidden ? '12px 24px' : '24px';">
                         
                         <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
                             ${isMesAtualReal ? '📅' : '🗓️'} ${mesesNomeArray[mesCard]} 
                             <span class="seta-toggle" style="font-size: 0.8rem; color: var(--text-muted); margin-left: 4px;">${isMesPassado ? '▶' : '▼'}</span>
                         </h3>
                         
-                        <!-- event.stopPropagation() impede que o clique no botão ative o abrir/fechar da div pai -->
                         <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;" onclick="event.stopPropagation(); ${deveExibirAlerta ? `if(confirm('Este mês provavelmente já foi reembolsado no dia 22. Você deseja ainda assim adicionar essa despesa aqui?')) abrirModalDespesaFC(null, ${mesCard}, ${anoCard})` : `abrirModalDespesaFC(null, ${mesCard}, ${anoCard})`} ">+ Despesa</button>
                     </div>
 
-                    <!-- Corpo do Card (Recebe a classe 'hidden' se for mês passado) -->
+                    <!-- Corpo do Card -->
                     <div class="fc-card-body ${isMesPassado ? 'hidden' : ''}">
                         <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between;">
                             <span>Quota Base: ${nomeQuotaBase}</span>
                             <strong>R$ ${formatarReal(valorBaseQuota)}</strong>
                         </div>
 
-                        <ul style="list-style: none; padding: 0; margin: 0; flex-grow: 1; min-height: 80px;">
-                            ${htmlItens || '<li class="text-muted" style="font-size: 0.85rem; padding: 8px 0;">Nenhuma despesa lançada.</li>'}
-                        </ul>
+                        <!-- Aqui entram os novos blocos separados por autor -->
+                        <div style="flex-grow: 1; min-height: 80px;">
+                            ${htmlListasPorAutor}
+                        </div>
 
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; margin-top: 8px; border-top: 1px dashed var(--border-color);">
-                            <span style="font-size: 0.85rem; color: var(--text-muted);">Total de Despesas:</span>
-                            <strong style="color: var(--accent-danger); font-size: 0.95rem;">R$ ${formatarReal(totalDespesas)}</strong>
+                        <!-- Rodapé de Totais Gerais -->
+                        <div style="padding-top: 12px; margin-top: 8px; border-top: 1px solid var(--border-color);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">Total de Despesas:</span>
+                                <strong style="color: var(--accent-danger); font-size: 0.95rem;">R$ ${formatarReal(totalDespesas)}</strong>
+                            </div>
                         </div>
 
                         <div style="${estiloFooter} padding: 12px; border-radius: 8px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
@@ -5251,6 +5291,13 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
 
             if (!desc || isNaN(valor)) { alert("Preencha descrição e valor."); return; }
 
+            // NOVO: Pega o nome do email logado (antes do @) e capitaliza a primeira letra
+            let autorLogado = 'Desconhecido';
+            if (auth.currentUser && auth.currentUser.email) {
+                const prefixo = auth.currentUser.email.split('@')[0];
+                autorLogado = prefixo.charAt(0).toUpperCase() + prefixo.slice(1);
+            }
+
             const dataFC = await DB.getDescontosFC();
             
             if (id) {
@@ -5258,9 +5305,12 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 if (idx !== -1) {
                     dataFC.despesas[idx].desc = desc;
                     dataFC.despesas[idx].valor = valor;
+                    // Se for uma despesa antiga que não tinha autor, assina ela agora
+                    if (!dataFC.despesas[idx].autor) dataFC.despesas[idx].autor = autorLogado;
                 }
             } else {
-                dataFC.despesas.push({ id: 'fcdesp_' + Date.now(), mes, ano, desc, valor });
+                // Ao criar, salva o autor extraído do e-mail
+                dataFC.despesas.push({ id: 'fcdesp_' + Date.now(), mes, ano, desc, valor, autor: autorLogado });
             }
 
             await DB.setDescontosFC(dataFC);
