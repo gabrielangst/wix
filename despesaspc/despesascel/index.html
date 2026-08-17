@@ -401,7 +401,7 @@
 
   <!-- Nova barra no topo -->
   <header class="top-bar" id="appHeader">
-    <h1>Despesas e Anotações v2.4</h1>
+    <h1>Despesas e Anotações v2.5</h1>
     <button onclick="toggleMenu()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 5px;">⋮</button>
     
     <div class="menu-dropdown" id="topMenu">
@@ -616,20 +616,36 @@
         Faça login para acessar a lista de compras.
       </p>
       
-      <div class="input-group">
-        <label>E-mail</label>
-        <input type="email" id="loginEmail" placeholder="seu@email.com" style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 1rem;">
-      </div>
-      
-      <div class="input-group">
-        <label>Senha</label>
-        <input type="password" id="loginPassword" placeholder="******" style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 1rem;">
-      </div>
-      
-      <div class="modal-actions">
-        <button class="btn btn-cancel" onclick="fecharLoginModal()">Cancelar</button>
-        <button class="btn btn-save" onclick="fazerLogin()">Entrar</button>
-      </div>
+      <form id="formAuth" onsubmit="event.preventDefault(); fazerLogin();">
+        <div class="input-group">
+          <label for="loginEmail">E-mail</label>
+          <input 
+            type="email" 
+            id="loginEmail" 
+            name="email"
+            autocomplete="username" 
+            placeholder="seu@email.com" 
+            style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 1rem;"
+          >
+        </div>
+        
+        <div class="input-group">
+          <label for="loginPassword">Senha</label>
+          <input 
+            type="password" 
+            id="loginPassword" 
+            name="password"
+            autocomplete="current-password" 
+            placeholder="******" 
+            style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 1rem;"
+          >
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn btn-cancel" onclick="fecharLoginModal()">Cancelar</button>
+          <button type="submit" class="btn btn-save">Entrar</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -693,14 +709,13 @@
       const password = document.getElementById('loginPassword').value.trim();
       
       if (email && password) {
-        // 1. Força a persistência LOCAL antes de autenticar
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
           .then(() => {
-            // 2. Só então faz o login com as credenciais
             return auth.signInWithEmailAndPassword(email, password);
           })
           .then(() => {
-            // 3. Sucesso!
+            // Salva o e-mail para pré-preenchimento futuro
+            localStorage.setItem('last_user_email', email);
             fecharLoginModal();
             openComprasModal(); 
           })
@@ -1758,18 +1773,43 @@
       }
     }
 
-    // Abertura do modal adaptada para não precisar de await no carregamento inicial
-    function openComprasModal() {
+    // Variável para aguardar a checagem inicial do Firebase
+    let authInitialized = false;
+    const authReady = new Promise((resolve) => {
+      auth.onAuthStateChanged((user) => {
+        authInitialized = true;
+        if (user) {
+          console.log("Logado como:", user.email);
+          // Pré-preenche o e-mail no formulário para logins futuros
+          if (document.getElementById('loginEmail')) {
+            document.getElementById('loginEmail').value = user.email;
+          }
+        }
+        resolve(user);
+      });
+    });
+
+    // Abertura do modal aguardando a autenticação se necessário
+    async function openComprasModal() {
       document.getElementById('topMenu').style.display = 'none';
       
-      // Verifica se o usuário NÃO está logado
-      if (!auth.currentUser) {
-        // Abre a tela de login
-        document.getElementById('loginModal').classList.add('active');
-        return; // Para a execução aqui e não abre a lista
+      // Se ainda estiver checando o estado inicial, aguarda
+      if (!authInitialized) {
+        await authReady;
       }
 
-      // Se chegou aqui, é porque está logado. Segue o fluxo normal:
+      // Verifica se o usuário NÃO está logado
+      if (!auth.currentUser) {
+        // Carrega último e-mail salvo se houver
+        const savedEmail = localStorage.getItem('last_user_email');
+        if (savedEmail && document.getElementById('loginEmail')) {
+          document.getElementById('loginEmail').value = savedEmail;
+        }
+        document.getElementById('loginModal').classList.add('active');
+        return;
+      }
+
+      // Se logado, segue o fluxo normal
       initComprasData(); 
       document.getElementById('searchCompras').value = '';
       document.getElementById('filterUnchecked').checked = false;
