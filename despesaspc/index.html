@@ -532,7 +532,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças v. 1.9.7
+                <span>📊</span> Finanças v. 2.0.0
             </div>
             <nav>
                 <ul id="main-menu">
@@ -1225,7 +1225,10 @@
 
             <!-- POST-IT (Livre para ser arrastado) -->
             <div id="post-it-display" class="post-it-note">
-                <div id="post-it-display-header" class="post-it-header">⋮⋮ Arraste para mover ⋮⋮</div>
+                <div id="post-it-display-header" class="post-it-header" style="display: flex; justify-content: space-between; align-items: center; padding: 0 8px;">
+                    <span style="flex: 1; text-align: center;">⋮⋮ Arraste para mover ⋮⋮</span>
+                    <button onclick="fecharPostItTemporario(event)" style="background: none; border: none; color: #a16207; font-weight: bold; font-size: 1rem; cursor: pointer; padding: 2px 6px;" title="Fechar temporariamente">✖</button>
+                </div>
                 <div id="post-it-content" class="post-it-body"></div>
             </div>
 
@@ -2136,17 +2139,35 @@
             const display = document.getElementById('post-it-display');
             const content = document.getElementById('post-it-content');
             
-            // Aplica a posição guardada no banco
-            if (postit.top) display.style.top = postit.top;
-            if (postit.left) display.style.left = postit.left;
+            // Proteção Mobile: Impede que o post-it nasça fora da tela se o dispositivo for menor que a posição salva
+            let posTop = parseInt(postit.top) || 80;
+            let posLeft = parseInt(postit.left) || 300;
+            
+            if (posLeft > window.innerWidth - 260) {
+                // Se estiver fora, joga pro cantinho direito da tela atual (mobile)
+                posLeft = Math.max(10, window.innerWidth - 280); 
+            }
+            if (posTop > window.innerHeight - 100) {
+                posTop = 80;
+            }
+
+            display.style.top = posTop + 'px';
+            display.style.left = posLeft + 'px';
 
             if (postit.texto && postit.texto.trim() !== '') {
                 content.innerHTML = postit.texto.replace(/\n/g, '<br>');
-                display.style.display = 'block';
+                // Inicializa sempre como visível quando o site recarrega
+                display.style.display = 'block'; 
                 tornarArrastavel(display);
             } else {
                 display.style.display = 'none';
             }
+        };
+
+        // Nova função colada logo abaixo do renderizarPostIt
+        window.fecharPostItTemporario = (e) => {
+            if (e) e.stopPropagation(); // Impede que o clique ative a função de "arrastar" sem querer
+            document.getElementById('post-it-display').style.display = 'none'; // Apenas oculta, não apaga o texto
         };
 
         window.abrirModalPostIt = async () => {
