@@ -428,6 +428,76 @@
             animation: pulse-yellow 2s infinite;
         }
 
+        /* --- POST-IT E BOTÃO FLUTUANTE (ATUALIZADO) --- */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 990;
+        }
+
+        .fab-button {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--white); /* Fundo neutro */
+            color: var(--accent-danger); /* Ícone destacado em vermelho */
+            border: 1px solid var(--border-color);
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .fab-button:hover {
+            transform: scale(1.1);
+            background-color: #f1f5f9;
+        }
+
+        .post-it-note {
+            position: fixed;
+            top: 80px; /* Posição inicial perto do topo */
+            left: 300px; /* Posição inicial perto do menu lateral */
+            z-index: 1050; 
+            background-color: #fef08a; 
+            color: #422006;
+            width: 260px;
+            min-height: 100px;
+            border-radius: 4px;
+            box-shadow: 3px 5px 12px rgba(0,0,0,0.25);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            display: none; 
+            border: 1px solid #fde047;
+            overflow: hidden;
+        }
+
+        .post-it-header {
+            padding: 6px;
+            cursor: grab;
+            background: #fde047;
+            font-size: 0.75rem;
+            text-align: center;
+            font-weight: bold;
+            color: #a16207;
+            border-bottom: 1px solid #eab308;
+            user-select: none;
+        }
+
+        .post-it-header:active {
+            cursor: grabbing;
+        }
+        
+        .post-it-body {
+            padding: 12px 16px 16px 16px;
+            overflow-y: auto;
+            max-height: 250px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
     </style>
 </head>
 <body>
@@ -1147,6 +1217,34 @@
                 <button class="btn-secondary" style="padding: 12px 24px; font-weight: 600;" onclick="carregarMaisMesesFC()">🔄 Exibir mais 12 meses</button>
             </div>
         </section>
+
+        <!-- BOTÃO FLUTUANTE -->
+            <div class="fab-container">
+                <button class="fab-button" onclick="abrirModalPostIt()" title="Lembretes do Mês">📌</button>
+            </div>
+
+            <!-- POST-IT (Livre para ser arrastado) -->
+            <div id="post-it-display" class="post-it-note">
+                <div id="post-it-display-header" class="post-it-header">⋮⋮ Arraste para mover ⋮⋮</div>
+                <div id="post-it-content" class="post-it-body"></div>
+            </div>
+
+            <!-- MODAL EDITAR POST-IT -->
+            <div id="modal-post-it" class="modal-overlay hidden" style="z-index: 1200;">
+                <div class="modal-content" style="max-width: 400px; background-color: #fef08a;">
+                    <div class="view-header" style="margin-bottom: 15px; border-bottom: 1px solid #ca8a04; padding-bottom: 10px;">
+                        <h2 style="font-size: 1.2rem; color: #713f12; margin: 0;">📌 Lembretes Rápidos</h2>
+                        <button class="btn-secondary" style="border: none; font-size: 1.2rem; color: #713f12; background: transparent;" onclick="fecharModalPostIt()" title="Fechar">✖</button>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="post-it-texto" class="form-control" rows="8" placeholder="Anote lembretes importantes para ficar de olho durante o mês..." style="background: transparent; border: 1px solid #ca8a04; color: #422006; font-family: inherit; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                        <button class="btn-secondary" style="border-color: #ca8a04; color: #713f12;" onclick="fecharModalPostIt()">Cancelar</button>
+                        <button class="btn-primary" style="background-color: #ca8a04; color: white; border: none;" onclick="salvarPostIt()">Salvar anotações</button>
+                    </div>
+                </div>
+            </div>
 
         </main>
     </div>
@@ -1977,7 +2075,9 @@
             getDecimo: () => DB.get('fin_13', []),
             setDecimo: (data) => DB.set('fin_13', data),
             getAlocacoes: () => DB.get('fin_alocacoes', []),
-            setAlocacoes: (data) => DB.set('fin_alocacoes', data)
+            setAlocacoes: (data) => DB.set('fin_alocacoes', data),
+            getPostIt: () => DB.get('fin_postit', { texto: '', top: '80px', left: '300px' }),
+            setPostIt: (data) => DB.set('fin_postit', data)
         };
 
         // --- SISTEMA DE ROTEAMENTO DAS SEÇÕES ---
@@ -2027,6 +2127,110 @@
             await renderizarDecimo();
             await renderizarAlocacoes();
             await renderizarDividasTemporarias();
+            await renderizarPostIt();
+        }
+
+        // --- POST-IT FLUTUANTE ---
+        window.renderizarPostIt = async () => {
+            const postit = await DB.getPostIt();
+            const display = document.getElementById('post-it-display');
+            const content = document.getElementById('post-it-content');
+            
+            // Aplica a posição guardada no banco
+            if (postit.top) display.style.top = postit.top;
+            if (postit.left) display.style.left = postit.left;
+
+            if (postit.texto && postit.texto.trim() !== '') {
+                content.innerHTML = postit.texto.replace(/\n/g, '<br>');
+                display.style.display = 'block';
+                tornarArrastavel(display);
+            } else {
+                display.style.display = 'none';
+            }
+        };
+
+        window.abrirModalPostIt = async () => {
+            const postit = await DB.getPostIt();
+            document.getElementById('post-it-texto').value = postit.texto || '';
+            document.getElementById('modal-post-it').classList.remove('hidden');
+        };
+
+        window.fecharModalPostIt = () => {
+            document.getElementById('modal-post-it').classList.add('hidden');
+        };
+
+        window.salvarPostIt = async () => {
+            const texto = document.getElementById('post-it-texto').value;
+            const postit = await DB.getPostIt(); // Mantém as posições 'top' e 'left' salvas
+            postit.texto = texto;
+            await DB.setPostIt(postit);
+            fecharModalPostIt();
+            await renderizarPostIt();
+        };
+
+        // Mecanismo de arrastar e salvar posição
+        function tornarArrastavel(elmnt) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            const header = document.getElementById(elmnt.id + "-header");
+            
+            if (header) {
+                header.onmousedown = dragMouseDown;
+                header.ontouchstart = dragTouchStart;
+            } else {
+                elmnt.onmousedown = dragMouseDown;
+                elmnt.ontouchstart = dragTouchStart;
+            }
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+            
+            function dragTouchStart(e) { 
+                const touch = e.touches[0];
+                pos3 = touch.clientX;
+                pos4 = touch.clientY;
+                document.ontouchend = closeDragElement;
+                document.ontouchmove = elementDragTouch;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+            
+            function elementDragTouch(e) {
+                const touch = e.touches[0];
+                pos1 = pos3 - touch.clientX;
+                pos2 = pos4 - touch.clientY;
+                pos3 = touch.clientX;
+                pos4 = touch.clientY;
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+
+            async function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+                document.ontouchend = null;
+                document.ontouchmove = null;
+                
+                // Grava a nova posição arrastada no Firebase
+                const postit = await DB.getPostIt();
+                postit.top = elmnt.style.top;
+                postit.left = elmnt.style.left;
+                await DB.setPostIt(postit);
+            }
         }
 
         // --- MESES ---
