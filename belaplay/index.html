@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FF4081">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bela Play</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #f0f8ff; font-family: 'Comic Sans MS', cursive, sans-serif; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        .screen { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .screen.active { display: flex; }
+        .btn-voltar { position: absolute; top: 20px; left: 20px; width: 60px; height: 60px; background-color: #ff5252; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); cursor: pointer; z-index: 100; user-select: none; touch-action: none; }
+        .btn-voltar:active { transform: scale(0.9); }
+        h1 { color: #FF4081; font-size: 45px; text-shadow: 2px 2px 0px #FFCA28; margin-bottom: 50px; text-align: center; }
+        
+        /* Grid para os botões do Menu CookLab caberem melhor na tela */
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; max-width: 600px; }
+        .menu-btn { width: 100%; min-width: 200px; padding: 20px; margin: 10px 0; font-size: 26px; font-weight: bold; color: white; background-color: #4CAF50; border: none; border-radius: 20px; box-shadow: 0 8px 0 rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.1s; }
+        .menu-btn:active { transform: translateY(8px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
+        
+        .btn-main { width: 250px; margin: 15px; }
+        .btn-cooklab { background-color: #FF9800; box-shadow: 0 8px 0 #E65100; }
+        .btn-nomes { background-color: #03A9F4; box-shadow: 0 8px 0 #01579B; }
+        
+        #counter-display { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background-color: #fff; padding: 10px 25px; border-radius: 30px; font-size: 22px; font-weight: bold; color: #555; border: 3px solid #FFCA28; box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 100; user-select: none; display: flex; align-items: center; gap: 10px; }
+        #counter-value { color: #FF4081; font-size: 28px; }
+        #help-btn { position: absolute; top: 20px; right: 20px; width: 60px; height: 60px; background-color: #FFCA28; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 35px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); cursor: pointer; z-index: 100; user-select: none; touch-action: none; }
+        #help-btn:active { transform: scale(0.90); }
+        
+        #game-area { flex: 1; width: 100%; position: relative; display: flex; justify-content: space-around; align-items: center; padding: 0 20px; box-sizing: border-box; }
+        #reference-area { width: 200px; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+        .reference-title { font-size: 18px; color: #555; margin-bottom: 10px; font-weight: bold; }
+        .reference-burger { width: 130px; height: auto; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); }
+        #plate { width: 250px; height: 250px; background-color: #fff; border: 5px dashed #ccc; border-radius: 50%; display: flex; justify-content: center; align-items: flex-end; position: relative; }
+        
+        #ingredients-panel { height: 150px; width: 100%; background-color: #fff; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-evenly; align-items: center; flex-wrap: wrap; padding: 0 10px; position: relative; z-index: 50; box-sizing: border-box; }
+        .slot { width: 110px; height: 70px; display: flex; justify-content: center; align-items: center; }
+        .ingredient { width: 120px; height: auto; cursor: grab; touch-action: none; user-select: none; -webkit-user-drag: none; position: absolute; transition: transform 0.1s; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); display: flex; justify-content: center; align-items: center; }
+        .ingredient svg { pointer-events: none; width: 100%; height: auto; display: block; }
+        .ingredient:active { cursor: grabbing; transform: scale(1.15); }
+        
+        @keyframes hintPulse { 0% { transform: scale(1); filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); } 50% { transform: scale(1.3) translateY(-10px); filter: drop-shadow(0 0 15px #FFCA28); } 100% { transform: scale(1); filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); } }
+        .hint-active { animation: hintPulse 0.8s ease-in-out 2; }
+        .in-panel { position: static; }
+        .dragging { position: absolute; z-index: 1000; }
+        .stacked { position: absolute; z-index: 10; }
+        
+        #palavra-alvo { display: flex; gap: 15px; margin-top: 80px; margin-bottom: 50px; }
+        .slot-letra { width: 60px; height: 60px; border: 4px dashed #ccc; border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 40px; font-weight: bold; color: #4CAF50; background-color: rgba(255,255,255,0.5); }
+        #area-bolhas { flex: 1; width: 90%; position: relative; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 20px; }
+        .bolha { width: 80px; height: 80px; background-color: #FFCA28; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: bold; color: #fff; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); box-shadow: 0 6px 0px #FFB300, 0 10px 10px rgba(0,0,0,0.2); cursor: pointer; user-select: none; touch-action: none; }
+        .bolha:active { transform: translateY(6px); box-shadow: 0 0 0 #FFB300; }
+        
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px) rotate(-5deg); background-color: #ff5252;} 75% { transform: translateX(10px) rotate(5deg); background-color: #ff5252;} }
+        .error-shake { animation: shake 0.4s; }
+        
+        #victory-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        #victory-screen.show { opacity: 1; pointer-events: all; }
+        .victory-text { font-size: 60px; color: #FF4081; font-weight: bold; text-shadow: 3px 3px 0 #FFCA28; margin-bottom: 10px; transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #victory-screen.show .victory-text { transform: scale(1); }
+        
+        #victory-image { transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transition-delay: 0.1s; margin-bottom: 10px; }
+        #victory-screen.show #victory-image { transform: scale(1); }
+        #victory-image svg { width: 160px; height: auto; filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.3)); }
+        
+        /* Novo estilo para o nome do prato na vitória */
+        #victory-dish-name { font-size: 35px; color: #4CAF50; font-weight: bold; margin-bottom: 30px; text-shadow: 2px 2px 0px #fff; transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transition-delay: 0.2s; }
+        #victory-screen.show #victory-dish-name { transform: scale(1); }
+
+        #restart-btn { padding: 20px 40px; font-size: 30px; background-color: #4CAF50; color: white; border: none; border-radius: 30px; box-shadow: 0 8px 0 #2E7D32; cursor: pointer; }
+        #restart-btn:active { transform: translateY(8px); box-shadow: 0 0 0 #2E7D32; }
+        .confetti { position: absolute; width: 15px; height: 15px; top: -20px; border-radius: 3px; animation: fall linear forwards; pointer-events: none; z-index: 2000; }
+        @keyframes fall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <!-- MENU PRINCIPAL -->
+    <div id="tela-menu" class="screen active">
+        <h1>Bela Play 🌟</h1>
+        <button class="menu-btn btn-main btn-cooklab" onclick="navegar('tela-cooklab')">🍳 CookLab</button>
+        <button class="menu-btn btn-main btn-nomes" onclick="iniciarJogoNomes()">🔤 Formando Nomes</button>
+    </div>
+
+    <!-- MENU COOKLAB -->
+    <div id="tela-cooklab" class="screen">
+        <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
+        <h1 style="margin-bottom: 20px;">Escolha a Receita</h1>
+        
+        <div class="menu-grid">
+            <button class="menu-btn" style="background-color:#8D6E63;" onclick="iniciarReceita('hamburguer')">🍔 Hambúrguer</button>
+            <button class="menu-btn" style="background-color:#E53935;" onclick="iniciarReceita('pizza')">🍕 Pizza</button>
+            <button class="menu-btn" style="background-color:#FDD835;" onclick="iniciarReceita('macarrao')">🍝 Macarrão</button>
+            <button class="menu-btn" style="background-color:#00BCD4;" onclick="iniciarReceita('sorvete')">🍨 Sorvete</button>
+            <button class="menu-btn" style="background-color:#E91E63;" onclick="iniciarReceita('picole')">🍦 Picolé</button>
+            <button class="menu-btn" style="background-color:#FF9800;" onclick="iniciarReceita('bolo')">🥕 Bolo de Cenoura</button>
+        </div>
+    </div>
+
+    <!-- TELA COOKLAB GAME -->
+    <div id="tela-cooklab-game" class="screen">
+        <div class="btn-voltar" onclick="navegar('tela-cooklab')">✖</div>
+        
+        <div id="counter-display">Restam: <span id="counter-value">0</span></div>
+        <div id="help-btn">💡</div>
+
+        <div id="game-area">
+            <div id="reference-area">
+                <div class="reference-title">Modelo:</div>
+                <div id="reference-svg-container"></div>
+            </div>
+            <div id="plate"></div>
+        </div>
+
+        <div id="ingredients-panel"></div>
+
+        <div id="victory-screen">
+            <div class="victory-text">Parabéns! 🎉</div>
+            <div id="victory-image"></div>
+            <!-- Novo elemento para o nome do prato -->
+            <div id="victory-dish-name"></div>
+            <button id="restart-btn" onclick="voltarMenuReceitas()">Escolher Outra!</button>
+        </div>
+    </div>
+
+    <!-- TELA FORMANDO NOMES -->
+    <div id="tela-nomes" class="screen">
+        <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
+        <div id="palavra-alvo"></div>
+        <div id="area-bolhas"></div>
+    </div>
+
+    <script>
+        const sndAcerto = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
+        const sndErro = new Audio('https://assets.mixkit.co/active_storage/sfx/2954/2954-preview.mp3'); 
+        const sndDica = new Audio('https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3'); 
+        const sndVitoria = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3'); 
+
+        function navegar(idTelaAlvo) {
+            document.querySelectorAll('.screen').forEach(tela => tela.classList.remove('active'));
+            document.getElementById(idTelaAlvo).classList.add('active');
+            document.querySelectorAll('.confetti').forEach(c => c.remove());
+        }
+
+        function voltarMenuReceitas() {
+            document.getElementById('victory-screen').classList.remove('show');
+            navegar('tela-cooklab');
+        }
+
+        function soltarConfetes(alvoElemento) {
+            const cores = ['#FFC107', '#FF4081', '#4CAF50', '#03A9F4', '#E040FB'];
+            for (let i = 0; i < 50; i++) {
+                let conf = document.createElement('div');
+                conf.classList.add('confetti');
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.backgroundColor = cores[Math.floor(Math.random() * cores.length)];
+                conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                conf.style.animationDelay = (Math.random() * 0.5) + 's';
+                alvoElemento.appendChild(conf);
+                setTimeout(() => conf.remove(), 5000);
+            }
+        }
+
+        // ==========================================
+        // BANCO DE DADOS DAS RECEITAS (ATUALIZADO)
+        // ==========================================
+        const bancoDeReceitas = {
+            hamburguer: {
+                nome: "Hambúrguer",
+                sequence: ['base-bun', 'meat', 'cheese', 'lettuce', 'top-bun'],
+                offsets: [30, 60, 80, 95, 110],
+                modeloSvg: `
+                    <svg class="reference-burger" viewBox="0 0 100 130">
+                        <path d="M10 110 C10 140, 90 140, 90 110 Z" fill="#E2A76F"/>
+                        <rect x="10" y="85" width="80" height="20" rx="10" fill="#703B23"/>
+                        <polygon points="10,65 90,65 85,75 15,75" fill="#FFD54F"/>
+                        <path d="M5 45 Q15 35 25 45 T45 45 T65 45 T85 45 T95 45 L90 55 L10 55 Z" fill="#81C784"/>
+                        <path d="M10 40 C10 0, 90 0, 90 40 Z" fill="#E2A76F"/>
+                        <circle cx="30" cy="15" r="2" fill="#FFF3E0"/><circle cx="50" cy="5" r="2" fill="#FFF3E0"/><circle cx="70" cy="15" r="2" fill="#FFF3E0"/>
+                    </svg>`,
+                ingredientes: [
+                    { type: 'base-bun', svg: '<svg viewBox="0 0 100 30"><path d="M10 0 C10 30, 90 30, 90 0 Z" fill="#E2A76F"/></svg>' },
+                    { type: 'meat', svg: '<svg viewBox="0 0 100 20"><rect x="10" y="0" width="80" height="20" rx="10" fill="#703B23"/></svg>' },
+                    { type: 'cheese', svg: '<svg viewBox="0 0 100 10"><polygon points="10,0 90,0 85,10 15,10" fill="#FFD54F"/></svg>' },
+                    { type: 'lettuce', svg: '<svg viewBox="0 0 100 20"><path d="M5 10 Q15 0 25 10 T45 10 T65 10 T85 10 T95 10 L90 20 L10 20 Z" fill="#81C784"/></svg>' },
+                    { type: 'top-bun', svg: '<svg viewBox="0 0 100 40"><path d="M10 40 C10 0, 90 0, 90 40 Z" fill="#E2A76F"/><circle cx="30" cy="15" r="2" fill="#FFF3E0"/><circle cx="50" cy="5" r="2" fill="#FFF3E0"/><circle cx="70" cy="15" r="2" fill="#FFF3E0"/></svg>' }
+                ]
+            },
+            pizza: {
+                nome: "Pizza de Banana",
+                sequence: ['massa', 'passata', 'queijo', 'banana'],
+                offsets: [20, 25, 30, 35],
+                modeloSvg: `
+                    <svg class="reference-burger" viewBox="0 0 100 60">
+                        <ellipse cx="50" cy="40" rx="45" ry="15" fill="#E2C275"/>
+                        <ellipse cx="50" cy="37" rx="40" ry="12" fill="#D32F2F"/>
+                        <ellipse cx="50" cy="34" rx="38" ry="10" fill="#FFD54F"/>
+                        <circle cx="35" cy="30" r="6" fill="#FFF59D"/><circle cx="50" cy="27" r="6" fill="#FFF59D"/><circle cx="65" cy="32" r="6" fill="#FFF59D"/>
+                    </svg>`,
+                ingredientes: [
+                    { type: 'massa', svg: '<svg viewBox="0 0 100 40"><ellipse cx="50" cy="20" rx="45" ry="15" fill="#E2C275"/></svg>' },
+                    { type: 'passata', svg: '<svg viewBox="0 0 100 40"><ellipse cx="50" cy="20" rx="40" ry="12" fill="#D32F2F"/></svg>' },
+                    { type: 'queijo', svg: '<svg viewBox="0 0 100 40"><ellipse cx="50" cy="20" rx="38" ry="10" fill="#FFD54F"/></svg>' },
+                    { type: 'banana', svg: '<svg viewBox="0 0 100 40"><circle cx="30" cy="20" r="6" fill="#FFF59D"/><circle cx="50" cy="15" r="6" fill="#FFF59D"/><circle cx="70" cy="22" r="6" fill="#FFF59D"/></svg>' }
+                ]
+            },
+            macarrao: {
+                nome: "Macarrão",
+                sequence: ['tigela', 'massa', 'molho', 'almondegas', 'manjericao'],
+                offsets: [30, 50, 65, 75, 85],
+                modeloSvg: `
+                    <svg class="reference-burger" viewBox="0 0 100 100">
+                        <path d="M 10 50 C 10 90, 90 90, 90 50 Z" fill="#B0BEC5"/>
+                        <path d="M 20 50 C 20 30, 80 30, 80 50 Z" fill="#FFE082"/>
+                        <ellipse cx="50" cy="40" rx="25" ry="10" fill="#D32F2F"/>
+                        <circle cx="40" cy="35" r="7" fill="#5D4037"/>
+                        <circle cx="60" cy="35" r="7" fill="#5D4037"/>
+                        <circle cx="50" cy="30" r="7" fill="#5D4037"/>
+                        <path d="M 50 25 Q 55 15 60 25 Q 55 30 50 25 Z" fill="#4CAF50"/>
+                    </svg>`,
+                ingredientes: [
+                    { type: 'tigela', svg: '<svg viewBox="0 0 100 40"><path d="M 10 10 C 10 50, 90 50, 90 10 Z" fill="#B0BEC5"/></svg>' },
+                    { type: 'massa', svg: '<svg viewBox="0 0 100 40"><path d="M 10 30 C 10 10, 90 10, 90 30 Z" fill="#FFE082"/></svg>' },
+                    { type: 'molho', svg: '<svg viewBox="0 0 100 30"><ellipse cx="50" cy="15" rx="35" ry="10" fill="#D32F2F"/></svg>' },
+                    { type: 'almondegas', svg: '<svg viewBox="0 0 100 30"><circle cx="35" cy="15" r="8" fill="#5D4037"/><circle cx="50" cy="10" r="8" fill="#5D4037"/><circle cx="65" cy="15" r="8" fill="#5D4037"/></svg>' },
+                    { type: 'manjericao', svg: '<svg viewBox="0 0 100 30"><path d="M 40 20 Q 50 5 60 20 Q 50 30 40 20 Z" fill="#4CAF50"/></svg>' }
+                ]
+            },
+            sorvete: {
+                nome: "Sorvete",
+                sequence: ['cone', 'scoop1', 'scoop2', 'calda', 'cereja'],
+                offsets: [30, 80, 105, 120, 135],
+                modeloSvg: `
+                    <svg class="reference-burger" viewBox="0 0 100 150">
+                        <polygon points="20,70 80,70 50,140" fill="#E6C280"/>
+                        <circle cx="50" cy="65" r="25" fill="#FFF9C4"/>
+                        <circle cx="50" cy="40" r="22" fill="#F8BBD0"/>
+                        <path d="M 28 40 Q 50 60 72 40 Q 50 15 28 40 Z" fill="#5D4037"/>
+                        <circle cx="50" cy="18" r="8" fill="#D32F2F"/>
+                    </svg>`,
+                ingredientes: [
+                    { type: 'cone', svg: '<svg viewBox="0 0 100 60"><polygon points="25,10 75,10 50,60" fill="#E6C280"/></svg>' },
+                    { type: 'scoop1', svg: '<svg viewBox="0 0 100 40"><circle cx="50" cy="20" r="20" fill="#FFF9C4"/></svg>' },
+                    { type: 'scoop2', svg: '<svg viewBox="0 0 100 40"><circle cx="50" cy="20" r="20" fill="#F8BBD0"/></svg>' },
+                    { type: 'calda', svg: '<svg viewBox="0 0 100 30"><path d="M 30 15 Q 50 35 70 15 Q 50 -5 30 15 Z" fill="#5D4037"/></svg>' },
+                    { type: 'cereja', svg: '<svg viewBox="0 0 100 30"><circle cx="50" cy="15" r="8" fill="#D32F2F"/></svg>' }
+                ]
+            },
+            picole: {
+                nome: "Picolé Colorido",
+                sequence: ['palito', 'base', 'cobertura', 'granulado'],
+                offsets: [30, 50, 95, 100],
+                modeloSvg: `
+                    <svg class="reference-burger" viewBox="0 0 100 150">
+                        <rect x="42" y="90" width="16" height="50" rx="8" fill="#FFCC80"/>
+                        <rect x="25" y="20" width="50" height="80" rx="25" fill="#9C27B0"/>
+                        <path d="M 25 60 L 75 60 L 75 45 C 75 20 25 20 25 45 Z" fill="#795548"/>
+                        <line x1="40" y1="30" x2="45" y2="35" stroke="#FFEB3B" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="60" y1="35" x2="55" y2="40" stroke="#00BCD4" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="50" y1="50" x2="55" y2="45" stroke="#FF9800" stroke-width="3" stroke-linecap="round"/>
+                    </svg>`,
+                ingredientes: [
+                    { type: 'palito', svg: '<svg viewBox="0 0 100 50"><rect x="42" y="0" width="16" height="50" rx="8" fill="#FFCC80"/></svg>' },
+                    { type: 'base', svg: '<svg viewBox="0 0 100 80"><rect x="25" y="0" width="50" height="80" rx="25" fill="#9C27B0"/></svg>' },
+                    { type: 'cobertura', svg: '<svg viewBox="0 0 100 50"><path d="M 25 40 L 75 40 L 75 25 C 75 0 25 0 25 25 Z" fill="#795548"/></svg>' },
+                    { type: 'granulado', svg: '<svg viewBox="0 0 100 40"><line x1="40" y1="10" x2="45" y2="15" stroke="#FFEB3B" stroke-width="3" stroke-linecap="round"/><line x1="60" y1="15" x2="55" y2="20" stroke="#00BCD4" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="30" x2="55" y2="25" stroke="#FF9800" stroke-width="3" stroke-linecap="round"/></svg>' }
+                ]
+            },
+            bolo: {
+                nome: "Bolo de Cenoura",
+                sequence: ['prato', 'bolo', 'cobertura', 'granulado'],
+                offsets: [30, 45, 80, 85],
+                modeloSvg: `
+                    <svg class="reference-burger" viewBox="0 0 100 100">
+                        <ellipse cx="50" cy="80" rx="45" ry="15" fill="#CFD8DC"/>
+                        <path d="M 15 80 L 15 40 C 15 20 85 20 85 40 L 85 80 Z" fill="#FF9800"/>
+                        <path d="M 13 45 C 13 20 87 20 87 45 C 87 55 75 60 65 50 C 55 40 45 60 35 50 C 25 40 13 55 13 45 Z" fill="#4E342E"/>
+                        <line x1="40" y1="30" x2="45" y2="32" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="60" y1="35" x2="55" y2="33" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="50" y1="40" x2="55" y2="38" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/>
+                    </svg>`,
+                ingredientes: [
+                    { type: 'prato', svg: '<svg viewBox="0 0 100 30"><ellipse cx="50" cy="15" rx="45" ry="15" fill="#CFD8DC"/></svg>' },
+                    { type: 'bolo', svg: '<svg viewBox="0 0 100 50"><path d="M 15 50 L 15 20 C 15 0 85 0 85 20 L 85 50 Z" fill="#FF9800"/></svg>' },
+                    { type: 'cobertura', svg: '<svg viewBox="0 0 100 40"><path d="M 13 25 C 13 0 87 0 87 25 C 87 35 75 40 65 30 C 55 20 45 40 35 30 C 25 20 13 35 13 25 Z" fill="#4E342E"/></svg>' },
+                    { type: 'granulado', svg: '<svg viewBox="0 0 100 30"><line x1="40" y1="10" x2="45" y2="12" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/><line x1="60" y1="15" x2="55" y2="13" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="20" x2="55" y2="18" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/></svg>' }
+                ]
+            }
+        };
+
+        const plate = document.getElementById('plate');
+        const panel = document.getElementById('ingredients-panel');
+        const refContainer = document.getElementById('reference-svg-container');
+        const helpBtn = document.getElementById('help-btn');
+        const victoryScreen = document.getElementById('victory-screen');
+        const counterValue = document.getElementById('counter-value');
+        const victoryImage = document.getElementById('victory-image');
+        const victoryDishName = document.getElementById('victory-dish-name');
+        
+        let expectedSequence = [];
+        let stackOffsets = []; 
+        let currentStep = 0;
+        let idReceitaAtual = '';
+        let activeItem = null;
+        let currentX, currentY, initialX, initialY;
+
+        function iniciarReceita(idReceita) {
+            const receita = bancoDeReceitas[idReceita];
+            if (!receita || receita.sequence.length === 0) return;
+
+            idReceitaAtual = idReceita;
+            expectedSequence = receita.sequence;
+            stackOffsets = receita.offsets;
+            currentStep = 0;
+            counterValue.textContent = expectedSequence.length;
+            
+            plate.innerHTML = '';
+            panel.innerHTML = '';
+            victoryScreen.classList.remove('show');
+            refContainer.innerHTML = receita.modeloSvg;
+
+            receita.ingredientes.forEach(ing => {
+                const slot = document.createElement('div');
+                slot.classList.add('slot');
+                slot.dataset.slotType = ing.type;
+                
+                const divIngrediente = document.createElement('div');
+                divIngrediente.classList.add('ingredient', 'in-panel');
+                divIngrediente.dataset.type = ing.type;
+                divIngrediente.innerHTML = ing.svg;
+                
+                divIngrediente.addEventListener('pointerdown', dragStart);
+                
+                slot.appendChild(divIngrediente);
+                panel.appendChild(slot);
+            });
+
+            navegar('tela-cooklab-game');
+        }
+
+        document.addEventListener('pointermove', drag);
+        document.addEventListener('pointerup', dragEnd);
+
+        helpBtn.addEventListener('pointerdown', () => {
+            if (currentStep >= expectedSequence.length) return; 
+            const nextType = expectedSequence[currentStep];
+            const nextElement = document.querySelector(`.ingredient.in-panel[data-type="${nextType}"]`);
+            if (nextElement) {
+                sndDica.cloneNode(true).play().catch(e => {});
+                nextElement.classList.add('hint-active');
+                setTimeout(() => nextElement.classList.remove('hint-active'), 1600);
+            }
+        });
+
+        function dragStart(e) {
+            let target = e.target.closest('.ingredient');
+            if (!target || target.classList.contains('stacked')) return;
+            
+            activeItem = target;
+            activeItem.classList.remove('hint-active');
+            
+            if (activeItem.classList.contains('in-panel')) {
+                const rect = activeItem.getBoundingClientRect();
+                activeItem.classList.remove('in-panel');
+                activeItem.classList.add('dragging');
+                document.body.appendChild(activeItem);
+                activeItem.style.left = rect.left + 'px';
+                activeItem.style.top = rect.top + 'px';
+                initialX = e.clientX - rect.left;
+                initialY = e.clientY - rect.top;
+            } else {
+                initialX = e.clientX - activeItem.offsetLeft;
+                initialY = e.clientY - activeItem.offsetTop;
+            }
+        }
+
+        function drag(e) {
+            if (!activeItem) return;
+            e.preventDefault();
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+            activeItem.style.left = currentX + 'px';
+            activeItem.style.top = currentY + 'px';
+        }
+
+        function returnToPanel(item) {
+            item.classList.remove('dragging', 'stacked');
+            item.classList.add('in-panel');
+            const type = item.dataset.type;
+            const slot = document.querySelector(`.slot[data-slot-type="${type}"]`);
+            if (slot) slot.appendChild(item);
+            item.style.left = ''; item.style.top = ''; item.style.bottom = ''; item.style.transform = '';
+        }
+
+        function dragEnd(e) {
+            if (!activeItem) return;
+
+            const plateRect = plate.getBoundingClientRect();
+            const itemRect = activeItem.getBoundingClientRect();
+            const isOverPlate = !(itemRect.right < plateRect.left || itemRect.left > plateRect.right || itemRect.bottom < plateRect.top || itemRect.top > plateRect.bottom);
+
+            if (isOverPlate) {
+                if (activeItem.dataset.type === expectedSequence[currentStep]) {
+                    activeItem.classList.remove('dragging');
+                    activeItem.classList.add('stacked');
+                    plate.appendChild(activeItem);
+                    
+                    activeItem.style.left = '50%';
+                    activeItem.style.top = 'auto';
+                    activeItem.style.bottom = stackOffsets[currentStep] + 'px';
+                    activeItem.style.transform = 'translateX(-50%)';
+                    
+                    sndAcerto.cloneNode(true).play().catch(e => {});
+                    currentStep++;
+                    counterValue.textContent = expectedSequence.length - currentStep;
+                    
+                    if (currentStep === expectedSequence.length) {
+                        setTimeout(() => {
+                            sndVitoria.cloneNode(true).play().catch(e => {});
+                            soltarConfetes(document.getElementById('tela-cooklab-game'));
+                            
+                            // Injeta o desenho e o nome do prato na tela de vitória
+                            victoryImage.innerHTML = bancoDeReceitas[idReceitaAtual].modeloSvg;
+                            victoryDishName.textContent = bancoDeReceitas[idReceitaAtual].nome;
+                            
+                            victoryScreen.classList.add('show');
+                        }, 500);
+                    }
+                } else {
+                    sndErro.cloneNode(true).play().catch(e => {});
+                    returnToPanel(activeItem);
+                }
+            } else {
+                returnToPanel(activeItem);
+            }
+            activeItem = null;
+        }
+
+        // ==========================================
+        // LÓGICA: FORMANDO NOMES
+        // ==========================================
+        const listaNomes = ["ISABELA", "GABRIEL", "KAMILA", "SAPO", "BOLA", "CASA"];
+        let ultimaPalavra = "";
+        let nomeAlvo = "";
+        let indiceLetraAtual = 1; 
+        const containerSlots = document.getElementById('palavra-alvo');
+        const containerBolhas = document.getElementById('area-bolhas');
+
+        function iniciarJogoNomes() {
+            navegar('tela-nomes');
+            
+            // Sorteia um nome garantindo que não repita o da rodada anterior
+            do {
+                nomeAlvo = listaNomes[Math.floor(Math.random() * listaNomes.length)];
+            } while (nomeAlvo === ultimaPalavra && listaNomes.length > 1);
+            
+            ultimaPalavra = nomeAlvo;
+            indiceLetraAtual = 1; 
+            
+            containerSlots.innerHTML = '';
+            containerBolhas.innerHTML = '';
+
+            for(let i = 0; i < nomeAlvo.length; i++) {
+                const slot = document.createElement('div');
+                slot.classList.add('slot-letra');
+                slot.id = `slot-${i}`;
+                
+                if(i === 0) {
+                    slot.textContent = nomeAlvo[0];
+                    slot.style.backgroundColor = "#fff";
+                    slot.style.borderColor = "#4CAF50";
+                }
+                
+                containerSlots.appendChild(slot);
+            }
+
+            let letrasEmbaralhadas = nomeAlvo.substring(1).split('').sort(() => Math.random() - 0.5);
+
+            letrasEmbaralhadas.forEach((letra, index) => {
+                const bolha = document.createElement('div');
+                bolha.classList.add('bolha');
+                bolha.textContent = letra;
+                const cores = ['#FFCA28', '#03A9F4', '#4CAF50', '#FF4081', '#9C27B0'];
+                bolha.style.backgroundColor = cores[index % cores.length];
+                bolha.addEventListener('pointerdown', () => checarLetra(bolha, letra));
+                containerBolhas.appendChild(bolha);
+            });
+        }
+
+        function checarLetra(elementoBolha, letraClicada) {
+            const letraCorreta = nomeAlvo[indiceLetraAtual];
+            if (letraClicada === letraCorreta) {
+                sndAcerto.cloneNode(true).play().catch(e => {});
+                const slotAlvo = document.getElementById(`slot-${indiceLetraAtual}`);
+                slotAlvo.textContent = letraClicada;
+                slotAlvo.style.backgroundColor = "#fff";
+                slotAlvo.style.borderColor = "#4CAF50";
+                elementoBolha.remove();
+                indiceLetraAtual++;
+
+                if (indiceLetraAtual === nomeAlvo.length) {
+                    setTimeout(() => {
+                        sndVitoria.cloneNode(true).play().catch(e => {});
+                        soltarConfetes(document.getElementById('tela-nomes'));
+                        setTimeout(iniciarJogoNomes, 4000);
+                    }, 300);
+                }
+            } else {
+                sndErro.cloneNode(true).play().catch(e => {});
+                elementoBolha.classList.add('error-shake');
+                setTimeout(() => elementoBolha.classList.remove('error-shake'), 400);
+            }
+        }
+    </script>
+
+    
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker registrado com sucesso.'))
+                .catch(err => console.log('Erro ao registrar Service Worker:', err));
+        });
+    }
+</script>
+</body>
+</html>
