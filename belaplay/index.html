@@ -44,6 +44,7 @@
         .input-custom:focus { outline: none; border-color: #FF4081; }
         .form-custom { display: flex; align-items: center; justify-content: center; margin-top: 30px; background: rgba(255,255,255,0.7); padding: 20px; border-radius: 30px; }
         
+        /* CookLab */
         #counter-display { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background-color: #fff; padding: 10px 25px; border-radius: 30px; font-size: 22px; font-weight: bold; color: #555; border: 3px solid #FFCA28; box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 100; user-select: none; display: flex; align-items: center; gap: 10px; }
         #counter-value { color: #FF4081; font-size: 28px; }
         #help-btn { position: absolute; top: 20px; right: 20px; width: 60px; height: 60px; background-color: #FFCA28; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 35px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); cursor: pointer; z-index: 100; user-select: none; touch-action: none; }
@@ -53,7 +54,6 @@
         #reference-area { width: 200px; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
         .reference-title { font-size: 18px; color: #555; margin-bottom: 10px; font-weight: bold; }
         
-        /* CORREÇÃO AQUI: Garante que o modelo SVG apareça no tamanho correto em qualquer receita */
         #reference-svg-container svg { width: 130px; height: auto; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); display: block; }
         
         #plate { width: 250px; height: 250px; background-color: #fff; border: 5px dashed #ccc; border-radius: 50%; display: flex; justify-content: center; align-items: flex-end; position: relative; }
@@ -70,6 +70,7 @@
         .dragging { position: absolute; z-index: 1000; }
         .stacked { position: absolute; z-index: 10; }
         
+        /* Nomes */
         #palavra-alvo { display: flex; gap: 15px; margin-top: 80px; margin-bottom: 50px; flex-wrap: wrap; justify-content: center; }
         .slot-letra { width: 60px; height: 60px; border: 4px dashed #ccc; border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 40px; font-weight: bold; color: #4CAF50; background-color: rgba(255,255,255,0.5); }
         #area-bolhas { flex: 1; width: 90%; position: relative; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 20px; }
@@ -79,6 +80,7 @@
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px) rotate(-5deg); background-color: #ff5252;} 75% { transform: translateX(10px) rotate(5deg); background-color: #ff5252;} }
         .error-shake { animation: shake 0.4s; }
         
+        /* Vitória */
         #victory-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
         #victory-screen.show { opacity: 1; pointer-events: all; }
         .victory-text { font-size: 60px; color: #FF4081; font-weight: bold; text-shadow: 3px 3px 0 #FFCA28; margin-bottom: 10px; transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -86,8 +88,6 @@
         
         #victory-image { transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transition-delay: 0.1s; margin-bottom: 10px; }
         #victory-screen.show #victory-image { transform: scale(1); }
-        
-        /* CORREÇÃO TAMBÉM NA VITÓRIA */
         #victory-image svg { width: 160px; height: auto; filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.3)); display: block; }
         
         #victory-dish-name { font-size: 35px; color: #4CAF50; font-weight: bold; margin-bottom: 30px; text-shadow: 2px 2px 0px #fff; transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transition-delay: 0.2s; }
@@ -176,9 +176,9 @@
         const sndBotao = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
         sndBotao.volume = 0.4;
         
-        const musicaFundo = new Audio('https://assets.mixkit.co/active_storage/sfx/135/135-preview.mp3'); 
+        const musicaFundo = new Audio('./danca.mp3');
         musicaFundo.loop = true;
-        musicaFundo.volume = 0.10; 
+        musicaFundo.volume = 0.30;  
 
         let musicaIniciada = false;
         document.body.addEventListener('pointerdown', () => {
@@ -507,7 +507,8 @@
             nomeAlvo = palavra;
             indiceLetraAtual = 1; 
             
-            falar("Vamos escrever " + nomeAlvo);
+            // Fala a instrução inicial e pede a primeira letra
+            falar("Vamos escrever " + nomeAlvo + ". Procure a letra " + nomeAlvo[indiceLetraAtual]);
             
             containerSlots.innerHTML = '';
             containerBolhas.innerHTML = '';
@@ -564,6 +565,9 @@
                         soltarConfetes(document.getElementById('tela-nomes'));
                         setTimeout(() => navegar('tela-nomes-menu'), 4000);
                     }, 300);
+                } else {
+                    // Pede a próxima letra
+                    falar("Agora a letra " + nomeAlvo[indiceLetraAtual]);
                 }
             } else {
                 sndErro.cloneNode(true).play().catch(e => {});
