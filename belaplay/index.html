@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bela Play</title>
+    <!-- Ícones da aba do navegador -->
+    <link rel="icon" href="favicon.png" sizes="any">
     <style>
         body { margin: 0; padding: 0; background-color: #f0f8ff; font-family: 'Comic Sans MS', cursive, sans-serif; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
         
-        /* Fundo animado para as telas de Menu */
-        #tela-menu, #tela-cooklab {
+        #tela-menu, #tela-cooklab, #tela-nomes-menu {
             background-color: #FFD1DC;
             background-image: 
                 radial-gradient(rgba(255, 255, 255, 0.4) 5px, transparent 5px),
@@ -26,21 +27,23 @@
         .screen { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; position: relative; }
         .screen.active { display: flex; }
         
-        /* Botões padronizados */
         .btn-voltar { position: absolute; top: 20px; left: 20px; width: 60px; height: 60px; background-color: #ff5252; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); cursor: pointer; z-index: 100; user-select: none; touch-action: none; }
         .btn-voltar:active { transform: scale(0.9); }
         
         h1 { color: #FF4081; font-size: 45px; text-shadow: 2px 2px 0px #FFCA28; margin-bottom: 50px; text-align: center; }
         
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; max-width: 600px; }
-        .menu-btn { width: 100%; min-width: 200px; padding: 20px; margin: 10px 0; font-size: 26px; font-weight: bold; color: white; background-color: #4CAF50; border: none; border-radius: 20px; box-shadow: 0 8px 0 rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.1s; user-select: none; touch-action: none; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 20px; width: 90%; max-width: 900px; }
+        .menu-btn { width: 100%; padding: 20px; font-size: 26px; font-weight: bold; color: white; background-color: #4CAF50; border: none; border-radius: 20px; box-shadow: 0 8px 0 rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.1s; user-select: none; touch-action: none; }
         .menu-btn:active { transform: translateY(8px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
         
-        .btn-main { width: 250px; margin: 15px; }
+        .btn-main { width: 280px; margin: 15px; }
         .btn-cooklab { background-color: #FF9800; box-shadow: 0 8px 0 #E65100; }
         .btn-nomes { background-color: #03A9F4; box-shadow: 0 8px 0 #01579B; }
         
-        /* CookLab */
+        .input-custom { padding: 15px 25px; font-size: 24px; font-family: inherit; border: 4px solid #03A9F4; border-radius: 20px; width: 250px; text-align: center; margin-right: 10px; text-transform: uppercase; }
+        .input-custom:focus { outline: none; border-color: #FF4081; }
+        .form-custom { display: flex; align-items: center; justify-content: center; margin-top: 30px; background: rgba(255,255,255,0.7); padding: 20px; border-radius: 30px; }
+        
         #counter-display { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background-color: #fff; padding: 10px 25px; border-radius: 30px; font-size: 22px; font-weight: bold; color: #555; border: 3px solid #FFCA28; box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 100; user-select: none; display: flex; align-items: center; gap: 10px; }
         #counter-value { color: #FF4081; font-size: 28px; }
         #help-btn { position: absolute; top: 20px; right: 20px; width: 60px; height: 60px; background-color: #FFCA28; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 35px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); cursor: pointer; z-index: 100; user-select: none; touch-action: none; }
@@ -49,7 +52,10 @@
         #game-area { flex: 1; width: 100%; position: relative; display: flex; justify-content: space-around; align-items: center; padding: 0 20px; box-sizing: border-box; }
         #reference-area { width: 200px; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
         .reference-title { font-size: 18px; color: #555; margin-bottom: 10px; font-weight: bold; }
-        .reference-burger { width: 130px; height: auto; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); }
+        
+        /* CORREÇÃO AQUI: Garante que o modelo SVG apareça no tamanho correto em qualquer receita */
+        #reference-svg-container svg { width: 130px; height: auto; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); display: block; }
+        
         #plate { width: 250px; height: 250px; background-color: #fff; border: 5px dashed #ccc; border-radius: 50%; display: flex; justify-content: center; align-items: flex-end; position: relative; }
         
         #ingredients-panel { height: 150px; width: 100%; background-color: #fff; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-evenly; align-items: center; flex-wrap: wrap; padding: 0 10px; position: relative; z-index: 50; box-sizing: border-box; }
@@ -64,8 +70,7 @@
         .dragging { position: absolute; z-index: 1000; }
         .stacked { position: absolute; z-index: 10; }
         
-        /* Nomes */
-        #palavra-alvo { display: flex; gap: 15px; margin-top: 80px; margin-bottom: 50px; }
+        #palavra-alvo { display: flex; gap: 15px; margin-top: 80px; margin-bottom: 50px; flex-wrap: wrap; justify-content: center; }
         .slot-letra { width: 60px; height: 60px; border: 4px dashed #ccc; border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 40px; font-weight: bold; color: #4CAF50; background-color: rgba(255,255,255,0.5); }
         #area-bolhas { flex: 1; width: 90%; position: relative; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 20px; }
         .bolha { width: 80px; height: 80px; background-color: #FFCA28; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: bold; color: #fff; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); box-shadow: 0 6px 0px #FFB300, 0 10px 10px rgba(0,0,0,0.2); cursor: pointer; user-select: none; touch-action: none; }
@@ -74,7 +79,6 @@
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px) rotate(-5deg); background-color: #ff5252;} 75% { transform: translateX(10px) rotate(5deg); background-color: #ff5252;} }
         .error-shake { animation: shake 0.4s; }
         
-        /* Vitória */
         #victory-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
         #victory-screen.show { opacity: 1; pointer-events: all; }
         .victory-text { font-size: 60px; color: #FF4081; font-weight: bold; text-shadow: 3px 3px 0 #FFCA28; margin-bottom: 10px; transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -82,7 +86,9 @@
         
         #victory-image { transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transition-delay: 0.1s; margin-bottom: 10px; }
         #victory-screen.show #victory-image { transform: scale(1); }
-        #victory-image svg { width: 160px; height: auto; filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.3)); }
+        
+        /* CORREÇÃO TAMBÉM NA VITÓRIA */
+        #victory-image svg { width: 160px; height: auto; filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.3)); display: block; }
         
         #victory-dish-name { font-size: 35px; color: #4CAF50; font-weight: bold; margin-bottom: 30px; text-shadow: 2px 2px 0px #fff; transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transition-delay: 0.2s; }
         #victory-screen.show #victory-dish-name { transform: scale(1); }
@@ -97,16 +103,15 @@
 
     <!-- MENU PRINCIPAL -->
     <div id="tela-menu" class="screen active">
-        <h1>Bela Play 1.0 🌟</h1>
+        <h1>Bela Play 🌟</h1>
         <button class="menu-btn btn-main btn-cooklab" onclick="navegar('tela-cooklab')">🍳 CookLab</button>
-        <button class="menu-btn btn-main btn-nomes" onclick="iniciarJogoNomes()">🔤 Formando Nomes</button>
+        <button class="menu-btn btn-main btn-nomes" onclick="navegar('tela-nomes-menu')">🔤 Formando Nomes</button>
     </div>
 
     <!-- MENU COOKLAB -->
     <div id="tela-cooklab" class="screen">
         <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
         <h1 style="margin-bottom: 20px;">Escolha a Receita</h1>
-        
         <div class="menu-grid">
             <button class="menu-btn" style="background-color:#8D6E63;" onclick="iniciarReceita('hamburguer')">🍔 Hambúrguer</button>
             <button class="menu-btn" style="background-color:#E53935;" onclick="iniciarReceita('pizza')">🍕 Pizza</button>
@@ -114,16 +119,29 @@
             <button class="menu-btn" style="background-color:#00BCD4;" onclick="iniciarReceita('sorvete')">🍨 Sorvete</button>
             <button class="menu-btn" style="background-color:#E91E63;" onclick="iniciarReceita('picole')">🍦 Picolé</button>
             <button class="menu-btn" style="background-color:#FF9800;" onclick="iniciarReceita('bolo')">🥕 Bolo</button>
+            <button class="menu-btn" style="background-color:#9C27B0;" onclick="iniciarReceita('pirulito')">🍭 Pirulito</button>
+            <button class="menu-btn" style="background-color:#F48FB1;" onclick="iniciarReceita('milkshake')">🥤 Milkshake</button>
+        </div>
+    </div>
+
+    <!-- MENU FORMANDO NOMES -->
+    <div id="tela-nomes-menu" class="screen">
+        <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
+        <h1 style="margin-bottom: 20px;">Escolha uma Palavra</h1>
+        <div class="menu-grid">
+            <button class="menu-btn btn-nomes" onclick="iniciarJogoNomesAleatorio()">🎲 Sortear Palavra</button>
+        </div>
+        <div class="form-custom">
+            <input type="text" id="palavra-custom" class="input-custom" placeholder="Ou digite aqui...">
+            <button class="menu-btn" style="width: auto; margin: 0; font-size: 24px;" onclick="iniciarJogoNomesCustomizado()">Jogar!</button>
         </div>
     </div>
 
     <!-- TELA COOKLAB GAME -->
     <div id="tela-cooklab-game" class="screen">
         <div class="btn-voltar" onclick="navegar('tela-cooklab')">✖</div>
-        
         <div id="counter-display">Restam: <span id="counter-value">0</span></div>
         <div id="help-btn">💡</div>
-
         <div id="game-area">
             <div id="reference-area">
                 <div class="reference-title">Modelo:</div>
@@ -131,9 +149,7 @@
             </div>
             <div id="plate"></div>
         </div>
-
         <div id="ingredients-panel"></div>
-
         <div id="victory-screen">
             <div class="victory-text">Parabéns! 🎉</div>
             <div id="victory-image"></div>
@@ -142,66 +158,54 @@
         </div>
     </div>
 
-    <!-- TELA FORMANDO NOMES -->
+    <!-- TELA FORMANDO NOMES GAME -->
     <div id="tela-nomes" class="screen">
-        <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
+        <div class="btn-voltar" onclick="navegar('tela-nomes-menu')">✖</div>
         <div id="palavra-alvo"></div>
         <div id="area-bolhas"></div>
     </div>
 
     <script>
         // ==========================================
-        // SISTEMA DE ÁUDIO
+        // SISTEMA DE ÁUDIO & TTS
         // ==========================================
         const sndAcerto = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
         const sndErro = new Audio('https://assets.mixkit.co/active_storage/sfx/2954/2954-preview.mp3'); 
         const sndDica = new Audio('https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3'); 
         const sndVitoria = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3'); 
-        
-        // Novos áudios para Botões e Música de Fundo
         const sndBotao = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
         sndBotao.volume = 0.4;
         
-        // Música instrumental calma em loop
-        const musicaFundo = new Audio('./danca.mp3');
+        const musicaFundo = new Audio('https://assets.mixkit.co/active_storage/sfx/135/135-preview.mp3'); 
         musicaFundo.loop = true;
-        musicaFundo.volume = 0.30; 
+        musicaFundo.volume = 0.10; 
 
-        // Inicializa a música no primeiro toque na tela para respeitar a política de autoplay
         let musicaIniciada = false;
         document.body.addEventListener('pointerdown', () => {
             if (!musicaIniciada) {
-                musicaFundo.play().catch(e => console.log("Áudio bloqueado pelo navegador"));
+                musicaFundo.play().catch(e => console.log("Áudio bloqueado"));
                 musicaIniciada = true;
             }
         }, { once: true });
 
-        // Aplica o som de "pop" a todos os botões e elementos interativos do jogo
         document.querySelectorAll('.menu-btn, .btn-voltar, #help-btn, #restart-btn').forEach(btn => {
-            btn.addEventListener('pointerdown', () => {
-                sndBotao.cloneNode(true).play().catch(e => {});
-            });
+            btn.addEventListener('pointerdown', () => sndBotao.cloneNode(true).play().catch(e => {}));
         });
 
-        // Delegação de eventos para botões criados dinamicamente
-        document.body.addEventListener('pointerdown', (e) => {
-            if (e.target.classList.contains('bolha')) {
-                sndBotao.cloneNode(true).play().catch(err => {});
+        function falar(texto) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); 
+                const msg = new SpeechSynthesisUtterance(texto);
+                msg.lang = 'pt-BR';
+                msg.rate = 0.9; 
+                window.speechSynthesis.speak(msg);
             }
-        });
+        }
 
-        // ==========================================
-        // NAVEGAÇÃO SPA
-        // ==========================================
         function navegar(idTelaAlvo) {
             document.querySelectorAll('.screen').forEach(tela => tela.classList.remove('active'));
             document.getElementById(idTelaAlvo).classList.add('active');
             document.querySelectorAll('.confetti').forEach(c => c.remove());
-        }
-
-        function voltarMenuReceitas() {
-            document.getElementById('victory-screen').classList.remove('show');
-            navegar('tela-cooklab');
         }
 
         function soltarConfetes(alvoElemento) {
@@ -218,71 +222,95 @@
             }
         }
 
+        function voltarMenuReceitas() {
+            document.getElementById('victory-screen').classList.remove('show');
+            navegar('tela-cooklab');
+        }
+
         // ==========================================
         // BANCO DE DADOS DAS RECEITAS
         // ==========================================
         const bancoDeReceitas = {
             hamburguer: {
                 nome: "Hambúrguer", sequence: ['base-bun', 'meat', 'cheese', 'lettuce', 'top-bun'], offsets: [30, 60, 80, 95, 110],
-                modeloSvg: `<svg class="reference-burger" viewBox="0 0 100 130"><path d="M10 110 C10 140, 90 140, 90 110 Z" fill="#E2A76F"/><rect x="10" y="85" width="80" height="20" rx="10" fill="#703B23"/><polygon points="10,65 90,65 85,75 15,75" fill="#FFD54F"/><path d="M5 45 Q15 35 25 45 T45 45 T65 45 T85 45 T95 45 L90 55 L10 55 Z" fill="#81C784"/><path d="M10 40 C10 0, 90 0, 90 40 Z" fill="#E2A76F"/><circle cx="30" cy="15" r="2" fill="#FFF3E0"/><circle cx="50" cy="5" r="2" fill="#FFF3E0"/><circle cx="70" cy="15" r="2" fill="#FFF3E0"/></svg>`,
+                modeloSvg: `<svg viewBox="0 0 100 130"><path d="M10 110 C10 140, 90 140, 90 110 Z" fill="#E2A76F"/><rect x="10" y="85" width="80" height="20" rx="10" fill="#703B23"/><polygon points="10,65 90,65 85,75 15,75" fill="#FFD54F"/><path d="M5 45 Q15 35 25 45 T45 45 T65 45 T85 45 T95 45 L90 55 L10 55 Z" fill="#81C784"/><path d="M10 40 C10 0, 90 0, 90 40 Z" fill="#E2A76F"/><circle cx="30" cy="15" r="2" fill="#FFF3E0"/><circle cx="50" cy="5" r="2" fill="#FFF3E0"/><circle cx="70" cy="15" r="2" fill="#FFF3E0"/></svg>`,
                 ingredientes: [
-                    { type: 'base-bun', svg: '<svg viewBox="0 0 100 30"><path d="M10 0 C10 30, 90 30, 90 0 Z" fill="#E2A76F"/></svg>' },
-                    { type: 'meat', svg: '<svg viewBox="0 0 100 20"><rect x="10" y="0" width="80" height="20" rx="10" fill="#703B23"/></svg>' },
-                    { type: 'cheese', svg: '<svg viewBox="0 0 100 10"><polygon points="10,0 90,0 85,10 15,10" fill="#FFD54F"/></svg>' },
-                    { type: 'lettuce', svg: '<svg viewBox="0 0 100 20"><path d="M5 10 Q15 0 25 10 T45 10 T65 10 T85 10 T95 10 L90 20 L10 20 Z" fill="#81C784"/></svg>' },
-                    { type: 'top-bun', svg: '<svg viewBox="0 0 100 40"><path d="M10 40 C10 0, 90 0, 90 40 Z" fill="#E2A76F"/><circle cx="30" cy="15" r="2" fill="#FFF3E0"/><circle cx="50" cy="5" r="2" fill="#FFF3E0"/><circle cx="70" cy="15" r="2" fill="#FFF3E0"/></svg>' }
+                    { type: 'base-bun', nomeTTS: 'Pão de baixo', svg: '<svg viewBox="0 0 100 30"><path d="M10 0 C10 30, 90 30, 90 0 Z" fill="#E2A76F"/></svg>' },
+                    { type: 'meat', nomeTTS: 'Carne', svg: '<svg viewBox="0 0 100 20"><rect x="10" y="0" width="80" height="20" rx="10" fill="#703B23"/></svg>' },
+                    { type: 'cheese', nomeTTS: 'Queijo', svg: '<svg viewBox="0 0 100 10"><polygon points="10,0 90,0 85,10 15,10" fill="#FFD54F"/></svg>' },
+                    { type: 'lettuce', nomeTTS: 'Alface', svg: '<svg viewBox="0 0 100 20"><path d="M5 10 Q15 0 25 10 T45 10 T65 10 T85 10 T95 10 L90 20 L10 20 Z" fill="#81C784"/></svg>' },
+                    { type: 'top-bun', nomeTTS: 'Pão de cima', svg: '<svg viewBox="0 0 100 40"><path d="M10 40 C10 0, 90 0, 90 40 Z" fill="#E2A76F"/><circle cx="30" cy="15" r="2" fill="#FFF3E0"/><circle cx="50" cy="5" r="2" fill="#FFF3E0"/><circle cx="70" cy="15" r="2" fill="#FFF3E0"/></svg>' }
                 ]
             },
             pizza: {
-                nome: "Pizza de Banana", sequence: ['massa', 'passata', 'queijo', 'banana'], offsets: [20, 25, 30, 35],
-                modeloSvg: `<svg class="reference-burger" viewBox="0 0 100 60"><ellipse cx="50" cy="40" rx="45" ry="15" fill="#E2C275"/><ellipse cx="50" cy="37" rx="40" ry="12" fill="#D32F2F"/><ellipse cx="50" cy="34" rx="38" ry="10" fill="#FFD54F"/><circle cx="35" cy="30" r="6" fill="#FFF59D"/><circle cx="50" cy="27" r="6" fill="#FFF59D"/><circle cx="65" cy="32" r="6" fill="#FFF59D"/></svg>`,
+                nome: "Pizza", sequence: ['massa', 'passata', 'queijo', 'banana'], offsets: [20, 25, 30, 35],
+                modeloSvg: `<svg viewBox="0 0 100 60"><ellipse cx="50" cy="40" rx="45" ry="15" fill="#E2C275"/><ellipse cx="50" cy="37" rx="40" ry="12" fill="#D32F2F"/><ellipse cx="50" cy="34" rx="38" ry="10" fill="#FFD54F"/><circle cx="35" cy="30" r="6" fill="#FFF59D"/><circle cx="50" cy="27" r="6" fill="#FFF59D"/><circle cx="65" cy="32" r="6" fill="#FFF59D"/></svg>`,
                 ingredientes: [
-                    { type: 'massa', svg: '<svg viewBox="0 0 100 40"><ellipse cx="50" cy="20" rx="45" ry="15" fill="#E2C275"/></svg>' },
-                    { type: 'passata', svg: '<svg viewBox="0 0 100 40"><ellipse cx="50" cy="20" rx="40" ry="12" fill="#D32F2F"/></svg>' },
-                    { type: 'queijo', svg: '<svg viewBox="0 0 100 40"><ellipse cx="50" cy="20" rx="38" ry="10" fill="#FFD54F"/></svg>' },
-                    { type: 'banana', svg: '<svg viewBox="0 0 100 40"><circle cx="30" cy="20" r="6" fill="#FFF59D"/><circle cx="50" cy="15" r="6" fill="#FFF59D"/><circle cx="70" cy="22" r="6" fill="#FFF59D"/></svg>' }
+                    { type: 'massa', nomeTTS: 'Massa', svg: '<svg viewBox="0 0 100 40"><ellipse cx="50" cy="20" rx="45" ry="15" fill="#E2C275"/></svg>' },
+                    { type: 'passata', nomeTTS: 'Molho de tomate', svg: '<svg viewBox="0 0 100 40"><ellipse cx="50" cy="20" rx="40" ry="12" fill="#D32F2F"/></svg>' },
+                    { type: 'queijo', nomeTTS: 'Queijo', svg: '<svg viewBox="0 0 100 40"><ellipse cx="50" cy="20" rx="38" ry="10" fill="#FFD54F"/></svg>' },
+                    { type: 'banana', nomeTTS: 'Banana', svg: '<svg viewBox="0 0 100 40"><circle cx="30" cy="20" r="6" fill="#FFF59D"/><circle cx="50" cy="15" r="6" fill="#FFF59D"/><circle cx="70" cy="22" r="6" fill="#FFF59D"/></svg>' }
                 ]
             },
             macarrao: {
                 nome: "Macarrão", sequence: ['tigela', 'massa', 'molho', 'almondegas', 'manjericao'], offsets: [30, 50, 65, 75, 85],
-                modeloSvg: `<svg class="reference-burger" viewBox="0 0 100 100"><path d="M 10 50 C 10 90, 90 90, 90 50 Z" fill="#B0BEC5"/><path d="M 20 50 C 20 30, 80 30, 80 50 Z" fill="#FFE082"/><ellipse cx="50" cy="40" rx="25" ry="10" fill="#D32F2F"/><circle cx="40" cy="35" r="7" fill="#5D4037"/><circle cx="60" cy="35" r="7" fill="#5D4037"/><circle cx="50" cy="30" r="7" fill="#5D4037"/><path d="M 50 25 Q 55 15 60 25 Q 55 30 50 25 Z" fill="#4CAF50"/></svg>`,
+                modeloSvg: `<svg viewBox="0 0 100 100"><path d="M 10 50 C 10 90, 90 90, 90 50 Z" fill="#B0BEC5"/><path d="M 20 50 C 20 30, 80 30, 80 50 Z" fill="#FFE082"/><ellipse cx="50" cy="40" rx="25" ry="10" fill="#D32F2F"/><circle cx="40" cy="35" r="7" fill="#5D4037"/><circle cx="60" cy="35" r="7" fill="#5D4037"/><circle cx="50" cy="30" r="7" fill="#5D4037"/><path d="M 50 25 Q 55 15 60 25 Q 55 30 50 25 Z" fill="#4CAF50"/></svg>`,
                 ingredientes: [
-                    { type: 'tigela', svg: '<svg viewBox="0 0 100 40"><path d="M 10 10 C 10 50, 90 50, 90 10 Z" fill="#B0BEC5"/></svg>' },
-                    { type: 'massa', svg: '<svg viewBox="0 0 100 40"><path d="M 10 30 C 10 10, 90 10, 90 30 Z" fill="#FFE082"/></svg>' },
-                    { type: 'molho', svg: '<svg viewBox="0 0 100 30"><ellipse cx="50" cy="15" rx="35" ry="10" fill="#D32F2F"/></svg>' },
-                    { type: 'almondegas', svg: '<svg viewBox="0 0 100 30"><circle cx="35" cy="15" r="8" fill="#5D4037"/><circle cx="50" cy="10" r="8" fill="#5D4037"/><circle cx="65" cy="15" r="8" fill="#5D4037"/></svg>' },
-                    { type: 'manjericao', svg: '<svg viewBox="0 0 100 30"><path d="M 40 20 Q 50 5 60 20 Q 50 30 40 20 Z" fill="#4CAF50"/></svg>' }
+                    { type: 'tigela', nomeTTS: 'Tigela', svg: '<svg viewBox="0 0 100 40"><path d="M 10 10 C 10 50, 90 50, 90 10 Z" fill="#B0BEC5"/></svg>' },
+                    { type: 'massa', nomeTTS: 'Macarrão', svg: '<svg viewBox="0 0 100 40"><path d="M 10 30 C 10 10, 90 10, 90 30 Z" fill="#FFE082"/></svg>' },
+                    { type: 'molho', nomeTTS: 'Molho', svg: '<svg viewBox="0 0 100 30"><ellipse cx="50" cy="15" rx="35" ry="10" fill="#D32F2F"/></svg>' },
+                    { type: 'almondegas', nomeTTS: 'Almôndegas', svg: '<svg viewBox="0 0 100 30"><circle cx="35" cy="15" r="8" fill="#5D4037"/><circle cx="50" cy="10" r="8" fill="#5D4037"/><circle cx="65" cy="15" r="8" fill="#5D4037"/></svg>' },
+                    { type: 'manjericao', nomeTTS: 'Manjericão', svg: '<svg viewBox="0 0 100 30"><path d="M 40 20 Q 50 5 60 20 Q 50 30 40 20 Z" fill="#4CAF50"/></svg>' }
                 ]
             },
             sorvete: {
                 nome: "Sorvete", sequence: ['cone', 'scoop1', 'scoop2', 'calda', 'cereja'], offsets: [30, 80, 105, 120, 135],
-                modeloSvg: `<svg class="reference-burger" viewBox="0 0 100 150"><polygon points="20,70 80,70 50,140" fill="#E6C280"/><circle cx="50" cy="65" r="25" fill="#FFF9C4"/><circle cx="50" cy="40" r="22" fill="#F8BBD0"/><path d="M 28 40 Q 50 60 72 40 Q 50 15 28 40 Z" fill="#5D4037"/><circle cx="50" cy="18" r="8" fill="#D32F2F"/></svg>`,
+                modeloSvg: `<svg viewBox="0 0 100 150"><polygon points="20,70 80,70 50,140" fill="#E6C280"/><circle cx="50" cy="65" r="25" fill="#FFF9C4"/><circle cx="50" cy="40" r="22" fill="#F8BBD0"/><path d="M 28 40 Q 50 60 72 40 Q 50 15 28 40 Z" fill="#5D4037"/><circle cx="50" cy="18" r="8" fill="#D32F2F"/></svg>`,
                 ingredientes: [
-                    { type: 'cone', svg: '<svg viewBox="0 0 100 60"><polygon points="25,10 75,10 50,60" fill="#E6C280"/></svg>' },
-                    { type: 'scoop1', svg: '<svg viewBox="0 0 100 40"><circle cx="50" cy="20" r="20" fill="#FFF9C4"/></svg>' },
-                    { type: 'scoop2', svg: '<svg viewBox="0 0 100 40"><circle cx="50" cy="20" r="20" fill="#F8BBD0"/></svg>' },
-                    { type: 'calda', svg: '<svg viewBox="0 0 100 30"><path d="M 30 15 Q 50 35 70 15 Q 50 -5 30 15 Z" fill="#5D4037"/></svg>' },
-                    { type: 'cereja', svg: '<svg viewBox="0 0 100 30"><circle cx="50" cy="15" r="8" fill="#D32F2F"/></svg>' }
+                    { type: 'cone', nomeTTS: 'Casquinha', svg: '<svg viewBox="0 0 100 60"><polygon points="25,10 75,10 50,60" fill="#E6C280"/></svg>' },
+                    { type: 'scoop1', nomeTTS: 'Bola de baunilha', svg: '<svg viewBox="0 0 100 40"><circle cx="50" cy="20" r="20" fill="#FFF9C4"/></svg>' },
+                    { type: 'scoop2', nomeTTS: 'Bola de morango', svg: '<svg viewBox="0 0 100 40"><circle cx="50" cy="20" r="20" fill="#F8BBD0"/></svg>' },
+                    { type: 'calda', nomeTTS: 'Calda de chocolate', svg: '<svg viewBox="0 0 100 30"><path d="M 30 15 Q 50 35 70 15 Q 50 -5 30 15 Z" fill="#5D4037"/></svg>' },
+                    { type: 'cereja', nomeTTS: 'Cereja', svg: '<svg viewBox="0 0 100 30"><circle cx="50" cy="15" r="8" fill="#D32F2F"/></svg>' }
                 ]
             },
             picole: {
-                nome: "Picolé Colorido", sequence: ['palito', 'base', 'cobertura', 'granulado'], offsets: [30, 50, 95, 100],
-                modeloSvg: `<svg class="reference-burger" viewBox="0 0 100 150"><rect x="42" y="90" width="16" height="50" rx="8" fill="#FFCC80"/><rect x="25" y="20" width="50" height="80" rx="25" fill="#9C27B0"/><path d="M 25 60 L 75 60 L 75 45 C 75 20 25 20 25 45 Z" fill="#795548"/><line x1="40" y1="30" x2="45" y2="35" stroke="#FFEB3B" stroke-width="3" stroke-linecap="round"/><line x1="60" y1="35" x2="55" y2="40" stroke="#00BCD4" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="50" x2="55" y2="45" stroke="#FF9800" stroke-width="3" stroke-linecap="round"/></svg>`,
+                nome: "Picolé", sequence: ['palito', 'base', 'cobertura', 'granulado'], offsets: [30, 50, 95, 100],
+                modeloSvg: `<svg viewBox="0 0 100 150"><rect x="42" y="90" width="16" height="50" rx="8" fill="#FFCC80"/><rect x="25" y="20" width="50" height="80" rx="25" fill="#9C27B0"/><path d="M 25 60 L 75 60 L 75 45 C 75 20 25 20 25 45 Z" fill="#795548"/><line x1="40" y1="30" x2="45" y2="35" stroke="#FFEB3B" stroke-width="3" stroke-linecap="round"/><line x1="60" y1="35" x2="55" y2="40" stroke="#00BCD4" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="50" x2="55" y2="45" stroke="#FF9800" stroke-width="3" stroke-linecap="round"/></svg>`,
                 ingredientes: [
-                    { type: 'palito', svg: '<svg viewBox="0 0 100 50"><rect x="42" y="0" width="16" height="50" rx="8" fill="#FFCC80"/></svg>' },
-                    { type: 'base', svg: '<svg viewBox="0 0 100 80"><rect x="25" y="0" width="50" height="80" rx="25" fill="#9C27B0"/></svg>' },
-                    { type: 'cobertura', svg: '<svg viewBox="0 0 100 50"><path d="M 25 40 L 75 40 L 75 25 C 75 0 25 0 25 25 Z" fill="#795548"/></svg>' },
-                    { type: 'granulado', svg: '<svg viewBox="0 0 100 40"><line x1="40" y1="10" x2="45" y2="15" stroke="#FFEB3B" stroke-width="3" stroke-linecap="round"/><line x1="60" y1="15" x2="55" y2="20" stroke="#00BCD4" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="30" x2="55" y2="25" stroke="#FF9800" stroke-width="3" stroke-linecap="round"/></svg>' }
+                    { type: 'palito', nomeTTS: 'Palito', svg: '<svg viewBox="0 0 100 50"><rect x="42" y="0" width="16" height="50" rx="8" fill="#FFCC80"/></svg>' },
+                    { type: 'base', nomeTTS: 'Picolé', svg: '<svg viewBox="0 0 100 80"><rect x="25" y="0" width="50" height="80" rx="25" fill="#9C27B0"/></svg>' },
+                    { type: 'cobertura', nomeTTS: 'Cobertura', svg: '<svg viewBox="0 0 100 50"><path d="M 25 40 L 75 40 L 75 25 C 75 0 25 0 25 25 Z" fill="#795548"/></svg>' },
+                    { type: 'granulado', nomeTTS: 'Granulado', svg: '<svg viewBox="0 0 100 40"><line x1="40" y1="10" x2="45" y2="15" stroke="#FFEB3B" stroke-width="3" stroke-linecap="round"/><line x1="60" y1="15" x2="55" y2="20" stroke="#00BCD4" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="30" x2="55" y2="25" stroke="#FF9800" stroke-width="3" stroke-linecap="round"/></svg>' }
                 ]
             },
             bolo: {
                 nome: "Bolo de Cenoura", sequence: ['prato', 'bolo', 'cobertura', 'granulado'], offsets: [30, 45, 80, 85],
-                modeloSvg: `<svg class="reference-burger" viewBox="0 0 100 100"><ellipse cx="50" cy="80" rx="45" ry="15" fill="#CFD8DC"/><path d="M 15 80 L 15 40 C 15 20 85 20 85 40 L 85 80 Z" fill="#FF9800"/><path d="M 13 45 C 13 20 87 20 87 45 C 87 55 75 60 65 50 C 55 40 45 60 35 50 C 25 40 13 55 13 45 Z" fill="#4E342E"/><line x1="40" y1="30" x2="45" y2="32" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/><line x1="60" y1="35" x2="55" y2="33" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="40" x2="55" y2="38" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/></svg>`,
+                modeloSvg: `<svg viewBox="0 0 100 100"><ellipse cx="50" cy="80" rx="45" ry="15" fill="#CFD8DC"/><path d="M 15 80 L 15 40 C 15 20 85 20 85 40 L 85 80 Z" fill="#FF9800"/><path d="M 13 45 C 13 20 87 20 87 45 C 87 55 75 60 65 50 C 55 40 45 60 35 50 C 25 40 13 55 13 45 Z" fill="#4E342E"/><line x1="40" y1="30" x2="45" y2="32" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/><line x1="60" y1="35" x2="55" y2="33" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="40" x2="55" y2="38" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/></svg>`,
                 ingredientes: [
-                    { type: 'prato', svg: '<svg viewBox="0 0 100 30"><ellipse cx="50" cy="15" rx="45" ry="15" fill="#CFD8DC"/></svg>' },
-                    { type: 'bolo', svg: '<svg viewBox="0 0 100 50"><path d="M 15 50 L 15 20 C 15 0 85 0 85 20 L 85 50 Z" fill="#FF9800"/></svg>' },
-                    { type: 'cobertura', svg: '<svg viewBox="0 0 100 40"><path d="M 13 25 C 13 0 87 0 87 25 C 87 35 75 40 65 30 C 55 20 45 40 35 30 C 25 20 13 35 13 25 Z" fill="#4E342E"/></svg>' },
-                    { type: 'granulado', svg: '<svg viewBox="0 0 100 30"><line x1="40" y1="10" x2="45" y2="12" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/><line x1="60" y1="15" x2="55" y2="13" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="20" x2="55" y2="18" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/></svg>' }
+                    { type: 'prato', nomeTTS: 'Prato', svg: '<svg viewBox="0 0 100 30"><ellipse cx="50" cy="15" rx="45" ry="15" fill="#CFD8DC"/></svg>' },
+                    { type: 'bolo', nomeTTS: 'Bolo', svg: '<svg viewBox="0 0 100 50"><path d="M 15 50 L 15 20 C 15 0 85 0 85 20 L 85 50 Z" fill="#FF9800"/></svg>' },
+                    { type: 'cobertura', nomeTTS: 'Cobertura', svg: '<svg viewBox="0 0 100 40"><path d="M 13 25 C 13 0 87 0 87 25 C 87 35 75 40 65 30 C 55 20 45 40 35 30 C 25 20 13 35 13 25 Z" fill="#4E342E"/></svg>' },
+                    { type: 'granulado', nomeTTS: 'Granulado', svg: '<svg viewBox="0 0 100 30"><line x1="40" y1="10" x2="45" y2="12" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/><line x1="60" y1="15" x2="55" y2="13" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="20" x2="55" y2="18" stroke="#3E2723" stroke-width="3" stroke-linecap="round"/></svg>' }
+                ]
+            },
+            pirulito: {
+                nome: "Pirulito", sequence: ['palito', 'doce', 'laco'], offsets: [25, 75, 55],
+                modeloSvg: `<svg viewBox="0 0 100 130"><rect x="45" y="50" width="10" height="80" rx="5" fill="#FFCC80"/><circle cx="50" cy="40" r="35" fill="#E91E63"/><circle cx="50" cy="40" r="25" fill="#FCE4EC" stroke="#E91E63" stroke-width="4" stroke-dasharray="10 5"/><path d="M 50 85 L 30 70 L 30 100 Z" fill="#00BCD4"/><path d="M 50 85 L 70 70 L 70 100 Z" fill="#00BCD4"/><circle cx="50" cy="85" r="8" fill="#0097A7"/></svg>`,
+                ingredientes: [
+                    { type: 'palito', nomeTTS: 'Palito', svg: '<svg viewBox="0 0 100 80"><rect x="45" y="0" width="10" height="80" rx="5" fill="#FFCC80"/></svg>' },
+                    { type: 'doce', nomeTTS: 'Doce do pirulito', svg: '<svg viewBox="0 0 100 80"><circle cx="50" cy="40" r="35" fill="#E91E63"/><circle cx="50" cy="40" r="25" fill="#FCE4EC" stroke="#E91E63" stroke-width="4" stroke-dasharray="10 5"/></svg>' },
+                    { type: 'laco', nomeTTS: 'Laço', svg: '<svg viewBox="0 0 100 40"><path d="M 50 20 L 30 0 L 30 40 Z" fill="#00BCD4"/><path d="M 50 20 L 70 0 L 70 40 Z" fill="#00BCD4"/><circle cx="50" cy="20" r="8" fill="#0097A7"/></svg>' }
+                ]
+            },
+            milkshake: {
+                nome: "Milkshake", sequence: ['copo', 'bebida', 'chantilly', 'canudo'], offsets: [20, 25, 80, 75],
+                modeloSvg: `<svg viewBox="0 0 100 120"><line x1="70" y1="20" x2="45" y2="70" stroke="#F44336" stroke-width="6" stroke-linecap="round"/><path d="M 25 40 L 35 110 C 35 115 65 115 65 110 L 75 40 Z" fill="rgba(200,225,255,0.4)" stroke="#B0BEC5" stroke-width="2"/><path d="M 27 45 L 34 108 C 34 112 66 112 66 108 L 73 45 Z" fill="#F8BBD0"/><path d="M 20 50 Q 50 10 80 50 Q 65 30 50 40 Q 35 30 20 50 Z" fill="#FFF"/></svg>`,
+                ingredientes: [
+                    { type: 'copo', nomeTTS: 'Copo', svg: '<svg viewBox="0 0 100 80"><path d="M 25 0 L 35 70 C 35 75 65 75 65 70 L 75 0 Z" fill="rgba(200,225,255,0.4)" stroke="#B0BEC5" stroke-width="2"/></svg>' },
+                    { type: 'bebida', nomeTTS: 'Milkshake', svg: '<svg viewBox="0 0 100 70"><path d="M 27 10 L 34 68 C 34 72 66 72 66 68 L 73 10 Z" fill="#F8BBD0"/></svg>' },
+                    { type: 'chantilly', nomeTTS: 'Chantilly', svg: '<svg viewBox="0 0 100 40"><path d="M 20 30 Q 50 -10 80 30 Q 65 10 50 20 Q 35 10 20 30 Z" fill="#FFF"/></svg>' },
+                    { type: 'canudo', nomeTTS: 'Canudo', svg: '<svg viewBox="0 0 100 80"><line x1="70" y1="10" x2="45" y2="70" stroke="#F44336" stroke-width="6" stroke-linecap="round"/><line x1="70" y1="10" x2="85" y2="25" stroke="#F44336" stroke-width="6" stroke-linecap="round"/></svg>' }
                 ]
             }
         };
@@ -297,6 +325,7 @@
         const victoryDishName = document.getElementById('victory-dish-name');
         
         let expectedSequence = [];
+        let expectedTTS = [];
         let stackOffsets = []; 
         let currentStep = 0;
         let idReceitaAtual = '';
@@ -318,7 +347,14 @@
             victoryScreen.classList.remove('show');
             refContainer.innerHTML = receita.modeloSvg;
 
-            receita.ingredientes.forEach(ing => {
+            expectedTTS = receita.sequence.map(tipo => {
+                let ing = receita.ingredientes.find(i => i.type === tipo);
+                return ing ? ing.nomeTTS : "";
+            });
+
+            let ingredientesEmbaralhados = [...receita.ingredientes].sort(() => Math.random() - 0.5);
+
+            ingredientesEmbaralhados.forEach(ing => {
                 const slot = document.createElement('div');
                 slot.classList.add('slot');
                 slot.dataset.slotType = ing.type;
@@ -335,6 +371,7 @@
             });
 
             navegar('tela-cooklab-game');
+            falar("Coloque " + expectedTTS[0]);
         }
 
         document.addEventListener('pointermove', drag);
@@ -345,7 +382,7 @@
             const nextType = expectedSequence[currentStep];
             const nextElement = document.querySelector(`.ingredient.in-panel[data-type="${nextType}"]`);
             if (nextElement) {
-                sndDica.cloneNode(true).play().catch(e => {});
+                falar(expectedTTS[currentStep]); 
                 nextElement.classList.add('hint-active');
                 setTimeout(() => nextElement.classList.remove('hint-active'), 1600);
             }
@@ -417,12 +454,13 @@
                         setTimeout(() => {
                             sndVitoria.cloneNode(true).play().catch(e => {});
                             soltarConfetes(document.getElementById('tela-cooklab-game'));
-                            
+                            falar("Parabéns!");
                             victoryImage.innerHTML = bancoDeReceitas[idReceitaAtual].modeloSvg;
                             victoryDishName.textContent = bancoDeReceitas[idReceitaAtual].nome;
-                            
                             victoryScreen.classList.add('show');
                         }, 500);
+                    } else {
+                        falar("Agora, " + expectedTTS[currentStep]);
                     }
                 } else {
                     sndErro.cloneNode(true).play().catch(e => {});
@@ -437,22 +475,39 @@
         // ==========================================
         // LÓGICA: FORMANDO NOMES
         // ==========================================
-        const listaNomes = ["ISABELA", "GABRIEL", "KAMILA", "SAPO", "BOLA", "CASA"];
-        let ultimaPalavra = "";
+        const listaNomesOriginais = ["ISABELA", "GABRIEL", "KAMILA", "SAPO", "BOLA", "CASA"];
+        let palavrasDisponiveis = [];
         let nomeAlvo = "";
         let indiceLetraAtual = 1; 
         const containerSlots = document.getElementById('palavra-alvo');
         const containerBolhas = document.getElementById('area-bolhas');
 
-        function iniciarJogoNomes() {
+        function iniciarJogoNomesAleatorio() {
+            if (palavrasDisponiveis.length === 0) {
+                palavrasDisponiveis = [...listaNomesOriginais];
+            }
+            const indexSorteado = Math.floor(Math.random() * palavrasDisponiveis.length);
+            const palavra = palavrasDisponiveis.splice(indexSorteado, 1)[0];
+            iniciarFaseNomes(palavra);
+        }
+
+        function iniciarJogoNomesCustomizado() {
+            const input = document.getElementById('palavra-custom').value.trim().toUpperCase();
+            const palavraLimpa = input.normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z]/g, '');
+            
+            if (palavraLimpa.length < 2) {
+                falar("Digite uma palavra maior");
+                return;
+            }
+            iniciarFaseNomes(palavraLimpa);
+        }
+
+        function iniciarFaseNomes(palavra) {
             navegar('tela-nomes');
-            
-            do {
-                nomeAlvo = listaNomes[Math.floor(Math.random() * listaNomes.length)];
-            } while (nomeAlvo === ultimaPalavra && listaNomes.length > 1);
-            
-            ultimaPalavra = nomeAlvo;
+            nomeAlvo = palavra;
             indiceLetraAtual = 1; 
+            
+            falar("Vamos escrever " + nomeAlvo);
             
             containerSlots.innerHTML = '';
             containerBolhas.innerHTML = '';
@@ -479,7 +534,11 @@
                 bolha.textContent = letra;
                 const cores = ['#FFCA28', '#03A9F4', '#4CAF50', '#FF4081', '#9C27B0'];
                 bolha.style.backgroundColor = cores[index % cores.length];
-                bolha.addEventListener('pointerdown', () => checarLetra(bolha, letra));
+                
+                bolha.addEventListener('pointerdown', function onClick() {
+                    checarLetra(this, letra);
+                });
+                
                 containerBolhas.appendChild(bolha);
             });
         }
@@ -492,14 +551,18 @@
                 slotAlvo.textContent = letraClicada;
                 slotAlvo.style.backgroundColor = "#fff";
                 slotAlvo.style.borderColor = "#4CAF50";
+                
+                elementoBolha.style.pointerEvents = 'none'; 
                 elementoBolha.remove();
+                
                 indiceLetraAtual++;
 
                 if (indiceLetraAtual === nomeAlvo.length) {
                     setTimeout(() => {
                         sndVitoria.cloneNode(true).play().catch(e => {});
+                        falar("Parabéns!");
                         soltarConfetes(document.getElementById('tela-nomes'));
-                        setTimeout(iniciarJogoNomes, 4000);
+                        setTimeout(() => navegar('tela-nomes-menu'), 4000);
                     }, 300);
                 }
             } else {
