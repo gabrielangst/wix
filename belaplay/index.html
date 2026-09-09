@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bela Play</title>
-    <!-- Ícones da aba do navegador -->
     <link rel="icon" href="favicon.png" sizes="any">
     <style>
         body { margin: 0; padding: 0; background-color: #f0f8ff; font-family: 'Comic Sans MS', cursive, sans-serif; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
@@ -44,7 +43,6 @@
         .input-custom:focus { outline: none; border-color: #FF4081; }
         .form-custom { display: flex; align-items: center; justify-content: center; margin-top: 30px; background: rgba(255,255,255,0.7); padding: 20px; border-radius: 30px; }
         
-        /* CookLab */
         #counter-display { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background-color: #fff; padding: 10px 25px; border-radius: 30px; font-size: 22px; font-weight: bold; color: #555; border: 3px solid #FFCA28; box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 100; user-select: none; display: flex; align-items: center; gap: 10px; }
         #counter-value { color: #FF4081; font-size: 28px; }
         #help-btn { position: absolute; top: 20px; right: 20px; width: 60px; height: 60px; background-color: #FFCA28; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 35px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); cursor: pointer; z-index: 100; user-select: none; touch-action: none; }
@@ -116,6 +114,8 @@
             <button class="menu-btn" style="background-color:#8D6E63;" onclick="iniciarReceita('hamburguer')">🍔 Hambúrguer</button>
             <button class="menu-btn" style="background-color:#E53935;" onclick="iniciarReceita('pizza')">🍕 Pizza</button>
             <button class="menu-btn" style="background-color:#FDD835;" onclick="iniciarReceita('macarrao')">🍝 Macarrão</button>
+            <button class="menu-btn" style="background-color:#FFB300;" onclick="iniciarReceita('risoto')">🥘 Risoto</button>
+            <button class="menu-btn" style="background-color:#E91E63;" onclick="iniciarReceita('fondue')">🍡 Fondue</button>
             <button class="menu-btn" style="background-color:#00BCD4;" onclick="iniciarReceita('sorvete')">🍨 Sorvete</button>
             <button class="menu-btn" style="background-color:#E91E63;" onclick="iniciarReceita('picole')">🍦 Picolé</button>
             <button class="menu-btn" style="background-color:#FF9800;" onclick="iniciarReceita('bolo')">🥕 Bolo</button>
@@ -261,6 +261,30 @@
                     { type: 'molho', nomeTTS: 'Molho', svg: '<svg viewBox="0 0 100 30"><ellipse cx="50" cy="15" rx="35" ry="10" fill="#D32F2F"/></svg>' },
                     { type: 'almondegas', nomeTTS: 'Almôndegas', svg: '<svg viewBox="0 0 100 30"><circle cx="35" cy="15" r="8" fill="#5D4037"/><circle cx="50" cy="10" r="8" fill="#5D4037"/><circle cx="65" cy="15" r="8" fill="#5D4037"/></svg>' },
                     { type: 'manjericao', nomeTTS: 'Manjericão', svg: '<svg viewBox="0 0 100 30"><path d="M 40 20 Q 50 5 60 20 Q 50 30 40 20 Z" fill="#4CAF50"/></svg>' }
+                ]
+            },
+            risoto: {
+                nome: "Risoto de Carne Seca", sequence: ['prato', 'arroz', 'carne-seca', 'banana-terra', 'cheiro-verde'], offsets: [30, 45, 55, 65, 75],
+                modeloSvg: `<svg viewBox="0 0 100 100"><path d="M 10 50 C 10 90, 90 90, 90 50 Z" fill="#ECEFF1"/><ellipse cx="50" cy="45" rx="35" ry="12" fill="#FFF9C4"/><rect x="35" y="35" width="10" height="8" rx="2" fill="#5D4037"/><rect x="55" y="40" width="12" height="7" rx="2" fill="#6D4C41"/><rect x="45" y="37" width="9" height="9" rx="2" fill="#4E342E"/><circle cx="40" cy="40" r="7" fill="#FBC02D"/><circle cx="60" cy="40" r="7" fill="#FBC02D"/><circle cx="50" cy="35" r="7" fill="#FBC02D"/><path d="M 45 35 L 48 30 L 51 35 Z" fill="#4CAF50"/><path d="M 38 42 L 41 37 L 44 42 Z" fill="#4CAF50"/><path d="M 55 45 L 58 40 L 61 45 Z" fill="#4CAF50"/></svg>`,
+                ingredientes: [
+                    { type: 'prato', nomeTTS: 'Prato fundo', svg: '<svg viewBox="0 0 100 40"><path d="M 10 10 C 10 50, 90 50, 90 10 Z" fill="#ECEFF1"/></svg>' },
+                    { type: 'arroz', nomeTTS: 'Arroz cremoso', svg: '<svg viewBox="0 0 100 30"><ellipse cx="50" cy="15" rx="35" ry="12" fill="#FFF9C4"/></svg>' },
+                    { type: 'carne-seca', nomeTTS: 'Carne seca', svg: '<svg viewBox="0 0 100 30"><rect x="35" y="10" width="10" height="8" rx="2" fill="#5D4037"/><rect x="55" y="15" width="12" height="7" rx="2" fill="#6D4C41"/><rect x="45" y="12" width="9" height="9" rx="2" fill="#4E342E"/></svg>' },
+                    { type: 'banana-terra', nomeTTS: 'Banana da terra', svg: '<svg viewBox="0 0 100 30"><circle cx="40" cy="15" r="7" fill="#FBC02D"/><circle cx="60" cy="15" r="7" fill="#FBC02D"/><circle cx="50" cy="10" r="7" fill="#FBC02D"/></svg>' },
+                    { type: 'cheiro-verde', nomeTTS: 'Cheiro verde', svg: '<svg viewBox="0 0 100 30"><path d="M 45 15 L 48 10 L 51 15 Z" fill="#4CAF50"/><path d="M 38 20 L 41 15 L 44 20 Z" fill="#4CAF50"/><path d="M 55 22 L 58 17 L 61 22 Z" fill="#4CAF50"/></svg>' }
+                ]
+            },
+            fondue: {
+                nome: "Espetinho de Fondue", sequence: ['palito', 'banana', 'marshmallow', 'uva', 'morango', 'chocolate', 'mms'], offsets: [20, 40, 65, 90, 115, 35, 35],
+                modeloSvg: `<svg viewBox="0 0 100 150"><rect x="47" y="10" width="6" height="130" rx="3" fill="#D7CCC8"/><rect x="35" y="90" width="30" height="20" rx="5" fill="#FFF59D"/><rect x="35" y="65" width="30" height="25" rx="8" fill="#F8BBD0"/><circle cx="50" cy="50" r="12" fill="#9C27B0"/><path d="M 35 30 Q 50 50 65 30 Z" fill="#F44336"/><path d="M 40 25 L 50 30 L 60 25 Z" fill="#4CAF50"/><path d="M 30 15 C 20 15 25 50 30 70 C 25 90 30 110 40 120 C 50 130 60 120 70 110 C 75 90 70 60 70 40 C 70 15 60 15 50 15 Z" fill="#3E2723" opacity="0.9"/><circle cx="45" cy="40" r="4" fill="#E91E63"/><circle cx="55" cy="60" r="4" fill="#2196F3"/><circle cx="42" cy="80" r="4" fill="#FFEB3B"/><circle cx="60" cy="90" r="4" fill="#4CAF50"/><circle cx="50" cy="105" r="4" fill="#FF9800"/></svg>`,
+                ingredientes: [
+                    { type: 'palito', nomeTTS: 'Palito', svg: '<svg viewBox="0 0 100 100"><rect x="47" y="0" width="6" height="100" rx="3" fill="#D7CCC8"/></svg>' },
+                    { type: 'banana', nomeTTS: 'Banana', svg: '<svg viewBox="0 0 100 30"><rect x="35" y="5" width="30" height="20" rx="5" fill="#FFF59D"/></svg>' },
+                    { type: 'marshmallow', nomeTTS: 'Marshmallow', svg: '<svg viewBox="0 0 100 40"><rect x="35" y="5" width="30" height="30" rx="10" fill="#F8BBD0"/></svg>' },
+                    { type: 'uva', nomeTTS: 'Uva', svg: '<svg viewBox="0 0 100 30"><circle cx="50" cy="15" r="12" fill="#9C27B0"/></svg>' },
+                    { type: 'morango', nomeTTS: 'Morango', svg: '<svg viewBox="0 0 100 40"><path d="M 35 15 Q 50 40 65 15 Z" fill="#F44336"/><path d="M 40 10 L 50 15 L 60 10 Z" fill="#4CAF50"/></svg>' },
+                    { type: 'chocolate', nomeTTS: 'Chocolate derretido', svg: '<svg viewBox="0 0 100 110"><path d="M 30 10 C 20 10 25 45 30 65 C 25 85 30 105 40 115 C 50 125 60 115 70 105 C 75 85 70 55 70 35 C 70 10 60 10 50 10 Z" fill="#3E2723" opacity="0.9"/></svg>' },
+                    { type: 'mms', nomeTTS: 'Confetes coloridos', svg: '<svg viewBox="0 0 100 110"><circle cx="45" cy="35" r="4" fill="#E91E63"/><circle cx="55" cy="55" r="4" fill="#2196F3"/><circle cx="42" cy="75" r="4" fill="#FFEB3B"/><circle cx="60" cy="85" r="4" fill="#4CAF50"/><circle cx="50" cy="100" r="4" fill="#FF9800"/></svg>' }
                 ]
             },
             sorvete: {
@@ -507,7 +531,6 @@
             nomeAlvo = palavra;
             indiceLetraAtual = 1; 
             
-            // Fala a instrução inicial e pede a primeira letra
             falar("Vamos escrever " + nomeAlvo + ". Procure a letra " + nomeAlvo[indiceLetraAtual]);
             
             containerSlots.innerHTML = '';
@@ -566,7 +589,6 @@
                         setTimeout(() => navegar('tela-nomes-menu'), 4000);
                     }, 300);
                 } else {
-                    // Pede a próxima letra
                     falar("Agora a letra " + nomeAlvo[indiceLetraAtual]);
                 }
             } else {
