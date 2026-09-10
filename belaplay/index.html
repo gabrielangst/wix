@@ -8,7 +8,7 @@
     <style>
         body { margin: 0; padding: 0; background-color: #f0f8ff; font-family: 'Comic Sans MS', cursive, sans-serif; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
         
-        #tela-menu, #tela-cooklab, #tela-nomes-menu {
+        #tela-menu, #tela-cooklab, #tela-nomes-menu, #tela-letras-menu {
             background-color: #FFD1DC;
             background-image: 
                 radial-gradient(rgba(255, 255, 255, 0.4) 5px, transparent 5px),
@@ -38,11 +38,29 @@
         .btn-main { width: 280px; margin: 15px; }
         .btn-cooklab { background-color: #FF9800; box-shadow: 0 8px 0 #E65100; }
         .btn-nomes { background-color: #03A9F4; box-shadow: 0 8px 0 #01579B; }
+        .btn-letras { background-color: #9C27B0; box-shadow: 0 8px 0 #6A1B9A; }
+        .btn-numeros { background-color: #E91E63; box-shadow: 0 8px 0 #C2185B; }
         
         .input-custom { padding: 15px 25px; font-size: 24px; font-family: inherit; border: 4px solid #03A9F4; border-radius: 20px; width: 250px; text-align: center; margin-right: 10px; text-transform: uppercase; }
         .input-custom:focus { outline: none; border-color: #FF4081; }
         .form-custom { display: flex; align-items: center; justify-content: center; margin-top: 30px; background: rgba(255,255,255,0.7); padding: 20px; border-radius: 30px; }
         
+        /* ================= MASCOTE ================= */
+        #mascote-container { position: fixed; bottom: 10px; right: 20px; z-index: 3000; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; }
+        
+        /* Escala ajustada para ficar gigante mas sem cobrir o jogo inteiro */
+        #mascote-atual { font-size: 180px; cursor: pointer; filter: drop-shadow(2px 6px 10px rgba(0,0,0,0.3)); animation: floatMascote 3s ease-in-out infinite; user-select: none; touch-action: none; transition: transform 0.2s; line-height: 1; pointer-events: all; }
+        #mascote-atual:active { transform: scale(0.9); }
+
+        @keyframes floatMascote { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(2deg); } }
+
+        #mascote-popup { background: rgba(255, 255, 255, 0.95); border: 4px solid #FF4081; border-radius: 20px; padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 15px rgba(0,0,0,0.2); transition: opacity 0.3s, transform 0.3s; opacity: 0; pointer-events: none; transform: translateY(20px) scale(0.9); transform-origin: bottom right; }
+        #mascote-popup.show { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+
+        .mascote-option { font-size: 55px; cursor: pointer; transition: transform 0.1s; user-select: none; touch-action: none; padding: 15px; background: #FFD1DC; border-radius: 50%; display: flex; justify-content: center; align-items: center; line-height: 1; border: 2px solid transparent; }
+        .mascote-option:active { transform: scale(0.8); background: #FF4081; border-color: #C2185B; }
+
+        /* ================= COOKLAB ================= */
         #counter-display { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background-color: #fff; padding: 10px 25px; border-radius: 30px; font-size: 22px; font-weight: bold; color: #555; border: 3px solid #FFCA28; box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 100; user-select: none; display: flex; align-items: center; gap: 10px; }
         #counter-value { color: #FF4081; font-size: 28px; }
         #help-btn { position: absolute; top: 20px; right: 20px; width: 60px; height: 60px; background-color: #FFCA28; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 35px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); cursor: pointer; z-index: 100; user-select: none; touch-action: none; }
@@ -51,9 +69,7 @@
         #game-area { flex: 1; width: 100%; position: relative; display: flex; justify-content: space-around; align-items: center; padding: 0 20px; box-sizing: border-box; }
         #reference-area { width: 200px; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
         .reference-title { font-size: 18px; color: #555; margin-bottom: 10px; font-weight: bold; }
-        
         #reference-svg-container svg { width: 130px; height: auto; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); display: block; }
-        
         #plate { width: 250px; height: 250px; background-color: #fff; border: 5px dashed #ccc; border-radius: 50%; display: flex; justify-content: center; align-items: flex-end; position: relative; }
         
         #ingredients-panel { height: 150px; width: 100%; background-color: #fff; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-evenly; align-items: center; flex-wrap: wrap; padding: 0 10px; position: relative; z-index: 50; box-sizing: border-box; }
@@ -68,17 +84,42 @@
         .dragging { position: absolute; z-index: 1000; }
         .stacked { position: absolute; z-index: 10; }
         
-        /* Nomes */
+        /* ================= NOMES E NÚMEROS ================= */
         #palavra-alvo { display: flex; gap: 15px; margin-top: 80px; margin-bottom: 50px; flex-wrap: wrap; justify-content: center; }
         .slot-letra { width: 60px; height: 60px; border: 4px dashed #ccc; border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 40px; font-weight: bold; color: #4CAF50; background-color: rgba(255,255,255,0.5); }
-        #area-bolhas { flex: 1; width: 90%; position: relative; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 20px; }
-        .bolha { width: 80px; height: 80px; background-color: #FFCA28; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: bold; color: #fff; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); box-shadow: 0 6px 0px #FFB300, 0 10px 10px rgba(0,0,0,0.2); cursor: pointer; user-select: none; touch-action: none; }
+        #area-bolhas, #area-bolhas-numeros { flex: 1; width: 90%; position: relative; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 20px; padding-bottom: 40px; }
+        
+        #area-bolhas-numeros {
+            display: block; /* Remove o flex para permitir o espalhamento */
+        }
+
+        #area-bolhas-numeros .bolha {
+            position: absolute;
+            width: 120px;  /* Bolha maior */
+            height: 120px;
+            font-size: 65px; /* Número maior */
+        }
+
+        .bolha { width: 90px; height: 90px; background-color: #FFCA28; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 50px; font-weight: bold; color: #fff; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); box-shadow: 0 6px 0px #FFB300, 0 10px 10px rgba(0,0,0,0.2); cursor: pointer; user-select: none; touch-action: none; transition: transform 0.2s, opacity 0.2s; }
         .bolha:active { transform: translateY(6px); box-shadow: 0 0 0 #FFB300; }
         
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px) rotate(-5deg); background-color: #ff5252;} 75% { transform: translateX(10px) rotate(5deg); background-color: #ff5252;} }
-        .error-shake { animation: shake 0.4s; }
+        /* ================= LETRAS E OBJETOS ================= */
+        #container-letras-objetos { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; justify-content: center; }
+        #box-letra-alvo { background-color: #FFCA28; width: 120px; height: 120px; border-radius: 30px; display: flex; justify-content: center; align-items: center; font-size: 80px; font-weight: bold; color: white; text-shadow: 3px 3px 0 rgba(0,0,0,0.2); box-shadow: 0 8px 15px rgba(0,0,0,0.2); margin-bottom: 30px; border: 5px solid #fff; animation: floatLetra 3s ease-in-out infinite; }
         
-        /* Vitória */
+        @keyframes floatLetra { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        
+        #grid-objetos { display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; max-width: 800px; padding: 10px; }
+        .card-objeto { background: white; border-radius: 20px; width: 160px; height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 6px 0 #ccc; cursor: pointer; transition: transform 0.1s; user-select: none; touch-action: none; border: 4px solid #eee; }
+        .card-objeto:active { transform: translateY(6px); box-shadow: 0 0 0 #ccc; }
+        .emoji-objeto { font-size: 70px; margin-bottom: 10px; line-height: 1; }
+        .texto-objeto { font-size: 22px; font-weight: bold; color: #555; text-transform: uppercase; }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px) rotate(-5deg); background-color: #ff5252;} 75% { transform: translateX(10px) rotate(5deg); background-color: #ff5252;} }
+        .error-shake { animation: shake 0.4s; border-color: #ff5252 !important; }
+        .success-pulse { background-color: #C8E6C9 !important; border-color: #4CAF50 !important; transform: scale(1.1); box-shadow: 0 0 20px #4CAF50; z-index: 10; transition: 0.3s; }
+        
+        /* ================= VITÓRIA ================= */
         #victory-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
         #victory-screen.show { opacity: 1; pointer-events: all; }
         .victory-text { font-size: 60px; color: #FF4081; font-weight: bold; text-shadow: 3px 3px 0 #FFCA28; margin-bottom: 10px; transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -99,11 +140,24 @@
 </head>
 <body>
 
+    <!-- MASCOTE FIXA (Global) -->
+    <div id="mascote-container">
+        <div id="mascote-popup">
+            <div class="mascote-option" onclick="escolherMascote('🦄', 'Unicórnia')">🦄</div>
+            <div class="mascote-option" onclick="escolherMascote('🐻', 'Ursinha')">🐻</div>
+            <div class="mascote-option" onclick="escolherMascote('🐰', 'Coelhinha')">🐰</div>
+            <div class="mascote-option" onclick="escolherMascote('🦊', 'Raposinha')">🦊</div>
+        </div>
+        <div id="mascote-atual" onclick="toggleMascotePopup()">🦄</div>
+    </div>
+
     <!-- MENU PRINCIPAL -->
     <div id="tela-menu" class="screen active">
-        <h1>Bela Play 🌟</h1>
+        <h1>Bela Play 1.1 🌟</h1>
         <button class="menu-btn btn-main btn-cooklab" onclick="navegar('tela-cooklab')">🍳 CookLab</button>
         <button class="menu-btn btn-main btn-nomes" onclick="navegar('tela-nomes-menu')">🔤 Formando Nomes</button>
+        <button class="menu-btn btn-main btn-letras" onclick="iniciarLetrasObjetos()">🅰️ Letras e Objetos</button>
+        <button class="menu-btn btn-main btn-numeros" onclick="iniciarBolhasNumericas()">🔢 Bolhas Numéricas</button>
     </div>
 
     <!-- MENU COOKLAB -->
@@ -121,6 +175,8 @@
             <button class="menu-btn" style="background-color:#FF9800;" onclick="iniciarReceita('bolo')">🥕 Bolo</button>
             <button class="menu-btn" style="background-color:#9C27B0;" onclick="iniciarReceita('pirulito')">🍭 Pirulito</button>
             <button class="menu-btn" style="background-color:#F48FB1;" onclick="iniciarReceita('milkshake')">🥤 Milkshake</button>
+            <button class="menu-btn" style="background-color:#E040FB;" onclick="iniciarReceita('boloAniversario')">🎂 Bolo de Aniversário</button>
+            <button class="menu-btn" style="background-color:#4CAF50;" onclick="iniciarReceita('pratoBrasileiro')">🍛 Prato Brasileiro</button>
         </div>
     </div>
 
@@ -165,6 +221,24 @@
         <div id="area-bolhas"></div>
     </div>
 
+    <!-- TELA LETRAS E OBJETOS GAME -->
+    <div id="tela-letras-objetos" class="screen">
+        <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
+        <div id="container-letras-objetos">
+            <div id="box-letra-alvo">A</div>
+            <div id="grid-objetos">
+                <!-- Cards injetados via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA BOLHAS NUMÉRICAS GAME -->
+    <div id="tela-numeros" class="screen">
+        <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
+        <h1 style="margin-bottom: 20px;">Estoure na Ordem!</h1>
+        <div id="area-bolhas-numeros"></div>
+    </div>
+
     <script>
         // ==========================================
         // SISTEMA DE ÁUDIO & TTS
@@ -202,6 +276,29 @@
             }
         }
 
+        // ==========================================
+        // SISTEMA DE MASCOTE
+        // ==========================================
+        function toggleMascotePopup() {
+            sndBotao.cloneNode(true).play().catch(e => {});
+            document.getElementById('mascote-popup').classList.toggle('show');
+        }
+
+        function escolherMascote(emoji, nome) {
+            sndBotao.cloneNode(true).play().catch(e => {});
+            document.getElementById('mascote-atual').textContent = emoji;
+            document.getElementById('mascote-popup').classList.remove('show');
+            falar("Oi, eu sou a " + nome + "!");
+        }
+
+        document.addEventListener('pointerdown', (e) => {
+            const popup = document.getElementById('mascote-popup');
+            const container = document.getElementById('mascote-container');
+            if (popup.classList.contains('show') && !container.contains(e.target)) {
+                popup.classList.remove('show');
+            }
+        });
+
         function navegar(idTelaAlvo) {
             document.querySelectorAll('.screen').forEach(tela => tela.classList.remove('active'));
             document.getElementById(idTelaAlvo).classList.add('active');
@@ -228,7 +325,7 @@
         }
 
         // ==========================================
-        // BANCO DE DADOS DAS RECEITAS
+        // BANCO DE DADOS: COOKLAB
         // ==========================================
         const bancoDeReceitas = {
             hamburguer: {
@@ -335,6 +432,29 @@
                     { type: 'bebida', nomeTTS: 'Milkshake', svg: '<svg viewBox="0 0 100 70"><path d="M 27 10 L 34 68 C 34 72 66 72 66 68 L 73 10 Z" fill="#F8BBD0"/></svg>' },
                     { type: 'chantilly', nomeTTS: 'Chantilly', svg: '<svg viewBox="0 0 100 40"><path d="M 20 30 Q 50 -10 80 30 Q 65 10 50 20 Q 35 10 20 30 Z" fill="#FFF"/></svg>' },
                     { type: 'canudo', nomeTTS: 'Canudo', svg: '<svg viewBox="0 0 100 80"><line x1="70" y1="10" x2="45" y2="70" stroke="#F44336" stroke-width="6" stroke-linecap="round"/><line x1="70" y1="10" x2="85" y2="25" stroke="#F44336" stroke-width="6" stroke-linecap="round"/></svg>' }
+                ]
+            },
+            boloAniversario: {
+                nome: "Bolo de Aniversário", sequence: ['prato', 'massa', 'recheio', 'cobertura', 'velas'], offsets: [20, 35, 60, 75, 110],
+                modeloSvg: `<svg viewBox="0 0 100 150"><ellipse cx="50" cy="130" rx="45" ry="15" fill="#CFD8DC"/><rect x="20" y="90" width="60" height="40" rx="5" fill="#FF80AB"/><rect x="20" y="75" width="60" height="15" fill="#FFFFFF"/><path d="M 18 80 L 82 80 C 82 65 18 65 18 80 Z" fill="#E91E63"/><path d="M 25 80 Q 30 95 35 80 Q 45 90 55 80 Q 65 95 75 80" fill="#E91E63"/><rect x="47" y="35" width="6" height="30" fill="#FFF59D"/><path d="M 50 15 Q 55 25 50 35 Q 45 25 50 15 Z" fill="#FF9800"/></svg>`,
+                ingredientes: [
+                    { type: 'prato', nomeTTS: 'Prato', svg: '<svg viewBox="0 0 100 40"><ellipse cx="50" cy="20" rx="45" ry="15" fill="#CFD8DC"/></svg>' },
+                    { type: 'massa', nomeTTS: 'Massa de morango', svg: '<svg viewBox="0 0 100 50"><rect x="20" y="10" width="60" height="40" rx="5" fill="#FF80AB"/></svg>' },
+                    { type: 'recheio', nomeTTS: 'Recheio de baunilha', svg: '<svg viewBox="0 0 100 30"><rect x="20" y="10" width="60" height="15" fill="#FFFFFF"/></svg>' },
+                    { type: 'cobertura', nomeTTS: 'Cobertura', svg: '<svg viewBox="0 0 100 40"><path d="M 18 25 L 82 25 C 82 10 18 10 18 25 Z" fill="#E91E63"/><path d="M 25 25 Q 30 40 35 25 Q 45 35 55 25 Q 65 40 75 25" fill="#E91E63"/></svg>' },
+                    { type: 'velas', nomeTTS: 'Velinha', svg: '<svg viewBox="0 0 100 60"><rect x="47" y="25" width="6" height="30" fill="#FFF59D"/><path d="M 50 5 Q 55 15 50 25 Q 45 15 50 5 Z" fill="#FF9800"/></svg>' }
+                ]
+            },
+            pratoBrasileiro: {
+                nome: "Prato Brasileiro", sequence: ['prato', 'arroz', 'feijao', 'carne', 'salada', 'banana'], offsets: [20, 25, 30, 40, 50, 60],
+                modeloSvg: `<svg viewBox="0 0 100 100"><ellipse cx="50" cy="80" rx="45" ry="15" fill="#ECEFF1"/><ellipse cx="35" cy="70" rx="20" ry="10" fill="#FFF9C4"/><ellipse cx="40" cy="65" rx="15" ry="8" fill="#795548"/><path d="M 55 60 Q 80 60 85 75 Q 60 80 50 70 Z" fill="#5D4037"/><circle cx="50" cy="55" r="10" fill="#4CAF50"/><circle cx="40" cy="55" r="8" fill="#81C784"/><circle cx="60" cy="55" r="8" fill="#81C784"/><circle cx="50" cy="50" r="4" fill="#F44336"/><path d="M 25 85 Q 40 95 55 85 Q 40 90 25 85 Z" fill="#FFEB3B"/></svg>`,
+                ingredientes: [
+                    { type: 'prato', nomeTTS: 'Prato', svg: '<svg viewBox="0 0 100 40"><ellipse cx="50" cy="20" rx="45" ry="15" fill="#ECEFF1"/></svg>' },
+                    { type: 'arroz', nomeTTS: 'Arroz', svg: '<svg viewBox="0 0 100 40"><ellipse cx="35" cy="20" rx="20" ry="10" fill="#FFF9C4"/></svg>' },
+                    { type: 'feijao', nomeTTS: 'Feijão', svg: '<svg viewBox="0 0 100 40"><ellipse cx="40" cy="20" rx="15" ry="8" fill="#795548"/></svg>' },
+                    { type: 'carne', nomeTTS: 'Carne', svg: '<svg viewBox="0 0 100 40"><path d="M 55 10 Q 80 10 85 25 Q 60 30 50 20 Z" fill="#5D4037"/></svg>' },
+                    { type: 'salada', nomeTTS: 'Salada', svg: '<svg viewBox="0 0 100 40"><circle cx="50" cy="20" r="10" fill="#4CAF50"/><circle cx="40" cy="20" r="8" fill="#81C784"/><circle cx="60" cy="20" r="8" fill="#81C784"/><circle cx="50" cy="15" r="4" fill="#F44336"/></svg>' },
+                    { type: 'banana', nomeTTS: 'Banana frita', svg: '<svg viewBox="0 0 100 40"><path d="M 25 25 Q 40 35 55 25 Q 40 30 25 25 Z" fill="#FFEB3B"/></svg>' }
                 ]
             }
         };
@@ -501,10 +621,10 @@
         // ==========================================
         const listaNomesOriginais = ["ISABELA", "GABRIEL", "KAMILA", "SAPO", "BOLA", "CASA"];
         let palavrasDisponiveis = [];
-        let nomeAlvo = "";
+        let nomeAlvoNomes = "";
         let indiceLetraAtual = 1; 
-        const containerSlots = document.getElementById('palavra-alvo');
-        const containerBolhas = document.getElementById('area-bolhas');
+        const containerSlotsNomes = document.getElementById('palavra-alvo');
+        const containerBolhasNomes = document.getElementById('area-bolhas');
 
         function iniciarJogoNomesAleatorio() {
             if (palavrasDisponiveis.length === 0) {
@@ -528,29 +648,29 @@
 
         function iniciarFaseNomes(palavra) {
             navegar('tela-nomes');
-            nomeAlvo = palavra;
+            nomeAlvoNomes = palavra;
             indiceLetraAtual = 1; 
             
-            falar("Vamos escrever " + nomeAlvo + ". Procure a letra " + nomeAlvo[indiceLetraAtual]);
+            falar("Vamos escrever " + nomeAlvoNomes + ". Procure a letra " + nomeAlvoNomes[indiceLetraAtual]);
             
-            containerSlots.innerHTML = '';
-            containerBolhas.innerHTML = '';
+            containerSlotsNomes.innerHTML = '';
+            containerBolhasNomes.innerHTML = '';
 
-            for(let i = 0; i < nomeAlvo.length; i++) {
+            for(let i = 0; i < nomeAlvoNomes.length; i++) {
                 const slot = document.createElement('div');
                 slot.classList.add('slot-letra');
                 slot.id = `slot-${i}`;
                 
                 if(i === 0) {
-                    slot.textContent = nomeAlvo[0];
+                    slot.textContent = nomeAlvoNomes[0];
                     slot.style.backgroundColor = "#fff";
                     slot.style.borderColor = "#4CAF50";
                 }
                 
-                containerSlots.appendChild(slot);
+                containerSlotsNomes.appendChild(slot);
             }
 
-            let letrasEmbaralhadas = nomeAlvo.substring(1).split('').sort(() => Math.random() - 0.5);
+            let letrasEmbaralhadas = nomeAlvoNomes.substring(1).split('').sort(() => Math.random() - 0.5);
 
             letrasEmbaralhadas.forEach((letra, index) => {
                 const bolha = document.createElement('div');
@@ -560,15 +680,15 @@
                 bolha.style.backgroundColor = cores[index % cores.length];
                 
                 bolha.addEventListener('pointerdown', function onClick() {
-                    checarLetra(this, letra);
+                    checarLetraNomes(this, letra);
                 });
                 
-                containerBolhas.appendChild(bolha);
+                containerBolhasNomes.appendChild(bolha);
             });
         }
 
-        function checarLetra(elementoBolha, letraClicada) {
-            const letraCorreta = nomeAlvo[indiceLetraAtual];
+        function checarLetraNomes(elementoBolha, letraClicada) {
+            const letraCorreta = nomeAlvoNomes[indiceLetraAtual];
             if (letraClicada === letraCorreta) {
                 sndAcerto.cloneNode(true).play().catch(e => {});
                 const slotAlvo = document.getElementById(`slot-${indiceLetraAtual}`);
@@ -581,7 +701,7 @@
                 
                 indiceLetraAtual++;
 
-                if (indiceLetraAtual === nomeAlvo.length) {
+                if (indiceLetraAtual === nomeAlvoNomes.length) {
                     setTimeout(() => {
                         sndVitoria.cloneNode(true).play().catch(e => {});
                         falar("Parabéns!");
@@ -589,12 +709,199 @@
                         setTimeout(() => navegar('tela-nomes-menu'), 4000);
                     }, 300);
                 } else {
-                    falar("Agora a letra " + nomeAlvo[indiceLetraAtual]);
+                    falar("Agora a letra " + nomeAlvoNomes[indiceLetraAtual]);
                 }
             } else {
                 sndErro.cloneNode(true).play().catch(e => {});
                 elementoBolha.classList.add('error-shake');
                 setTimeout(() => elementoBolha.classList.remove('error-shake'), 400);
+            }
+        }
+
+        // ==========================================
+        // LÓGICA: LETRAS E OBJETOS
+        // ==========================================
+        const dicionarioLetras = {
+            A: [{n: "ABACAXI", e: "🍍"}, {n: "AVIÃO", e: "✈️"}, {n: "ÁRVORE", e: "🌳"}, {n: "ABELHA", e: "🐝"}, {n: "ANEL", e: "💍"}],
+            B: [{n: "BOLA", e: "⚽"}, {n: "BANANA", e: "🍌"}, {n: "BALEIA", e: "🐳"}, {n: "BARCO", e: "⛵"}, {n: "BORBOLETA", e: "🦋"}],
+            C: [{n: "CARRO", e: "🚗"}, {n: "CASA", e: "🏠"}, {n: "CACHORRO", e: "🐶"}, {n: "CENOURA", e: "🥕"}, {n: "CAVALO", e: "🐴"}],
+            D: [{n: "DINOSSAURO", e: "🦕"}, {n: "DENTE", e: "🦷"}, {n: "DADO", e: "🎲"}, {n: "DIAMANTE", e: "💎"}, {n: "DRAGÃO", e: "🐉"}],
+            E: [{n: "ELEFANTE", e: "🐘"}, {n: "ESTRELA", e: "🌟"}, {n: "ESCUDO", e: "🛡️"}, {n: "ESCOLA", e: "🏫"}, {n: "ESPADA", e: "🗡️"}],
+            F: [{n: "FLOR", e: "🌸"}, {n: "FOLHA", e: "🍃"}, {n: "FORMIGA", e: "🐜"}, {n: "FANTASMA", e: "👻"}, {n: "FOGO", e: "🔥"}],
+            G: [{n: "GATO", e: "🐱"}, {n: "GIRAFA", e: "🦒"}, {n: "GELO", e: "🧊"}, {n: "GOTA", e: "💧"}, {n: "GALINHA", e: "🐔"}],
+            H: [{n: "HELICÓPTERO", e: "🚁"}, {n: "HOSPITAL", e: "🏥"}, {n: "HIPOPÓTAMO", e: "🦛"}, {n: "HAMBÚRGUER", e: "🍔"}, {n: "HARPA", e: "🪕"}],
+            I: [{n: "IGREJA", e: "⛪"}, {n: "ILHA", e: "🏝️"}, {n: "ÍMÃ", e: "🧲"}, {n: "IGUANA", e: "🦎"}, {n: "IGLU", e: "🛖"}],
+            J: [{n: "JACARÉ", e: "🐊"}, {n: "JOANINHA", e: "🐞"}, {n: "JANELA", e: "🪟"}, {n: "JAVALI", e: "🐗"}, {n: "JIPE", e: "🚙"}],
+            L: [{n: "LEÃO", e: "🦁"}, {n: "LIMÃO", e: "🍋"}, {n: "LOBO", e: "🐺"}, {n: "LUA", e: "🌙"}, {n: "LUVA", e: "🧤"}],
+            M: [{n: "MAÇÃ", e: "🍎"}, {n: "MACACO", e: "🐒"}, {n: "MORANGO", e: "🍓"}, {n: "MILHO", e: "🌽"}, {n: "MOCHILA", e: "🎒"}],
+            N: [{n: "NUVEM", e: "☁️"}, {n: "NAVIO", e: "🚢"}, {n: "NEVE", e: "❄️"}, {n: "NINJA", e: "🥷"}, {n: "NINHO", e: "🪹"}],
+            O: [{n: "OVO", e: "🥚"}, {n: "OVELHA", e: "🐑"}, {n: "ÔNIBUS", e: "🚌"}, {n: "OLHO", e: "👁️"}, {n: "OSSO", e: "🦴"}],
+            P: [{n: "PATO", e: "🦆"}, {n: "PORCO", e: "🐷"}, {n: "PIZZA", e: "🍕"}, {n: "PEIXE", e: "🐟"}, {n: "PINGUIM", e: "🐧"}],
+            Q: [{n: "QUEIJO", e: "🧀"}, {n: "QUADRO", e: "🖼️"}, {n: "QUEBRA-CABEÇA", e: "🧩"}, {n: "QUIMONO", e: "🥋"}, {n: "QUIUI", e: "🥝"}],
+            R: [{n: "RATO", e: "🐀"}, {n: "RAPOSA", e: "🦊"}, {n: "RELÓGIO", e: "🕰️"}, {n: "RATOEIRA", e: "🪤"}, {n: "ROBÔ", e: "🤖"}],
+            S: [{n: "SAPO", e: "🐸"}, {n: "SORVETE", e: "🍦"}, {n: "SOL", e: "🌞"}, {n: "SAPATO", e: "👞"}, {n: "SEREIA", e: "🧜‍♀️"}],
+            T: [{n: "TARTARUGA", e: "🐢"}, {n: "TOMATE", e: "🍅"}, {n: "TIGRE", e: "🐯"}, {n: "TELEFONE", e: "☎️"}, {n: "TUBARÃO", e: "🦈"}],
+            U: [{n: "UVA", e: "🍇"}, {n: "URSO", e: "🐻"}, {n: "UNICÓRNIO", e: "🦄"}, {n: "UNHA", e: "💅"}, {n: "URUBU", e: "🦅"}],
+            V: [{n: "VACA", e: "🐄"}, {n: "VELA", e: "🕯️"}, {n: "VULCÃO", e: "🌋"}, {n: "VESTIDO", e: "👗"}, {n: "VASSOURA", e: "🧹"}],
+            X: [{n: "XÍCARA", e: "☕"}, {n: "XADREZ", e: "♟️"}, {n: "XAMPU", e: "🧴"}, {n: "XAROPE", e: "🥄"}, {n: "XERIFE", e: "🤠"}],
+            Z: [{n: "ZEBRA", e: "🦓"}, {n: "ZUMBI", e: "🧟"}, {n: "ZÍPER", e: "🤐"}, {n: "ZANGÃO", e: "🐝"}, {n: "ZOOLÓGICO", e: "🦁"}]
+        };
+
+        const alfabetoValido = Object.keys(dicionarioLetras);
+        let objetoCorretoDaRodada = null;
+        let letraAlvoRodada = "";
+
+        function iniciarLetrasObjetos() {
+            navegar('tela-letras-objetos');
+            gerarFaseLetrasObjetos();
+        }
+
+        function gerarFaseLetrasObjetos() {
+            document.getElementById('grid-objetos').innerHTML = '';
+            
+            letraAlvoRodada = alfabetoValido[Math.floor(Math.random() * alfabetoValido.length)];
+            document.getElementById('box-letra-alvo').textContent = letraAlvoRodada;
+            
+            const listaCorreta = dicionarioLetras[letraAlvoRodada];
+            objetoCorretoDaRodada = listaCorreta[Math.floor(Math.random() * listaCorreta.length)];
+            
+            let objetosNaTela = [objetoCorretoDaRodada];
+            let letrasUsadas = [letraAlvoRodada];
+            
+            while(objetosNaTela.length < 6) {
+                let letraAleatoria = alfabetoValido[Math.floor(Math.random() * alfabetoValido.length)];
+                if(!letrasUsadas.includes(letraAleatoria)) {
+                    let objAleatorio = dicionarioLetras[letraAleatoria][Math.floor(Math.random() * dicionarioLetras[letraAleatoria].length)];
+                    objetosNaTela.push(objAleatorio);
+                    letrasUsadas.push(letraAleatoria); 
+                }
+            }
+            
+            objetosNaTela.sort(() => Math.random() - 0.5);
+            
+            const grid = document.getElementById('grid-objetos');
+            objetosNaTela.forEach(obj => {
+                const card = document.createElement('div');
+                card.classList.add('card-objeto');
+                card.innerHTML = `
+                    <div class="emoji-objeto">${obj.e}</div>
+                    <div class="texto-objeto">${obj.n}</div>
+                `;
+                
+                card.addEventListener('pointerdown', function() {
+                    checarObjeto(card, obj);
+                });
+                
+                grid.appendChild(card);
+            });
+            
+            falar("Encontre algo que começa com a letra " + letraAlvoRodada);
+        }
+
+        function checarObjeto(elementoCard, objClicado) {
+            if(objClicado === objetoCorretoDaRodada) {
+                sndVitoria.cloneNode(true).play().catch(e => {});
+                falar("Muito bem! " + objClicado.n + " começa com " + letraAlvoRodada);
+                
+                elementoCard.classList.add('success-pulse');
+                soltarConfetes(document.getElementById('tela-letras-objetos'));
+                
+                document.querySelectorAll('.card-objeto').forEach(c => c.style.pointerEvents = 'none');
+                
+                setTimeout(() => {
+                    gerarFaseLetrasObjetos();
+                }, 4000);
+            } else {
+                sndErro.cloneNode(true).play().catch(e => {});
+                elementoCard.classList.add('error-shake');
+                setTimeout(() => elementoCard.classList.remove('error-shake'), 400);
+            }
+        }
+
+        // ==========================================
+        // LÓGICA: BOLHAS NUMÉRICAS
+        // ==========================================
+        let numerosFase = [];
+        let proximoNumeroIndice = 0;
+        let nivelNumeros = 5; 
+
+        function iniciarBolhasNumericas() {
+            navegar('tela-numeros');
+            nivelNumeros = 5; // Reseta para 5 ao entrar no jogo
+            gerarFaseNumeros();
+        }
+
+        function gerarFaseNumeros() {
+            const container = document.getElementById('area-bolhas-numeros');
+            container.innerHTML = '';
+            numerosFase = [];
+            
+            for (let i = 1; i <= nivelNumeros; i++) {
+                numerosFase.push(i);
+            }
+            
+            proximoNumeroIndice = 0;
+            let embaralhados = [...numerosFase].sort(() => Math.random() - 0.5);
+
+            falar("Toque no número " + numerosFase[proximoNumeroIndice]);
+
+            embaralhados.forEach(num => {
+                const bolha = document.createElement('div');
+                bolha.classList.add('bolha');
+                bolha.textContent = num;
+                
+                const cores = ['#FFCA28', '#03A9F4', '#4CAF50', '#FF4081', '#9C27B0', '#FF9800', '#00BCD4'];
+                bolha.style.backgroundColor = cores[num % cores.length];
+
+                const posicaoTopo = Math.floor(Math.random() * 65) + 15;
+                const posicaoEsquerda = Math.floor(Math.random() * 75) + 10; 
+                
+                bolha.style.top = posicaoTopo + '%';
+                bolha.style.left = posicaoEsquerda + '%';
+
+                // NOVO: Garante que os números menores fiquem sempre na frente
+                bolha.style.zIndex = 100 - num;
+
+                bolha.addEventListener('pointerdown', function() {
+                    checarNumero(this, num);
+                });
+
+                container.appendChild(bolha);
+            });
+        }
+
+        function checarNumero(bolha, numClicado) {
+            const numCorreto = numerosFase[proximoNumeroIndice];
+            if (numClicado === numCorreto) {
+                sndAcerto.cloneNode(true).play().catch(e => {});
+                
+                // Animação de estouro
+                bolha.style.pointerEvents = 'none';
+                bolha.style.transform = 'scale(0)';
+                bolha.style.opacity = '0';
+                
+                setTimeout(() => bolha.remove(), 300);
+
+                proximoNumeroIndice++;
+
+                if (proximoNumeroIndice === numerosFase.length) {
+                    setTimeout(() => {
+                        sndVitoria.cloneNode(true).play().catch(e => {});
+                        falar("Parabéns!");
+                        soltarConfetes(document.getElementById('tela-numeros'));
+                        
+                        // Aumenta a dificuldade em 2 bolhas por rodada (limite 10)
+                        if(nivelNumeros < 10) nivelNumeros += 2; 
+
+                        setTimeout(() => gerarFaseNumeros(), 4000);
+                    }, 300);
+                } else {
+                    falar(numerosFase[proximoNumeroIndice].toString());
+                }
+            } else {
+                sndErro.cloneNode(true).play().catch(e => {});
+                bolha.classList.add('error-shake');
+                setTimeout(() => bolha.classList.remove('error-shake'), 400);
             }
         }
     </script>
