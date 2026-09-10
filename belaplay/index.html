@@ -48,8 +48,20 @@
         .form-custom { display: flex; align-items: center; justify-content: center; margin-top: 30px; background: rgba(255,255,255,0.7); padding: 20px; border-radius: 30px; }
         
         /* ================= MASCOTE ================= */
-        #mascote-container { position: fixed; bottom: 10px; right: 20px; z-index: 3000; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; }
+        #mascote-container { position: fixed; bottom: 160px; right: 20px; z-index: 3000; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; }
         
+        /* Escala gigante mantida, mas agora flutuando acima dos ingredientes */
+        #mascote-atual { font-size: 180px; cursor: pointer; filter: drop-shadow(2px 6px 10px rgba(0,0,0,0.3)); animation: floatMascote 3s ease-in-out infinite; user-select: none; touch-action: none; transition: transform 0.2s; line-height: 1; pointer-events: all; }
+        #mascote-atual:active { transform: scale(0.9); }
+
+        @keyframes floatMascote { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(2deg); } }
+
+        /* Ajustado para 3 colunas para acomodar 6 bichinhos */
+        #mascote-popup { background: rgba(255, 255, 255, 0.95); border: 4px solid #FF4081; border-radius: 20px; padding: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 15px rgba(0,0,0,0.2); transition: opacity 0.3s, transform 0.3s; opacity: 0; pointer-events: none; transform: translateY(20px) scale(0.9); transform-origin: bottom right; }
+        #mascote-popup.show { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+
+        .mascote-option { font-size: 55px; cursor: pointer; transition: transform 0.1s; user-select: none; touch-action: none; padding: 15px; background: #FFD1DC; border-radius: 50%; display: flex; justify-content: center; align-items: center; line-height: 1; border: 2px solid transparent; }
+        .mascote-option:active { transform: scale(0.8); background: #FF4081; border-color: #C2185B; }
         /* Escala ajustada para ficar gigante mas sem cobrir o jogo inteiro */
         #mascote-atual { font-size: 180px; cursor: pointer; filter: drop-shadow(2px 6px 10px rgba(0,0,0,0.3)); animation: floatMascote 3s ease-in-out infinite; user-select: none; touch-action: none; transition: transform 0.2s; line-height: 1; pointer-events: all; }
         #mascote-atual:active { transform: scale(0.9); }
@@ -149,13 +161,15 @@
             <div class="mascote-option" onclick="escolherMascote('🐻', 'Ursinha')">🐻</div>
             <div class="mascote-option" onclick="escolherMascote('🐰', 'Coelhinha')">🐰</div>
             <div class="mascote-option" onclick="escolherMascote('🦊', 'Raposinha')">🦊</div>
+            <div class="mascote-option" onclick="escolherMascote('🐱', 'Gatinha')">🐱</div>
+            <div class="mascote-option" onclick="escolherMascote('🐶', 'Cachorrinha')">🐶</div>
         </div>
         <div id="mascote-atual" onclick="toggleMascotePopup()">🦄</div>
     </div>
 
     <!-- MENU PRINCIPAL -->
     <div id="tela-menu" class="screen active">
-        <h1>Bela Play 1.1 🌟</h1>
+        <h1>Bela Play 1.2 🌟</h1>
         <button class="menu-btn btn-main btn-cooklab" onclick="navegar('tela-cooklab')">🍳 CookLab</button>
         <button class="menu-btn btn-main btn-nomes" onclick="navegar('tela-nomes-menu')">🔤 Formando Nomes</button>
         <button class="menu-btn btn-main btn-letras" onclick="iniciarLetrasObjetos()">🅰️ Letras e Objetos</button>
