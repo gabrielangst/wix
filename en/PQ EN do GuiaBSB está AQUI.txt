@@ -1,0 +1,3 @@
+A pasta EN está aqui, pois o dominio guiadebrasilia.com leva para o repositorio "wix". Daí no index tem um redirecionado para wix/guiadebrasilia.
+
+Assim, o QR Code do livro direciona para guiadebrasilia.com/en que, na prática, seria wix/en e não wix/guiadebrasilia/en
