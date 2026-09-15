@@ -37,11 +37,13 @@
         .menu-btn { width: 100%; padding: 20px; font-size: 26px; font-weight: bold; color: white; background-color: #4CAF50; border: none; border-radius: 20px; box-shadow: 0 8px 0 rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.1s; user-select: none; touch-action: none; }
         .menu-btn:active { transform: translateY(8px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
         
-        .btn-main { width: 280px; margin: 15px; }
+        .main-menu-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 95%; max-width: 650px; }
+        .btn-main { width: 280px; margin: 0; }
         .btn-cooklab { background-color: #FF9800; box-shadow: 0 8px 0 #E65100; }
         .btn-nomes { background-color: #03A9F4; box-shadow: 0 8px 0 #01579B; }
         .btn-letras { background-color: #9C27B0; box-shadow: 0 8px 0 #6A1B9A; }
         .btn-numeros { background-color: #E91E63; box-shadow: 0 8px 0 #C2185B; }
+        .btn-labirinto { background-color: #00BCD4; box-shadow: 0 8px 0 #0097A7; }
         
         .input-custom { padding: 15px 25px; font-size: 24px; font-family: inherit; border: 4px solid #03A9F4; border-radius: 20px; width: 250px; text-align: center; margin-right: 10px; text-transform: uppercase; }
         .input-custom:focus { outline: none; border-color: #FF4081; }
@@ -49,28 +51,11 @@
         
         /* ================= MASCOTE ================= */
         #mascote-container { position: fixed; bottom: 160px; right: 20px; z-index: 3000; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; }
-        
-        /* Escala gigante mantida, mas agora flutuando acima dos ingredientes */
         #mascote-atual { font-size: 180px; cursor: pointer; filter: drop-shadow(2px 6px 10px rgba(0,0,0,0.3)); animation: floatMascote 3s ease-in-out infinite; user-select: none; touch-action: none; transition: transform 0.2s; line-height: 1; pointer-events: all; }
         #mascote-atual:active { transform: scale(0.9); }
-
         @keyframes floatMascote { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(2deg); } }
-
-        /* Ajustado para 3 colunas para acomodar 6 bichinhos */
         #mascote-popup { background: rgba(255, 255, 255, 0.95); border: 4px solid #FF4081; border-radius: 20px; padding: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 15px rgba(0,0,0,0.2); transition: opacity 0.3s, transform 0.3s; opacity: 0; pointer-events: none; transform: translateY(20px) scale(0.9); transform-origin: bottom right; }
         #mascote-popup.show { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
-
-        .mascote-option { font-size: 55px; cursor: pointer; transition: transform 0.1s; user-select: none; touch-action: none; padding: 15px; background: #FFD1DC; border-radius: 50%; display: flex; justify-content: center; align-items: center; line-height: 1; border: 2px solid transparent; }
-        .mascote-option:active { transform: scale(0.8); background: #FF4081; border-color: #C2185B; }
-        /* Escala ajustada para ficar gigante mas sem cobrir o jogo inteiro */
-        #mascote-atual { font-size: 180px; cursor: pointer; filter: drop-shadow(2px 6px 10px rgba(0,0,0,0.3)); animation: floatMascote 3s ease-in-out infinite; user-select: none; touch-action: none; transition: transform 0.2s; line-height: 1; pointer-events: all; }
-        #mascote-atual:active { transform: scale(0.9); }
-
-        @keyframes floatMascote { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(2deg); } }
-
-        #mascote-popup { background: rgba(255, 255, 255, 0.95); border: 4px solid #FF4081; border-radius: 20px; padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 15px rgba(0,0,0,0.2); transition: opacity 0.3s, transform 0.3s; opacity: 0; pointer-events: none; transform: translateY(20px) scale(0.9); transform-origin: bottom right; }
-        #mascote-popup.show { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
-
         .mascote-option { font-size: 55px; cursor: pointer; transition: transform 0.1s; user-select: none; touch-action: none; padding: 15px; background: #FFD1DC; border-radius: 50%; display: flex; justify-content: center; align-items: center; line-height: 1; border: 2px solid transparent; }
         .mascote-option:active { transform: scale(0.8); background: #FF4081; border-color: #C2185B; }
 
@@ -79,20 +64,21 @@
         #counter-value { color: #FF4081; font-size: 28px; }
         #help-btn { position: absolute; top: 20px; right: 20px; width: 60px; height: 60px; background-color: #FFCA28; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 35px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); cursor: pointer; z-index: 100; user-select: none; touch-action: none; }
         #help-btn:active { transform: scale(0.90); }
-        
         #game-area { flex: 1; width: 100%; position: relative; display: flex; justify-content: space-around; align-items: center; padding: 0 20px; box-sizing: border-box; }
         #reference-area { width: 200px; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
         .reference-title { font-size: 18px; color: #555; margin-bottom: 10px; font-weight: bold; }
-        #reference-svg-container svg { width: 130px; height: auto; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); display: block; }
+        #reference-svg-container svg { width: 130px; height: auto; filter: drop-shadow(3px 5px 8px rgba(0,0,0,0.6)); display: block; }
         #plate { width: 250px; height: 250px; background-color: #fff; border: 5px dashed #ccc; border-radius: 50%; display: flex; justify-content: center; align-items: flex-end; position: relative; }
         
         #ingredients-panel { height: 150px; width: 100%; background-color: #fff; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-evenly; align-items: center; flex-wrap: wrap; padding: 0 10px; position: relative; z-index: 50; box-sizing: border-box; }
         .slot { width: 110px; height: 70px; display: flex; justify-content: center; align-items: center; }
-        .ingredient { width: 120px; height: auto; cursor: grab; touch-action: none; user-select: none; -webkit-user-drag: none; position: absolute; transition: transform 0.1s; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); display: flex; justify-content: center; align-items: center; }
-        .ingredient svg { pointer-events: none; width: 100%; height: auto; display: block; }
-        .ingredient:active { cursor: grabbing; transform: scale(1.15); }
         
-        @keyframes hintPulse { 0% { transform: scale(1); filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); } 50% { transform: scale(1.3) translateY(-10px); filter: drop-shadow(0 0 15px #FFCA28); } 100% { transform: scale(1); filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); } }
+        /* Sombras mais escuras e efeito de "levantar" a peça ao tocar */
+        .ingredient { width: 120px; height: auto; cursor: grab; touch-action: none; user-select: none; -webkit-user-drag: none; position: absolute; transition: transform 0.1s, filter 0.1s; filter: drop-shadow(3px 5px 8px rgba(0,0,0,0.6)); display: flex; justify-content: center; align-items: center; }
+        .ingredient svg { pointer-events: none; width: 100%; height: auto; display: block; }
+        .ingredient:active { cursor: grabbing; transform: scale(1.15); filter: drop-shadow(6px 10px 12px rgba(0,0,0,0.5)); z-index: 2000; }
+        
+        @keyframes hintPulse { 0% { transform: scale(1); filter: drop-shadow(3px 5px 8px rgba(0,0,0,0.6)); } 50% { transform: scale(1.3) translateY(-10px); filter: drop-shadow(0 0 15px #FFCA28); } 100% { transform: scale(1); filter: drop-shadow(3px 5px 8px rgba(0,0,0,0.6)); } }
         .hint-active { animation: hintPulse 0.8s ease-in-out 2; }
         .in-panel { position: static; }
         .dragging { position: absolute; z-index: 1000; }
@@ -102,27 +88,15 @@
         #palavra-alvo { display: flex; gap: 15px; margin-top: 80px; margin-bottom: 50px; flex-wrap: wrap; justify-content: center; }
         .slot-letra { width: 60px; height: 60px; border: 4px dashed #ccc; border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 40px; font-weight: bold; color: #4CAF50; background-color: rgba(255,255,255,0.5); }
         #area-bolhas, #area-bolhas-numeros { flex: 1; width: 90%; position: relative; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 20px; padding-bottom: 40px; }
-        
-        #area-bolhas-numeros {
-            display: block; /* Remove o flex para permitir o espalhamento */
-        }
-
-        #area-bolhas-numeros .bolha {
-            position: absolute;
-            width: 120px;  /* Bolha maior */
-            height: 120px;
-            font-size: 65px; /* Número maior */
-        }
-
+        #area-bolhas-numeros { display: block; }
+        #area-bolhas-numeros .bolha { position: absolute; width: 120px; height: 120px; font-size: 65px; }
         .bolha { width: 90px; height: 90px; background-color: #FFCA28; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 50px; font-weight: bold; color: #fff; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); box-shadow: 0 6px 0px #FFB300, 0 10px 10px rgba(0,0,0,0.2); cursor: pointer; user-select: none; touch-action: none; transition: transform 0.2s, opacity 0.2s; }
         .bolha:active { transform: translateY(6px); box-shadow: 0 0 0 #FFB300; }
         
         /* ================= LETRAS E OBJETOS ================= */
         #container-letras-objetos { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; justify-content: center; }
         #box-letra-alvo { background-color: #FFCA28; width: 120px; height: 120px; border-radius: 30px; display: flex; justify-content: center; align-items: center; font-size: 80px; font-weight: bold; color: white; text-shadow: 3px 3px 0 rgba(0,0,0,0.2); box-shadow: 0 8px 15px rgba(0,0,0,0.2); margin-bottom: 30px; border: 5px solid #fff; animation: floatLetra 3s ease-in-out infinite; }
-        
         @keyframes floatLetra { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        
         #grid-objetos { display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; max-width: 800px; padding: 10px; }
         .card-objeto { background: white; border-radius: 20px; width: 160px; height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 6px 0 #ccc; cursor: pointer; transition: transform 0.1s; user-select: none; touch-action: none; border: 4px solid #eee; }
         .card-objeto:active { transform: translateY(6px); box-shadow: 0 0 0 #ccc; }
@@ -133,16 +107,44 @@
         .error-shake { animation: shake 0.4s; border-color: #ff5252 !important; }
         .success-pulse { background-color: #C8E6C9 !important; border-color: #4CAF50 !important; transform: scale(1.1); box-shadow: 0 0 20px #4CAF50; z-index: 10; transition: 0.3s; }
         
+        /* ================= LABIRINTO ================= */
+        #container-labirinto { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; background-color: #E1F5FE; }
+        #grid-labirinto {
+            display: grid;
+            gap: 4px;
+            background-color: #B0BEC5;
+            padding: 8px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            /* ISSO É O SEGREDO: Impede a tela de rolar enquanto ela arrasta o dedo */
+            touch-action: none; 
+            user-select: none;
+        }
+        .maze-cell {
+            width: 9vw;
+            max-width: 75px;
+            height: 9vw;
+            max-height: 75px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 45px;
+            transition: background-color 0.15s ease;
+        }
+        .cell-wall { background-color: var(--wall-color, #795548); }
+        .cell-path { background-color: var(--path-color, #FFF8E1); }
+        .cell-start, .cell-end { background-color: var(--path-color, #FFF8E1); cursor: pointer; }
+        .cell-visited { background-color: var(--visited-color, #FFCA28); }
+
         /* ================= VITÓRIA ================= */
         #victory-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
         #victory-screen.show { opacity: 1; pointer-events: all; }
         .victory-text { font-size: 60px; color: #FF4081; font-weight: bold; text-shadow: 3px 3px 0 #FFCA28; margin-bottom: 10px; transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         #victory-screen.show .victory-text { transform: scale(1); }
-        
         #victory-image { transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transition-delay: 0.1s; margin-bottom: 10px; }
         #victory-screen.show #victory-image { transform: scale(1); }
         #victory-image svg { width: 160px; height: auto; filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.3)); display: block; }
-        
         #victory-dish-name { font-size: 35px; color: #4CAF50; font-weight: bold; margin-bottom: 30px; text-shadow: 2px 2px 0px #fff; transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transition-delay: 0.2s; }
         #victory-screen.show #victory-dish-name { transform: scale(1); }
 
@@ -157,23 +159,26 @@
     <!-- MASCOTE FIXA (Global) -->
     <div id="mascote-container">
         <div id="mascote-popup">
-            <div class="mascote-option" onclick="escolherMascote('🦄', 'Unicórnia')">🦄</div>
-            <div class="mascote-option" onclick="escolherMascote('🐻', 'Ursinha')">🐻</div>
-            <div class="mascote-option" onclick="escolherMascote('🐰', 'Coelhinha')">🐰</div>
-            <div class="mascote-option" onclick="escolherMascote('🦊', 'Raposinha')">🦊</div>
-            <div class="mascote-option" onclick="escolherMascote('🐱', 'Gatinha')">🐱</div>
-            <div class="mascote-option" onclick="escolherMascote('🐶', 'Cachorrinha')">🐶</div>
+            <div class="mascote-option" onclick="escolherMascote('🦄', 'Unicórnia Belinha')">🦄</div>
+            <div class="mascote-option" onclick="escolherMascote('🐻', 'Ursinha Babi')">🐻</div>
+            <div class="mascote-option" onclick="escolherMascote('🐰', 'Coelhinha Lilica')">🐰</div>
+            <div class="mascote-option" onclick="escolherMascote('🦊', 'Raposinha Rapi')">🦊</div>
+            <div class="mascote-option" onclick="escolherMascote('🐱', 'Gatinha Mia')">🐱</div>
+            <div class="mascote-option" onclick="escolherMascote('🐶', 'Cachorrinha Dudu')">🐶</div>
         </div>
         <div id="mascote-atual" onclick="toggleMascotePopup()">🦄</div>
     </div>
 
     <!-- MENU PRINCIPAL -->
     <div id="tela-menu" class="screen active">
-        <h1>Bela Play 1.2 🌟</h1>
-        <button class="menu-btn btn-main btn-cooklab" onclick="navegar('tela-cooklab')">🍳 CookLab</button>
-        <button class="menu-btn btn-main btn-nomes" onclick="navegar('tela-nomes-menu')">🔤 Formando Nomes</button>
-        <button class="menu-btn btn-main btn-letras" onclick="iniciarLetrasObjetos()">🅰️ Letras e Objetos</button>
-        <button class="menu-btn btn-main btn-numeros" onclick="iniciarBolhasNumericas()">🔢 Bolhas Numéricas</button>
+        <h1>Bela Play 1.3 🌟</h1>
+        <div class="main-menu-grid">
+            <button class="menu-btn btn-main btn-cooklab" onclick="navegar('tela-cooklab')">🍳 CookLab</button>
+            <button class="menu-btn btn-main btn-nomes" onclick="navegar('tela-nomes-menu')">🔤 Formando Nomes</button>
+            <button class="menu-btn btn-main btn-letras" onclick="iniciarLetrasObjetos()">🅰️ Letras e Objetos</button>
+            <button class="menu-btn btn-main btn-numeros" onclick="iniciarBolhasNumericas()">🔢 Bolhas Numéricas</button>
+            <button class="menu-btn btn-main btn-labirinto" onclick="iniciarLabirinto()">🧭 Labirinto</button>
+        </div>
     </div>
 
     <!-- MENU COOKLAB -->
@@ -193,6 +198,8 @@
             <button class="menu-btn" style="background-color:#F48FB1;" onclick="iniciarReceita('milkshake')">🥤 Milkshake</button>
             <button class="menu-btn" style="background-color:#E040FB;" onclick="iniciarReceita('boloAniversario')">🎂 Bolo de Aniversário</button>
             <button class="menu-btn" style="background-color:#4CAF50;" onclick="iniciarReceita('pratoBrasileiro')">🍛 Prato Brasileiro</button>
+            <button class="menu-btn" style="background-color:#CDDC39;" onclick="iniciarReceita('limonada')">🍋 Limonada</button>
+            <button class="menu-btn" style="background-color:#FF9800;" onclick="iniciarReceita('sucoLaranja')">🍊 Suco de Laranja</button>
         </div>
     </div>
 
@@ -242,9 +249,7 @@
         <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
         <div id="container-letras-objetos">
             <div id="box-letra-alvo">A</div>
-            <div id="grid-objetos">
-                <!-- Cards injetados via JS -->
-            </div>
+            <div id="grid-objetos"></div>
         </div>
     </div>
 
@@ -253,6 +258,14 @@
         <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
         <h1 style="margin-bottom: 20px;">Estoure na Ordem!</h1>
         <div id="area-bolhas-numeros"></div>
+    </div>
+
+    <!-- TELA LABIRINTO GAME -->
+    <div id="tela-labirinto" class="screen">
+        <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
+        <div id="container-labirinto">
+            <div id="grid-labirinto"></div>
+        </div>
     </div>
 
     <script>
@@ -471,6 +484,30 @@
                     { type: 'carne', nomeTTS: 'Carne', svg: '<svg viewBox="0 0 100 40"><path d="M 55 10 Q 80 10 85 25 Q 60 30 50 20 Z" fill="#5D4037"/></svg>' },
                     { type: 'salada', nomeTTS: 'Salada', svg: '<svg viewBox="0 0 100 40"><circle cx="50" cy="20" r="10" fill="#4CAF50"/><circle cx="40" cy="20" r="8" fill="#81C784"/><circle cx="60" cy="20" r="8" fill="#81C784"/><circle cx="50" cy="15" r="4" fill="#F44336"/></svg>' },
                     { type: 'banana', nomeTTS: 'Banana frita', svg: '<svg viewBox="0 0 100 40"><path d="M 25 25 Q 40 35 55 25 Q 40 30 25 25 Z" fill="#FFEB3B"/></svg>' }
+                ]
+            },
+            limonada: {
+                nome: "Limonada", sequence: ['copo', 'suco-limao', 'gelo', 'rodelas-limao', 'canudo', 'hortela'], offsets: [20, 25, 40, 70, 75, 80],
+                modeloSvg: `<svg viewBox="0 0 100 120"><line x1="70" y1="20" x2="45" y2="70" stroke="#4CAF50" stroke-width="6" stroke-linecap="round"/><path d="M 25 40 L 35 110 C 35 115 65 115 65 110 L 75 40 Z" fill="rgba(200,225,255,0.4)" stroke="#B0BEC5" stroke-width="2"/><path d="M 27 45 L 34 108 C 34 112 66 112 66 108 L 73 45 Z" fill="#FFF59D"/><rect x="40" y="60" width="15" height="15" rx="2" fill="#E1F5FE" opacity="0.8"/><rect x="50" y="75" width="15" height="15" rx="2" fill="#E1F5FE" opacity="0.8"/><circle cx="70" cy="45" r="12" fill="#CDDC39"/><circle cx="70" cy="45" r="10" fill="#F4FF81" stroke="#CDDC39" stroke-width="2" stroke-dasharray="4 2"/><path d="M 45 40 Q 35 20 45 30 Q 55 20 45 40 Z" fill="#4CAF50"/></svg>`,
+                ingredientes: [
+                    { type: 'copo', nomeTTS: 'Copo', svg: '<svg viewBox="0 0 100 80"><path d="M 25 0 L 35 70 C 35 75 65 75 65 70 L 75 0 Z" fill="rgba(200,225,255,0.4)" stroke="#B0BEC5" stroke-width="2"/></svg>' },
+                    { type: 'suco-limao', nomeTTS: 'Suco de limão', svg: '<svg viewBox="0 0 100 70"><path d="M 27 10 L 34 68 C 34 72 66 72 66 68 L 73 10 Z" fill="#FFF59D"/></svg>' },
+                    { type: 'gelo', nomeTTS: 'Gelo', svg: '<svg viewBox="0 0 100 40"><rect x="40" y="10" width="15" height="15" rx="2" fill="#E1F5FE" opacity="0.8"/><rect x="50" y="20" width="15" height="15" rx="2" fill="#E1F5FE" opacity="0.8"/></svg>' },
+                    { type: 'rodelas-limao', nomeTTS: 'Rodela de limão', svg: '<svg viewBox="0 0 100 40"><circle cx="50" cy="20" r="12" fill="#CDDC39"/><circle cx="50" cy="20" r="10" fill="#F4FF81" stroke="#CDDC39" stroke-width="2" stroke-dasharray="4 2"/></svg>' },
+                    { type: 'canudo', nomeTTS: 'Canudo', svg: '<svg viewBox="0 0 100 80"><line x1="70" y1="10" x2="45" y2="70" stroke="#4CAF50" stroke-width="6" stroke-linecap="round"/><line x1="70" y1="10" x2="85" y2="25" stroke="#4CAF50" stroke-width="6" stroke-linecap="round"/></svg>' },
+                    { type: 'hortela', nomeTTS: 'Hortelã', svg: '<svg viewBox="0 0 100 30"><path d="M 50 20 Q 40 0 50 10 Q 60 0 50 20 Z" fill="#4CAF50"/></svg>' }
+                ]
+            },
+            sucoLaranja: {
+                nome: "Suco com Morango", sequence: ['copo', 'suco-laranja', 'gelo', 'morango-borda', 'canudo', 'guarda-chuva'], offsets: [20, 25, 40, 75, 75, 90],
+                modeloSvg: `<svg viewBox="0 0 100 120"><line x1="70" y1="20" x2="45" y2="70" stroke="#F44336" stroke-width="6" stroke-linecap="round"/><path d="M 25 40 L 35 110 C 35 115 65 115 65 110 L 75 40 Z" fill="rgba(200,225,255,0.4)" stroke="#B0BEC5" stroke-width="2"/><path d="M 27 45 L 34 108 C 34 112 66 112 66 108 L 73 45 Z" fill="#FF9800"/><rect x="40" y="60" width="15" height="15" rx="2" fill="#E1F5FE" opacity="0.8"/><rect x="50" y="75" width="15" height="15" rx="2" fill="#E1F5FE" opacity="0.8"/><path d="M 20 40 Q 30 55 35 40 Z" fill="#F44336"/><path d="M 25 35 L 30 40 L 35 35 Z" fill="#4CAF50"/><line x1="60" y1="50" x2="80" y2="20" stroke="#FFCC80" stroke-width="2"/><path d="M 60 20 Q 80 10 100 20 Z" fill="#E91E63"/></svg>`,
+                ingredientes: [
+                    { type: 'copo', nomeTTS: 'Copo', svg: '<svg viewBox="0 0 100 80"><path d="M 25 0 L 35 70 C 35 75 65 75 65 70 L 75 0 Z" fill="rgba(200,225,255,0.4)" stroke="#B0BEC5" stroke-width="2"/></svg>' },
+                    { type: 'suco-laranja', nomeTTS: 'Suco de Laranja', svg: '<svg viewBox="0 0 100 70"><path d="M 27 10 L 34 68 C 34 72 66 72 66 68 L 73 10 Z" fill="#FF9800"/></svg>' },
+                    { type: 'gelo', nomeTTS: 'Gelo', svg: '<svg viewBox="0 0 100 40"><rect x="40" y="10" width="15" height="15" rx="2" fill="#E1F5FE" opacity="0.8"/><rect x="50" y="20" width="15" height="15" rx="2" fill="#E1F5FE" opacity="0.8"/></svg>' },
+                    { type: 'morango-borda', nomeTTS: 'Morango na borda', svg: '<svg viewBox="0 0 100 40"><path d="M 40 15 Q 50 30 55 15 Z" fill="#F44336"/><path d="M 45 10 L 50 15 L 55 10 Z" fill="#4CAF50"/></svg>' },
+                    { type: 'canudo', nomeTTS: 'Canudo', svg: '<svg viewBox="0 0 100 80"><line x1="70" y1="10" x2="45" y2="70" stroke="#F44336" stroke-width="6" stroke-linecap="round"/><line x1="70" y1="10" x2="85" y2="25" stroke="#F44336" stroke-width="6" stroke-linecap="round"/></svg>' },
+                    { type: 'guarda-chuva', nomeTTS: 'Guarda-chuvinha', svg: '<svg viewBox="0 0 100 60"><line x1="40" y1="50" x2="60" y2="20" stroke="#FFCC80" stroke-width="2"/><path d="M 40 20 Q 60 10 80 20 Z" fill="#E91E63"/></svg>' }
                 ]
             }
         };
@@ -843,7 +880,7 @@
 
         function iniciarBolhasNumericas() {
             navegar('tela-numeros');
-            nivelNumeros = 5; // Reseta para 5 ao entrar no jogo
+            nivelNumeros = 5; 
             gerarFaseNumeros();
         }
 
@@ -874,8 +911,6 @@
                 
                 bolha.style.top = posicaoTopo + '%';
                 bolha.style.left = posicaoEsquerda + '%';
-
-                // NOVO: Garante que os números menores fiquem sempre na frente
                 bolha.style.zIndex = 100 - num;
 
                 bolha.addEventListener('pointerdown', function() {
@@ -891,7 +926,6 @@
             if (numClicado === numCorreto) {
                 sndAcerto.cloneNode(true).play().catch(e => {});
                 
-                // Animação de estouro
                 bolha.style.pointerEvents = 'none';
                 bolha.style.transform = 'scale(0)';
                 bolha.style.opacity = '0';
@@ -906,7 +940,6 @@
                         falar("Parabéns!");
                         soltarConfetes(document.getElementById('tela-numeros'));
                         
-                        // Aumenta a dificuldade em 2 bolhas por rodada (limite 10)
                         if(nivelNumeros < 10) nivelNumeros += 2; 
 
                         setTimeout(() => gerarFaseNumeros(), 4000);
@@ -920,6 +953,130 @@
                 setTimeout(() => bolha.classList.remove('error-shake'), 400);
             }
         }
+
+        // ==========================================
+        // LÓGICA: LABIRINTO (Deslize o dedo)
+        // ==========================================
+        const labirintosData = [
+            // Mapa 1: Zigue-Zague simples
+            [ "S..#####", "##...###", "####...#", "######.#", "##.....#", "##.####E" ],
+            // Mapa 2: Espiral
+            [ "S......#", "######.#", "#......#", "#.######", "#......E", "######.#" ],
+            // Mapa 3: Escadinha
+            [ "S.######", "#.######", "#...####", "###.####", "###...##", "#####.##", "#####..E" ],
+            // Mapa 4: Contorno longo
+            [ "S......#", "#.####.#", "#.#....#", "#.####.#", "#......#", "#######E" ],
+            // Mapa 5: S-Shape
+            [ "S......#", "######.#", ".......#", "#.######", "#......E", "######.#" ],
+            // Mapa 6: Degraus largos
+            [ "S...####", "###.####", "###...##", "#####.##", "#####..E", "########" ],
+            // Mapa 7: Caminho duplo (falso)
+            [ "S.#....#", "#.#.##.#", "#...#..#", "#####.##", "##.....E", "########" ],
+            // Mapa 8: Canto a canto
+            [ "S.......", "######.#", ".......#", "#.######", "#......E", "########" ],
+            // Mapa 9: Loop inferior
+            [ "S..#####", "##.#####", "##.....#", "######.#", "#......#", "#######E" ],
+            // Mapa 10: O gancho
+            [ "S......#", "######.#", "#......#", "#.####.#", "#.####.#", "#......E" ]
+        ];
+
+        const temasLabirinto = [
+            { start: '🐶', end: '🦴', wall: '#8D6E63', path: '#EFEBE9', visited: '#FFCC80', falaBichinho: 'o cachorrinho', falaObjetivo: 'o osso' },
+            { start: '🐰', end: '🥕', wall: '#81C784', path: '#F1F8E9', visited: '#FFAB91', falaBichinho: 'o coelhinho', falaObjetivo: 'a cenoura' },
+            { start: '🐒', end: '🍌', wall: '#795548', path: '#FFF8E1', visited: '#FFF59D', falaBichinho: 'o macaquinho', falaObjetivo: 'a banana' },
+            { start: '🐝', end: '🌸', wall: '#FBC02D', path: '#FFFDE7', visited: '#FFCDD2', falaBichinho: 'a abelhinha', falaObjetivo: 'a flor' }
+        ];
+
+        let labirintoTracing = false;
+
+        function iniciarLabirinto() {
+            navegar('tela-labirinto');
+            gerarFaseLabirinto();
+        }
+
+        function gerarFaseLabirinto() {
+            const grid = document.getElementById('grid-labirinto');
+            grid.innerHTML = '';
+            
+            const tema = temasLabirinto[Math.floor(Math.random() * temasLabirinto.length)];
+            const mapaStr = labirintosData[Math.floor(Math.random() * labirintosData.length)];
+            
+            // Configura o CSS do grid baseado no array escolhido
+            const colunas = mapaStr[0].length;
+            grid.style.gridTemplateColumns = `repeat(${colunas}, 1fr)`;
+            
+            // Injeta as cores do tema no CSS raiz para facilidade
+            grid.style.setProperty('--wall-color', tema.wall);
+            grid.style.setProperty('--path-color', tema.path);
+            grid.style.setProperty('--visited-color', tema.visited);
+
+            mapaStr.forEach(linha => {
+                for(let i=0; i < linha.length; i++) {
+                    let char = linha[i];
+                    let div = document.createElement('div');
+                    div.classList.add('maze-cell');
+                    
+                    if(char === '#') {
+                        div.classList.add('cell-wall');
+                    } else if(char === '.') {
+                        div.classList.add('cell-path');
+                    } else if(char === 'S') {
+                        div.classList.add('cell-start');
+                        div.textContent = tema.start;
+                    } else if(char === 'E') {
+                        div.classList.add('cell-end');
+                        div.textContent = tema.end;
+                    }
+                    grid.appendChild(div);
+                }
+            });
+            falar("Leve " + tema.falaBichinho + " até " + tema.falaObjetivo);
+        }
+
+        // Lógica de deslizar o dedo (Pointer Events)
+        const gridLabirinto = document.getElementById('grid-labirinto');
+
+        gridLabirinto.addEventListener('pointerdown', (e) => {
+            let el = document.elementFromPoint(e.clientX, e.clientY);
+            if(el && el.classList.contains('cell-start')) {
+                labirintoTracing = true;
+                sndBotao.cloneNode(true).play().catch(()=>{});
+                document.querySelectorAll('.cell-visited').forEach(c => c.classList.remove('cell-visited'));
+            }
+        });
+
+        document.addEventListener('pointermove', (e) => {
+            if(!labirintoTracing) return;
+            
+            let el = document.elementFromPoint(e.clientX, e.clientY);
+            if(!el) return;
+
+            if(el.classList.contains('cell-wall')) {
+                // Errou o caminho
+                labirintoTracing = false;
+                sndErro.cloneNode(true).play().catch(()=>{});
+                document.querySelectorAll('.cell-visited').forEach(c => c.classList.remove('cell-visited'));
+            } else if(el.classList.contains('cell-path')) {
+                // Pintando o caminho correto
+                el.classList.add('cell-visited');
+            } else if(el.classList.contains('cell-end')) {
+                // Chegou no objetivo
+                labirintoTracing = false;
+                sndVitoria.cloneNode(true).play().catch(()=>{});
+                falar("Muito bem! Você conseguiu!");
+                soltarConfetes(document.getElementById('tela-labirinto'));
+                setTimeout(() => gerarFaseLabirinto(), 3000);
+            }
+        });
+
+        document.addEventListener('pointerup', () => {
+            if(labirintoTracing) {
+                // Soltou o dedo no meio do caminho, apaga a trilha para tentar de novo
+                labirintoTracing = false;
+                document.querySelectorAll('.cell-visited').forEach(c => c.classList.remove('cell-visited'));
+            }
+        });
+
     </script>
 </body>
 </html>
