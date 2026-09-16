@@ -401,7 +401,7 @@
 
   <!-- Nova barra no topo -->
   <header class="top-bar" id="appHeader">
-    <h1>Despesas e Anotações v2.6</h1>
+    <h1>Despesas e Anotações v2.7</h1>
     <button onclick="toggleMenu()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 5px;">⋮</button>
     
     <div class="menu-dropdown" id="topMenu">
@@ -749,6 +749,13 @@
 
     let categories = []; // Agora armazena objetos: {nome, ordem, temValores}
     let currentCategory = ''; 
+    let collapsedSubcats = {}; // NOVO: Guarda quais subcategorias estão recolhidas
+
+    // NOVA FUNÇÃO: Alterna entre expandido e recolhido
+    function toggleSubcat(subName) {
+      collapsedSubcats[subName] = !collapsedSubcats[subName];
+      loadExpenses(); // Recarrega a lista para aplicar o visual
+    }
 
     const formatCurrency = (value) => {
       return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -1151,7 +1158,8 @@
 
     async function changeCategory(categoryName) {
       currentCategory = categoryName;
-      await renderTabs(); // Atualizado com await
+      collapsedSubcats = {}; // NOVO: Reseta o estado ao mudar de aba
+      await renderTabs(); 
       await loadExpenses();
     }
 
@@ -1222,7 +1230,22 @@
           sortedSubcats.forEach(subName => {
             const displayTitle = subName === ' Geral' ? 'Geral' : subName;
             
-            html += `<h3 style="font-size: 0.95rem; color: var(--primary); margin: 1.25rem 0 0.5rem 0.25rem; border-bottom: 2px solid #E5E7EB; padding-bottom: 0.25rem;">${displayTitle}</h3>`;
+            // Verifica o estado atual (recolhido ou não) e define o ícone
+            const isCollapsed = collapsedSubcats[subName];
+            const toggleIcon = isCollapsed ? '▼' : '▲';
+            
+            // Novo cabeçalho flexível com o título à esquerda e o botão à direita
+            html += `
+              <div style="display: flex; justify-content: space-between; align-items: center; margin: 1.25rem 0 0.5rem 0.25rem; border-bottom: 2px solid #E5E7EB; padding-bottom: 0.25rem;">
+                <h3 style="font-size: 0.95rem; color: var(--primary); margin: 0;">${displayTitle}</h3>
+                <button onclick="toggleSubcat('${subName}')" style="background: none; border: none; font-size: 0.85rem; color: var(--text-light); cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 4px;">
+                  ${toggleIcon}
+                </button>
+              </div>
+            `;
+            
+            // Container agrupa todos os itens e obedece ao display: none se estiver recolhido
+            html += `<div style="display: ${isCollapsed ? 'none' : 'block'};">`;
             
             grouped[subName].forEach(exp => {
               html += `
@@ -1238,6 +1261,8 @@
                 </div>
               `;
             });
+            
+            html += `</div>`; // Fecha o container da subcategoria
           });
         }
       }
