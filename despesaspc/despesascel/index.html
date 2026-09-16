@@ -444,6 +444,13 @@
         <select id="catInput" style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 1rem; background: var(--surface); color: var(--text);"></select>
       </div>
 
+      <!-- NOVO CAMPO DE SUBCATEGORIA (Oculto por padrão, apenas para Listas) -->
+      <div class="input-group" id="subcatGroup" style="display: none; margin-bottom: 1rem;">
+        <label>Subcategoria</label>
+        <select id="subcatInput" style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 1rem; background: var(--surface); color: var(--text);">
+        </select>
+      </div>
+
       <!-- NOVO CAMPO DE TIPO -->
       <div class="input-group" id="tipoGroup" style="margin-bottom: 1rem;">
         <label>Tipo de Lançamento</label>
@@ -537,6 +544,16 @@
         <label for="editCatNotch" style="margin-bottom: 0; cursor: pointer; font-weight: 600;">
           Ativar notch quando houver pendência
         </label>
+      </div>
+
+      <!-- GERENCIADOR DE SUBCATEGORIAS (Só aparece quando desmarca o checkbox de Valores) -->
+      <div id="manageSubcatsConfig" style="display: none; margin-top: 1.5rem; border-top: 1px solid #E5E7EB; padding-top: 1rem;">
+        <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Subcategorias (Divisores)</h3>
+        <div id="subcatList" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem; max-height: 150px; overflow-y: auto;"></div>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text" id="newSubcatName" placeholder="Nova subcategoria..." style="flex: 1; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem;">
+          <button class="btn btn-primary" onclick="addSubcatToEdit()" style="padding: 0.5rem 1rem;">+</button>
+        </div>
       </div>
 
       <div class="modal-actions" style="margin-top: 2rem;">
@@ -832,38 +849,33 @@
       });
     }
 
-    async function dbUpdateCategory(oldNome, novoNome, temValores, cor, corTexto, showNotch) {
+    async function dbUpdateCategory(oldNome, novoNome, temValores, cor, corTexto, showNotch, subcategorias = [], subcatsRenamed = {}) {
       const db = await dbPromise;
       
-      // Passo A: Atualizar ou recriar o registro na tabela de categorias
       await new Promise((resolve) => {
         const tx = db.transaction('categorias', 'readwrite');
         const store = tx.objectStore('categorias');
-        
         const req = store.get(oldNome);
         req.onsuccess = () => {
           const cat = req.result;
           if (cat) {
-            // Se o nome mudou, deleta o registro antigo com a chave primária desatualizada
-            if (oldNome !== novoNome) {
-              store.delete(oldNome);
-            }
-            // Adiciona/Atualiza o registro com os novos parâmetros, INCLUINDO o showNotch
+            if (oldNome !== novoNome) store.delete(oldNome);
             store.put({
               nome: novoNome,
               ordem: cat.ordem,
               temValores: temValores,
               cor: cor,
               corTexto: corTexto,
-              showNotch: showNotch
+              showNotch: showNotch,
+              subcategorias: subcategorias // Salva o array de subcategorias
             });
           }
         };
         tx.oncomplete = () => resolve();
       });
 
-      // Passo B: Se o nome mudou, atualiza em lote a propriedade 'categoria' das despesas
-      if (oldNome !== novoNome) {
+      // Se mudou o nome da categoria ou renomeou subcategorias, atualiza todos os itens dela
+      if (oldNome !== novoNome || Object.keys(subcatsRenamed).length > 0) {
         await new Promise((resolve) => {
           const tx = db.transaction('despesas', 'readwrite');
           const store = tx.objectStore('despesas');
@@ -873,8 +885,17 @@
           request.onsuccess = () => {
             const despesas = request.result;
             despesas.forEach(exp => {
-              exp.categoria = novoNome;
-              store.put(exp);
+              let mudou = false;
+              if (oldNome !== novoNome) {
+                exp.categoria = novoNome;
+                mudou = true;
+              }
+              // Atualiza o nome da subcategoria nos itens caso tenha sido editado
+              if (exp.subcategoria && subcatsRenamed[exp.subcategoria]) {
+                exp.subcategoria = subcatsRenamed[exp.subcategoria];
+                mudou = true;
+              }
+              if (mudou) store.put(exp);
             });
           };
           tx.oncomplete = () => resolve();
@@ -1074,7 +1095,7 @@
       pressTimer = window.setTimeout(() => {
         isLongPress = true;
         openHistoryModal(categoryName);
-      }, 600); // 600 milissegundos para considerar como "segurar"
+      }, 3000); // 600 milissegundos para considerar como "segurar"
     }
 
     function handleTabPressEnd() {
@@ -1140,14 +1161,12 @@
       const usaValores = catConfig ? (catConfig.temValores !== false) : true;
       
       let total = 0;
-
-      // Ajusta interface baseado no tipo de categoria
       const totalRow = document.getElementById('totalRow');
       const btnNovo = document.getElementById('btnNovaDespesa');
       
       if (usaValores) {
         totalRow.style.visibility = 'visible'; 
-        btnNovo.innerText = '+ Adicionar'; // Alterado aqui também
+        btnNovo.innerText = '+ Adicionar'; 
       } else {
         totalRow.style.visibility = 'hidden';  
         btnNovo.innerText = '+ Novo Item';
@@ -1160,120 +1179,164 @@
       }
 
       const expenses = await dbGetExpensesByCategory(currentCategory);
-      listEl.innerHTML = '';
+      let html = '';
 
       if (expenses.length === 0) {
-        listEl.innerHTML = `<p style="text-align:center; color:#6B7280; margin-top:2rem;">Nenhum ${usaValores ? 'registro' : 'item'} adicionado.</p>`;
-      }
-
-      expenses.forEach(exp => {
-        const tipo = exp.tipo || 'despesa'; // Fallback para itens já salvos
-        const isCredito = tipo === 'credito';
-
-        // Lógica de saldo: créditos somam, despesas subtraem
+        html = `<p style="text-align:center; color:#6B7280; margin-top:2rem;">Nenhum ${usaValores ? 'registro' : 'item'} adicionado.</p>`;
+      } else {
         if (usaValores) {
-           if (isCredito) {
-               total += exp.amount;
-           } else {
-               total -= exp.amount;
-           }
+          // RENDERIZAÇÃO PADRÃO PARA DESPESAS
+          expenses.forEach(exp => {
+            const tipo = exp.tipo || 'despesa';
+            const isCredito = tipo === 'credito';
+            if (isCredito) total += exp.amount; else total -= exp.amount;
+
+            const amountClass = isCredito ? 'expense-amount credit-amount' : 'expense-amount';
+            const prefix = isCredito ? '+ ' : '';
+
+            html += `
+              <div class="expense-item">
+                <div class="expense-info">
+                  <strong>${exp.description}</strong>
+                  <span>${new Date(exp.timestamp).toLocaleDateString('pt-BR')}</span>
+                </div>
+                <div class="expense-actions">
+                  <span class="${amountClass}">${prefix}${formatCurrency(exp.amount)}</span>
+                  <button class="icon-btn" onclick="editExpense(${exp.id}, '${exp.description}', ${exp.amount}, '${tipo}', '${exp.categoria}', '')" title="Editar">✏️</button>
+                  <button class="icon-btn" onclick="deleteExpense(${exp.id})" title="Excluir">🗑️</button>
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          // RENDERIZAÇÃO AGRUPADA POR SUBCATEGORIA (Para Listas)
+          const grouped = {};
+          expenses.forEach(exp => {
+            const sub = exp.subcategoria || ' Geral'; // O espaço em " Geral" força ser o primeiro no alfabeto
+            if (!grouped[sub]) grouped[sub] = [];
+            grouped[sub].push(exp);
+          });
+
+          const sortedSubcats = Object.keys(grouped).sort();
+
+          sortedSubcats.forEach(subName => {
+            const displayTitle = subName === ' Geral' ? 'Geral' : subName;
+            
+            html += `<h3 style="font-size: 0.95rem; color: var(--primary); margin: 1.25rem 0 0.5rem 0.25rem; border-bottom: 2px solid #E5E7EB; padding-bottom: 0.25rem;">${displayTitle}</h3>`;
+            
+            grouped[subName].forEach(exp => {
+              html += `
+                <div class="expense-item" style="margin-bottom: 0.75rem;">
+                  <div class="expense-info">
+                    <strong>${exp.description}</strong>
+                    <span>${new Date(exp.timestamp).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                  <div class="expense-actions">
+                    <button class="icon-btn" onclick="editExpense(${exp.id}, '${exp.description}', 0, 'despesa', '${exp.categoria}', '${exp.subcategoria || ''}')" title="Editar">✏️</button>
+                    <button class="icon-btn" onclick="deleteExpense(${exp.id})" title="Excluir">🗑️</button>
+                  </div>
+                </div>
+              `;
+            });
+          });
         }
-
-        // Estilização dinâmica
-        const amountClass = isCredito ? 'expense-amount credit-amount' : 'expense-amount';
-        const prefix = isCredito ? '+ ' : '';
-
-        const item = document.createElement('div');
-        item.className = 'expense-item';
-        item.innerHTML = `
-          <div class="expense-info">
-            <strong>${exp.description}</strong>
-            <span>${new Date(exp.timestamp).toLocaleDateString('pt-BR')}</span>
-          </div>
-          <div class="expense-actions">
-            ${usaValores ? `<span class="${amountClass}">${prefix}${formatCurrency(exp.amount)}</span>` : ''}
-            <button class="icon-btn" onclick="editExpense(${exp.id}, '${exp.description}', ${exp.amount}, '${tipo}')" title="Editar">✏️</button>
-            <button class="icon-btn" onclick="deleteExpense(${exp.id})" title="Excluir">🗑️</button>
-          </div>
-        `;
-        listEl.appendChild(item);
-      });
+      }
+      listEl.innerHTML = html;
 
       const totalAmountEl = document.getElementById('totalAmount');
       totalAmountEl.innerText = formatCurrency(total);
+      if (total > 0) totalAmountEl.style.color = '#10B981';
+      else if (total < 0) totalAmountEl.style.color = 'var(--danger)';
+      else totalAmountEl.style.color = 'var(--text)';
+    }
 
-      // Aplica as cores baseadas no valor do total
-      if (total > 0) {
-        totalAmountEl.style.color = '#10B981'; // Verde (Emerald)
-      } else if (total < 0) {
-        totalAmountEl.style.color = 'var(--danger)'; // Vermelho (puxando a variável já existente no seu CSS)
-      } else {
-        totalAmountEl.style.color = 'var(--text)'; // Cor padrão escura para o zero
+    // DINÂMICA DO MODAL
+    function handleCatChangeInModal() {
+      const catSelecionada = document.getElementById('catInput').value;
+      const catConfig = categories.find(c => c.nome === catSelecionada);
+      const usaValores = catConfig ? (catConfig.temValores !== false) : true;
+      
+      document.getElementById('valGroup').style.display = usaValores ? 'block' : 'none';
+      document.getElementById('tipoGroup').style.display = usaValores ? 'block' : 'none';
+      document.getElementById('subcatGroup').style.display = usaValores ? 'none' : 'block';
+
+      if (!usaValores) {
+        const subcatSelect = document.getElementById('subcatInput');
+        const subcats = (catConfig && catConfig.subcategorias) ? catConfig.subcategorias.sort() : [];
+        subcatSelect.innerHTML = '<option value="">-- Geral --</option>' + 
+          subcats.map(s => `<option value="${s}">${s}</option>`).join('');
       }
     }
 
-    // --- DIÁLOGOS DE DESPESAS/ITENS ---
-    function openModal() {
+    function openModal(catParaSelecionar = null, subcatParaSelecionar = null) {
       if(!currentCategory) return alert('Por favor, crie uma categoria antes de adicionar itens.');
-      
-      const catConfig = categories.find(c => c.nome === currentCategory);
-      const usaValores = catConfig ? (catConfig.temValores !== false) : true;
       
       const editId = document.getElementById('editId').value;
       const modalTitle = document.getElementById('modalTitle');
-      const valGroup = document.getElementById('valGroup');
-      const tipoGroup = document.getElementById('tipoGroup'); // Puxando a nova div
-
       const catSelect = document.getElementById('catInput');
-      catSelect.innerHTML = categories.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
-      catSelect.value = currentCategory;
-
-      // Alterado para apenas 'Adicionar' ou 'Editar'
-      modalTitle.innerText = !editId ? 'Adicionar' : 'Editar';
-
-      valGroup.style.display = usaValores ? 'block' : 'none';
-      tipoGroup.style.display = usaValores ? 'block' : 'none'; // Oculta tipo se for só lista
       
+      // 1. Reconstrói as opções do select de categorias
+      catSelect.innerHTML = categories.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+      
+      // 2. Define qual categoria deve estar selecionada (a da edição OU a da aba atual)
+      catSelect.value = catParaSelecionar || currentCategory; 
+      
+      // 3. Ajusta o modal (mostra/esconde valor e monta subcategorias da categoria escolhida)
+      handleCatChangeInModal(); 
+
+      // 4. Se for edição e tiver subcategoria, seleciona ela APÓS o handleCatChangeInModal ter montado o menu
+      if (subcatParaSelecionar) {
+        document.getElementById('subcatInput').value = subcatParaSelecionar;
+      }
+
+      modalTitle.innerText = !editId ? 'Adicionar' : 'Editar';
       document.getElementById('expenseModal').classList.add('active');
 
       setTimeout(() => {
-        if (usaValores) {
+        const catConfig = categories.find(c => c.nome === catSelect.value);
+        if (catConfig && catConfig.temValores !== false) {
           document.getElementById('valInput').focus();
         } else {
           document.getElementById('descInput').focus();
         }
       }, 100);
     }
-    
-    function closeModal() {
-      document.getElementById('expenseModal').classList.remove('active');
-      document.getElementById('descInput').value = '';
-      document.getElementById('valInput').value = '';
-      document.getElementById('editId').value = '';
+
+    function editExpense(id, desc, amount, tipo = 'despesa', categoria, subcategoria = '') {
+      // Apenas preenche os valores ocultos e de texto/número
+      document.getElementById('descInput').value = desc;
+      document.getElementById('valInput').value = amount;
+      document.getElementById('tipoInput').value = tipo;
+      document.getElementById('editId').value = id;
+      
+      // Chama o openModal passando as variáveis exatas do item que está sendo editado
+      openModal(categoria, subcategoria);
     }
 
     async function saveExpense() {
-      const catConfig = categories.find(c => c.nome === currentCategory);
-      const usaValores = catConfig ? (catConfig.temValores !== false) : true;
-
       const desc = document.getElementById('descInput').value.trim();
       const editId = document.getElementById('editId').value;
       const categoriaSelecionada = document.getElementById('catInput').value;
-      const tipoSelecionado = document.getElementById('tipoInput').value; // Captura o tipo
+      
+      const catConfig = categories.find(c => c.nome === categoriaSelecionada);
+      const usaValores = catConfig ? (catConfig.temValores !== false) : true;
+
+      const tipoSelecionado = document.getElementById('tipoInput').value; 
+      const subcategoriaSelecionada = document.getElementById('subcatInput').value;
       
       let val = 0;
       if (usaValores) {
         val = parseFloat(document.getElementById('valInput').value);
         if (isNaN(val)) return alert('Preencha o valor corretamente.');
       }
-
       if (!desc) return alert('Preencha a descrição.');
 
       const expense = {
         description: desc,
         amount: val, 
         categoria: categoriaSelecionada,
-        tipo: tipoSelecionado, // Adiciona o tipo no banco de dados
+        tipo: tipoSelecionado,
+        subcategoria: usaValores ? null : subcategoriaSelecionada,
         timestamp: Date.now()
       };
 
@@ -1281,18 +1344,21 @@
 
       await dbAddOrUpdateExpense(expense);
       closeModal();
+      document.getElementById('catInput').value = ''; // Limpa estado 
+      
+      if (currentCategory !== categoriaSelecionada) {
+         currentCategory = categoriaSelecionada; // Pula pra categoria destino caso tenha movido o item
+      }
       await renderTabs();
       await loadExpenses();
-    }
-
-    // Adicionado o parâmetro 'tipo' com 'despesa' como fallback para dados antigos
-    function editExpense(id, desc, amount, tipo = 'despesa') {
-      document.getElementById('descInput').value = desc;
-      document.getElementById('valInput').value = amount;
-      document.getElementById('tipoInput').value = tipo; // Popula o select
-      document.getElementById('editId').value = id;
-      openModal();
-    }
+    }    
+    
+    function closeModal() {
+      document.getElementById('expenseModal').classList.remove('active');
+      document.getElementById('descInput').value = '';
+      document.getElementById('valInput').value = '';
+      document.getElementById('editId').value = '';
+    }    
 
     // --- GERENCIAMENTO DE CATEGORIAS ---
     function openCategoryModal() {
@@ -1519,10 +1585,18 @@
       document.getElementById('editCatName').value = cat.nome;    
       document.getElementById('editCatColor').value = cat.cor || '#FFCC99';
       document.getElementById('editCatTextColor').value = cat.corTexto || '#000000';
-      document.getElementById('editCatValores').checked = cat.temValores !== false;
       
-      // O checkbox virá marcado por padrão (para os casos undefined ou true)
+      const checkValores = document.getElementById('editCatValores');
+      checkValores.checked = cat.temValores !== false;
+      checkValores.onchange = toggleSubcatConfig; // Aciona o menu de subcategorias ao clicar
+      
       document.getElementById('editCatNotch').checked = cat.showNotch !== false; 
+
+      // Prepara as subcategorias
+      currentEditSubcats = cat.subcategorias ? [...cat.subcategorias] : [];
+      renamedSubcats = {};
+      toggleSubcatConfig();
+      renderEditSubcats();
 
       document.getElementById('editCategoryModal').classList.add('active');
     }
@@ -1531,26 +1605,75 @@
       document.getElementById('editCategoryModal').classList.remove('active');
     }
 
+    let currentEditSubcats = [];
+    let renamedSubcats = {};
+
+    function toggleSubcatConfig() {
+      const isList = !document.getElementById('editCatValores').checked;
+      document.getElementById('manageSubcatsConfig').style.display = isList ? 'block' : 'none';
+    }
+
+    function renderEditSubcats() {
+      const container = document.getElementById('subcatList');
+      if (currentEditSubcats.length === 0) {
+        container.innerHTML = '<span style="font-size:0.85rem; color:var(--text-light);">Nenhuma subcategoria criada.</span>';
+        return;
+      }
+      container.innerHTML = currentEditSubcats.sort().map((sub, index) => `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #F9FAFB; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #E5E7EB;">
+          <span style="font-size: 0.9rem; font-weight: 500;">${sub}</span>
+          <div>
+            <button class="icon-btn" onclick="renameSubcat(${index})" title="Editar" style="font-size: 1rem; padding: 0;">✏️</button>
+            <button class="icon-btn" onclick="removeSubcat(${index})" title="Excluir" style="font-size: 1rem; padding: 0; margin-left: 0.5rem;">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addSubcatToEdit() {
+      const input = document.getElementById('newSubcatName');
+      const val = input.value.trim();
+      if (val && !currentEditSubcats.includes(val)) {
+        currentEditSubcats.push(val);
+        input.value = '';
+        renderEditSubcats();
+      }
+    }
+
+    function removeSubcat(index) {
+      if (confirm('Excluir esta subcategoria? Os itens nela ficarão agrupados como "Geral".')) {
+        currentEditSubcats.splice(index, 1);
+        renderEditSubcats();
+      }
+    }
+
+    function renameSubcat(index) {
+      const oldName = currentEditSubcats[index];
+      const newName = prompt('Novo nome para a subcategoria:', oldName);
+      if (newName && newName.trim() && newName.trim() !== oldName) {
+        const trimmed = newName.trim();
+        currentEditSubcats[index] = trimmed;
+        renamedSubcats[oldName] = trimmed; // Registra a mudança para o banco de dados
+        renderEditSubcats();
+      }
+    }
+
     async function saveCategoryEdits() {
       const oldNome = document.getElementById('editCatOldName').value;
       const novoNome = document.getElementById('editCatName').value.trim();
       const cor = document.getElementById('editCatColor').value;
       const corTexto = document.getElementById('editCatTextColor').value;
       const temValores = document.getElementById('editCatValores').checked;
-      const showNotch = document.getElementById('editCatNotch').checked; // Lendo o status do Notch
+      const showNotch = document.getElementById('editCatNotch').checked;
 
       if (!novoNome) return alert('O nome da categoria não pode ficar vazio.');
-      
       if (oldNome !== novoNome && categories.some(c => c.nome.toLowerCase() === novoNome.toLowerCase())) {
         return alert('Já existe uma categoria com este nome.');
       }
 
-      // Enviando a variável showNotch como o 6º parâmetro para o banco
-      await dbUpdateCategory(oldNome, novoNome, temValores, cor, corTexto, showNotch);
+      await dbUpdateCategory(oldNome, novoNome, temValores, cor, corTexto, showNotch, currentEditSubcats, renamedSubcats);
       
-      if (currentCategory === oldNome) {
-        currentCategory = novoNome;
-      }
+      if (currentCategory === oldNome) currentCategory = novoNome;
 
       closeEditCategoryModal();
       await initApp();
