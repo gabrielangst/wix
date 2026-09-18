@@ -108,34 +108,21 @@
         .success-pulse { background-color: #C8E6C9 !important; border-color: #4CAF50 !important; transform: scale(1.1); box-shadow: 0 0 20px #4CAF50; z-index: 10; transition: 0.3s; }
         
         /* ================= LABIRINTO ================= */
-        #container-labirinto { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; background-color: #E1F5FE; }
-        #grid-labirinto {
-            display: grid;
-            gap: 4px;
-            background-color: #B0BEC5;
-            padding: 8px;
-            border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            /* ISSO É O SEGREDO: Impede a tela de rolar enquanto ela arrasta o dedo */
-            touch-action: none; 
-            user-select: none;
-        }
-        .maze-cell {
-            width: 9vw;
-            max-width: 75px;
-            height: 9vw;
-            max-height: 75px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 45px;
-            transition: background-color 0.15s ease;
-        }
+        #container-labirinto { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%; background-color: #E1F5FE; }
+        #grid-labirinto { display: grid; gap: 4px; background-color: #B0BEC5; padding: 8px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); user-select: none; touch-action: none; margin-bottom: 20px; }
+        .maze-cell { width: 9vw; max-width: 60px; height: 9vw; max-height: 60px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 40px; transition: background-color 0.15s ease; }
         .cell-wall { background-color: var(--wall-color, #795548); }
         .cell-path { background-color: var(--path-color, #FFF8E1); }
-        .cell-start, .cell-end { background-color: var(--path-color, #FFF8E1); cursor: pointer; }
         .cell-visited { background-color: var(--visited-color, #FFCA28); }
+
+        /* Controles Direcionais */
+        #controles-labirinto { display: grid; grid-template-columns: 70px 70px 70px; grid-template-rows: 70px 70px; gap: 15px; justify-content: center; align-items: center; }
+        .btn-dir { width: 70px; height: 70px; font-size: 35px; background-color: #03A9F4; color: white; border: none; border-radius: 15px; box-shadow: 0 6px 0 #0288D1; cursor: pointer; user-select: none; touch-action: none; transition: transform 0.1s; display: flex; justify-content: center; align-items: center; }
+        .btn-dir:active { transform: translateY(6px); box-shadow: 0 0 0 #0288D1; }
+        .btn-up { grid-column: 2; grid-row: 1; }
+        .btn-left { grid-column: 1; grid-row: 2; }
+        .btn-down { grid-column: 2; grid-row: 2; }
+        .btn-right { grid-column: 3; grid-row: 2; }
 
         /* ================= VITÓRIA ================= */
         #victory-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
@@ -152,6 +139,17 @@
         #restart-btn:active { transform: translateY(8px); box-shadow: 0 0 0 #2E7D32; }
         .confetti { position: absolute; width: 15px; height: 15px; top: -20px; border-radius: 3px; animation: fall linear forwards; pointer-events: none; z-index: 2000; }
         @keyframes fall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+    
+        /* ================= JOGO DA MEMÓRIA ================= */
+        #grid-memoria { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 20px; width: 95%; max-width: 900px; margin-top: 70px; perspective: 1000px; }
+        @media (max-width: 768px) { #grid-memoria { grid-template-columns: repeat(4, 1fr); } } /* Vira 4x6 no tablet em pé */
+        .carta-memoria { width: 100%; aspect-ratio: 1; position: relative; transform-style: preserve-3d; transition: transform 0.4s; cursor: pointer; user-select: none; touch-action: none; }
+        .carta-memoria.virada { transform: rotateY(180deg); }
+        .carta-frente, .carta-verso { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; border-radius: 15px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .carta-frente { background-color: #fff; font-size: 55px; transform: rotateY(180deg); border: 4px solid #4CAF50; }
+        .carta-verso { background-color: #FFCA28; font-size: 40px; color: white; border: 4px solid #FFB300; background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.2) 10px, rgba(255,255,255,0.2) 20px); }
+        .carta-memoria.matched .carta-frente { background-color: #C8E6C9; border-color: #2E7D32; box-shadow: 0 0 15px #4CAF50; }
+    
     </style>
 </head>
 <body>
@@ -171,13 +169,14 @@
 
     <!-- MENU PRINCIPAL -->
     <div id="tela-menu" class="screen active">
-        <h1>Bela Play 1.3 🌟</h1>
+        <h1>Bela Play 1.4 🌟</h1>
         <div class="main-menu-grid">
             <button class="menu-btn btn-main btn-cooklab" onclick="navegar('tela-cooklab')">🍳 CookLab</button>
             <button class="menu-btn btn-main btn-nomes" onclick="navegar('tela-nomes-menu')">🔤 Formando Nomes</button>
             <button class="menu-btn btn-main btn-letras" onclick="iniciarLetrasObjetos()">🅰️ Letras e Objetos</button>
             <button class="menu-btn btn-main btn-numeros" onclick="iniciarBolhasNumericas()">🔢 Bolhas Numéricas</button>
             <button class="menu-btn btn-main btn-labirinto" onclick="iniciarLabirinto()">🧭 Labirinto</button>
+            <button class="menu-btn btn-main" style="background-color: #3F51B5; box-shadow: 0 8px 0 #303F9F;" onclick="iniciarMemoria()">🧠 Jogo da Memória</button>
         </div>
     </div>
 
@@ -265,7 +264,20 @@
         <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
         <div id="container-labirinto">
             <div id="grid-labirinto"></div>
+            <div id="controles-labirinto">
+                <button class="btn-dir btn-up" onclick="moverLabirinto(-1, 0)">⬆️</button>
+                <button class="btn-dir btn-left" onclick="moverLabirinto(0, -1)">⬅️</button>
+                <button class="btn-dir btn-down" onclick="moverLabirinto(1, 0)">⬇️</button>
+                <button class="btn-dir btn-right" onclick="moverLabirinto(0, 1)">➡️</button>
+            </div>
         </div>
+    </div>
+
+    <!-- TELA JOGO DA MEMÓRIA -->
+    <div id="tela-memoria" class="screen">
+        <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
+        <div id="counter-display" style="top: 20px; left: 50%; transform: translateX(-50%);">Faltam: <span id="counter-memoria">12</span></div>
+        <div id="grid-memoria"></div>
     </div>
 
     <script>
@@ -955,29 +967,29 @@
         }
 
         // ==========================================
-        // LÓGICA: LABIRINTO (Deslize o dedo)
+        // LÓGICA: LABIRINTO (Comandos Direcionais)
         // ==========================================
         const labirintosData = [
-            // Mapa 1: Zigue-Zague simples
-            [ "S..#####", "##...###", "####...#", "######.#", "##.....#", "##.####E" ],
-            // Mapa 2: Espiral
-            [ "S......#", "######.#", "#......#", "#.######", "#......E", "######.#" ],
-            // Mapa 3: Escadinha
-            [ "S.######", "#.######", "#...####", "###.####", "###...##", "#####.##", "#####..E" ],
-            // Mapa 4: Contorno longo
-            [ "S......#", "#.####.#", "#.#....#", "#.####.#", "#......#", "#######E" ],
-            // Mapa 5: S-Shape
-            [ "S......#", "######.#", ".......#", "#.######", "#......E", "######.#" ],
-            // Mapa 6: Degraus largos
-            [ "S...####", "###.####", "###...##", "#####.##", "#####..E", "########" ],
-            // Mapa 7: Caminho duplo (falso)
-            [ "S.#....#", "#.#.##.#", "#...#..#", "#####.##", "##.....E", "########" ],
-            // Mapa 8: Canto a canto
-            [ "S.......", "######.#", ".......#", "#.######", "#......E", "########" ],
-            // Mapa 9: Loop inferior
-            [ "S..#####", "##.#####", "##.....#", "######.#", "#......#", "#######E" ],
-            // Mapa 10: O gancho
-            [ "S......#", "######.#", "#......#", "#.####.#", "#.####.#", "#......E" ]
+            // 1. Zigue-Zague
+            [ "S..#####", "##...###", "####...#", "######..", "#######.", "#######E" ],
+            // 2. Espiral Longa
+            [ "S......#", "######.#", "#......#", "#.######", "#......#", "######.E" ],
+            // 3. Escadinha
+            [ "S.######", "#.######", "#...####", "###.####", "###...##", "#####..E" ],
+            // 4. Caminhos Falsos
+            [ "S......#", "#.####.#", "#.#....#", "#.####.#", "#......#", "######.E" ],
+            // 5. O Grande Retorno
+            [ "S...####", "###....#", "######.#", ".......#", "#.######", "#......E" ],
+            // 6. Contorno Externo
+            [ "S.......", "#.#####.", "#.....#.", "#####.#.", "......#.", "#######E" ],
+            // 7. O Gancho
+            [ "S..#####", "##.#####", "##.....#", "######.#", "........", "#######E" ],
+            // 8. Labirinto Duplo
+            [ "S......#", "######.#", "#......#", "#.####.#", "#.####..", "#......E" ],
+            // 9. Serpentina
+            [ "S.######", "#......#", "######.#", "#......#", "#.######", "#......E" ],
+            // 10. Degraus Largos
+            [ "S...####", "###...##", "#####..#", "######..", "#######.", "#######E" ]
         ];
 
         const temasLabirinto = [
@@ -987,7 +999,10 @@
             { start: '🐝', end: '🌸', wall: '#FBC02D', path: '#FFFDE7', visited: '#FFCDD2', falaBichinho: 'a abelhinha', falaObjetivo: 'a flor' }
         ];
 
-        let labirintoTracing = false;
+        let mapaAtual = [];
+        let playerPos = { r: 0, c: 0 };
+        let temaLabirintoAtual = null;
+        let bloqueioLabirinto = false;
 
         function iniciarLabirinto() {
             navegar('tela-labirinto');
@@ -995,87 +1010,190 @@
         }
 
         function gerarFaseLabirinto() {
+            bloqueioLabirinto = false;
             const grid = document.getElementById('grid-labirinto');
             grid.innerHTML = '';
             
-            const tema = temasLabirinto[Math.floor(Math.random() * temasLabirinto.length)];
-            const mapaStr = labirintosData[Math.floor(Math.random() * labirintosData.length)];
+            temaLabirintoAtual = temasLabirinto[Math.floor(Math.random() * temasLabirinto.length)];
+            mapaAtual = labirintosData[Math.floor(Math.random() * labirintosData.length)];
             
-            // Configura o CSS do grid baseado no array escolhido
-            const colunas = mapaStr[0].length;
+            const colunas = mapaAtual[0].length;
             grid.style.gridTemplateColumns = `repeat(${colunas}, 1fr)`;
             
-            // Injeta as cores do tema no CSS raiz para facilidade
-            grid.style.setProperty('--wall-color', tema.wall);
-            grid.style.setProperty('--path-color', tema.path);
-            grid.style.setProperty('--visited-color', tema.visited);
+            grid.style.setProperty('--wall-color', temaLabirintoAtual.wall);
+            grid.style.setProperty('--path-color', temaLabirintoAtual.path);
+            grid.style.setProperty('--visited-color', temaLabirintoAtual.visited);
 
-            mapaStr.forEach(linha => {
-                for(let i=0; i < linha.length; i++) {
-                    let char = linha[i];
+            for(let r=0; r < mapaAtual.length; r++) {
+                for(let c=0; c < mapaAtual[r].length; c++) {
+                    let char = mapaAtual[r][c];
                     let div = document.createElement('div');
                     div.classList.add('maze-cell');
+                    div.id = `celula-${r}-${c}`;
                     
                     if(char === '#') {
                         div.classList.add('cell-wall');
-                    } else if(char === '.') {
+                    } else {
                         div.classList.add('cell-path');
-                    } else if(char === 'S') {
-                        div.classList.add('cell-start');
-                        div.textContent = tema.start;
-                    } else if(char === 'E') {
-                        div.classList.add('cell-end');
-                        div.textContent = tema.end;
+                        if(char === 'S') {
+                            playerPos = { r, c };
+                            div.classList.add('cell-visited');
+                            div.textContent = temaLabirintoAtual.start;
+                        } else if(char === 'E') {
+                            div.textContent = temaLabirintoAtual.end;
+                        }
                     }
                     grid.appendChild(div);
                 }
-            });
-            falar("Leve " + tema.falaBichinho + " até " + tema.falaObjetivo);
+            }
+            falar("Leve " + temaLabirintoAtual.falaBichinho + " até " + temaLabirintoAtual.falaObjetivo);
         }
 
-        // Lógica de deslizar o dedo (Pointer Events)
-        const gridLabirinto = document.getElementById('grid-labirinto');
+        function moverLabirinto(dr, dc) {
+            if (bloqueioLabirinto) return;
 
-        gridLabirinto.addEventListener('pointerdown', (e) => {
-            let el = document.elementFromPoint(e.clientX, e.clientY);
-            if(el && el.classList.contains('cell-start')) {
-                labirintoTracing = true;
-                sndBotao.cloneNode(true).play().catch(()=>{});
-                document.querySelectorAll('.cell-visited').forEach(c => c.classList.remove('cell-visited'));
-            }
-        });
+            let novaLinha = playerPos.r + dr;
+            let novaColuna = playerPos.c + dc;
 
-        document.addEventListener('pointermove', (e) => {
-            if(!labirintoTracing) return;
-            
-            let el = document.elementFromPoint(e.clientX, e.clientY);
-            if(!el) return;
-
-            if(el.classList.contains('cell-wall')) {
-                // Errou o caminho
-                labirintoTracing = false;
+            // Impede de sair para fora do mapa
+            if (novaLinha < 0 || novaLinha >= mapaAtual.length || novaColuna < 0 || novaColuna >= mapaAtual[0].length) {
                 sndErro.cloneNode(true).play().catch(()=>{});
-                document.querySelectorAll('.cell-visited').forEach(c => c.classList.remove('cell-visited'));
-            } else if(el.classList.contains('cell-path')) {
-                // Pintando o caminho correto
-                el.classList.add('cell-visited');
-            } else if(el.classList.contains('cell-end')) {
-                // Chegou no objetivo
-                labirintoTracing = false;
-                sndVitoria.cloneNode(true).play().catch(()=>{});
-                falar("Muito bem! Você conseguiu!");
-                soltarConfetes(document.getElementById('tela-labirinto'));
-                setTimeout(() => gerarFaseLabirinto(), 3000);
+                return;
             }
-        });
 
-        document.addEventListener('pointerup', () => {
-            if(labirintoTracing) {
-                // Soltou o dedo no meio do caminho, apaga a trilha para tentar de novo
-                labirintoTracing = false;
-                document.querySelectorAll('.cell-visited').forEach(c => c.classList.remove('cell-visited'));
+            let destinoChar = mapaAtual[novaLinha][novaColuna];
+
+            if (destinoChar === '#') {
+                sndErro.cloneNode(true).play().catch(()=>{});
+                // Efeito de bater na parede 
+                let celulaAtual = document.getElementById(`celula-${playerPos.r}-${playerPos.c}`);
+                celulaAtual.classList.add('error-shake');
+                setTimeout(() => celulaAtual.classList.remove('error-shake'), 400);
+            } else {
+                sndBotao.cloneNode(true).play().catch(()=>{});
+                
+                // Limpa a célula antiga
+                let celulaAntiga = document.getElementById(`celula-${playerPos.r}-${playerPos.c}`);
+                celulaAntiga.textContent = '';
+                
+                // Atualiza a posição
+                playerPos = { r: novaLinha, c: novaColuna };
+                let novaCelula = document.getElementById(`celula-${novaLinha}-${novaColuna}`);
+                novaCelula.classList.add('cell-visited');
+                novaCelula.textContent = temaLabirintoAtual.start;
+
+                // Verifica vitória
+                if (destinoChar === 'E') {
+                    bloqueioLabirinto = true;
+                    setTimeout(() => {
+                        sndVitoria.cloneNode(true).play().catch(()=>{});
+                        falar("Muito bem! Você conseguiu!");
+                        soltarConfetes(document.getElementById('tela-labirinto'));
+                        setTimeout(() => gerarFaseLabirinto(), 4000);
+                    }, 300);
+                }
             }
-        });
+        }
+
+        // ==========================================
+        // LÓGICA: JOGO DA MEMÓRIA
+        // ==========================================
+        const itensMemoria = [
+            { id: 1, e: '🍎', nome: 'Maçã' }, { id: 2, e: '🍌', nome: 'Banana' },
+            { id: 3, e: '🐶', nome: 'Cachorrinho' }, { id: 4, e: '🐱', nome: 'Gatinho' },
+            { id: 5, e: '🚗', nome: 'Carro' }, { id: 6, e: '✈️', nome: 'Avião' },
+            { id: 7, e: '🌟', nome: 'Estrela' }, { id: 8, e: '🎈', nome: 'Balão' },
+            { id: 9, e: '🍓', nome: 'Morango' }, { id: 10, e: '🍉', nome: 'Melancia' },
+            { id: 11, e: '🦋', nome: 'Borboleta' }, { id: 12, e: '🐸', nome: 'Sapo' }
+        ];
+
+        let cartasViradasMemoria = [];
+        let paresEncontradosMemoria = 0;
+        let bloqueioMemoria = false;
+
+        function iniciarMemoria() {
+            navegar('tela-memoria');
+            gerarFaseMemoria();
+        }
+
+        function gerarFaseMemoria() {
+            const grid = document.getElementById('grid-memoria');
+            grid.innerHTML = '';
+            cartasViradasMemoria = [];
+            paresEncontradosMemoria = 0;
+            bloqueioMemoria = false;
+            document.getElementById('counter-memoria').textContent = itensMemoria.length;
+
+            let cartas = [...itensMemoria, ...itensMemoria].sort(() => Math.random() - 0.5);
+
+            cartas.forEach(item => {
+                const carta = document.createElement('div');
+                carta.classList.add('carta-memoria');
+                carta.dataset.id = item.id;
+                carta.dataset.nome = item.nome;
+
+                carta.innerHTML = `
+                    <div class="carta-verso">❓</div>
+                    <div class="carta-frente">${item.e}</div>
+                `;
+
+                carta.addEventListener('pointerdown', () => virarCarta(carta));
+                grid.appendChild(carta);
+            });
+
+            falar("Ache os pares iguais!");
+        }
+
+        function virarCarta(carta) {
+            if (bloqueioMemoria) return;
+            if (carta.classList.contains('virada')) return;
+
+            carta.classList.add('virada');
+            sndBotao.cloneNode(true).play().catch(()=>{});
+            cartasViradasMemoria.push(carta);
+
+            if (cartasViradasMemoria.length === 2) {
+                checarParMemoria();
+            }
+        }
+
+        function checarParMemoria() {
+            bloqueioMemoria = true;
+            const [carta1, carta2] = cartasViradasMemoria;
+
+            if (carta1.dataset.id === carta2.dataset.id) {
+                setTimeout(() => {
+                    sndAcerto.cloneNode(true).play().catch(()=>{});
+                    falar(carta1.dataset.nome);
+                    carta1.classList.add('matched');
+                    carta2.classList.add('matched');
+                    paresEncontradosMemoria++;
+                    document.getElementById('counter-memoria').textContent = itensMemoria.length - paresEncontradosMemoria;
+                    
+                    if (paresEncontradosMemoria === itensMemoria.length) {
+                        setTimeout(() => {
+                            sndVitoria.cloneNode(true).play().catch(()=>{});
+                            falar("Você tem uma ótima memória!");
+                            soltarConfetes(document.getElementById('tela-memoria'));
+                            setTimeout(() => gerarFaseMemoria(), 5000);
+                        }, 500);
+                    }
+                    resetarJogadaMemoria();
+                }, 400);
+            } else {
+                setTimeout(() => {
+                    sndErro.cloneNode(true).play().catch(()=>{});
+                    carta1.classList.remove('virada');
+                    carta2.classList.remove('virada');
+                    resetarJogadaMemoria();
+                }, 1200);
+            }
+        }
+
+        function resetarJogadaMemoria() {
+            cartasViradasMemoria = [];
+            bloqueioMemoria = false;
+        }
 
     </script>
 </body>
