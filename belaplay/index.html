@@ -160,7 +160,7 @@
         #paleta-cores { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 95%; max-width: 600px; margin-bottom: 10px; z-index: 100; }
         .cor-btn { width: 45px; height: 45px; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.1s; user-select: none; touch-action: none; }
         .cor-btn:active { transform: scale(0.8); }
-        .cor-btn.selecionada { transform: scale(1.15) translateY(-5px); border-color: #555; }
+        .cor-btn.selecionada { transform: scale(1.15) translateY(-5px); border-color: #FF4081; }
         
         .btn-borracha { width: 45px; height: 45px; border-radius: 10px; background-color: #fff; display: flex; justify-content: center; align-items: center; font-size: 25px; border: 4px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; user-select: none; touch-action: none; }
         .btn-borracha.selecionada { border-color: #FF5252; background-color: #FFEBEE; transform: scale(1.15) translateY(-5px); }
@@ -212,7 +212,7 @@
 
     <!-- MENU PRINCIPAL -->
     <div id="tela-menu" class="screen active">
-        <h1>Bela Play 1.5 🌟</h1>
+        <h1>Bela Play 1.5.1 🌟</h1>
         <div class="main-menu-grid">
             <button class="menu-btn btn-main btn-cooklab" onclick="navegar('tela-cooklab')">🍳 CookLab</button>
             <button class="menu-btn btn-main btn-nomes" onclick="navegar('tela-nomes-menu')">🔤 Formando Nomes</button>
@@ -1273,7 +1273,8 @@
             '#F8BBD0', '#E91E63', '#F44336', '#FF9800', 
             '#FFEB3B', '#CDDC39', '#8BC34A', '#4CAF50', 
             '#009688', '#00BCD4', '#03A9F4', '#3F51B5', 
-            '#9C27B0', '#795548', '#9E9E9E', '#000000'
+            '#9C27B0', '#795548', '#9E9E9E', '#000000',
+            '#FFFFFF'
         ];
 
         const espessurasCaneta = [5, 10, 15, 25, 40]; 
@@ -1288,8 +1289,9 @@
             { id: 6, nome: "Peach", tipo: "img", dado: "colorir/colorir_01_Peach.png" },
             { id: 7, nome: "Pocahontas", tipo: "img", dado: "colorir/colorir_02_Pocah.png" },
             { id: 8, nome: "Minnie", tipo: "img", dado: "colorir/colorir_03_Minnie.png" },
-            { id: 9, nome: "Carrinho", tipo: "img", dado: "colorir/colorir_04_Princesa.png" },
-            { id: 10, nome: "Dinossauro", tipo: "img", dado: "colorir/colorir_05_Mercado.png" }
+            { id: 9, nome: "Princesa", tipo: "img", dado: "colorir/colorir_04_Princesa.png" },
+            { id: 10, nome: "Supermercado", tipo: "img", dado: "colorir/colorir_05_Mercado.png" },
+            { id: 11, nome: "Tela Livre", tipo: "livre", dado: "📝" }
         ];
 
         let corAtual = '#E91E63'; 
@@ -1311,6 +1313,7 @@
                 
                 let visual = desenho.tipo === 'svg' ? desenho.dado : `<img src="${desenho.dado}" alt="${desenho.nome}">`;
                 if(desenho.tipo === 'img' && desenho.dado.includes('COLE_AQUI')) visual = '<span>🖼️</span>';
+                if(desenho.tipo === 'livre') visual = `<span style="font-size: 70px;">${desenho.dado}</span>`;
 
                 card.innerHTML = visual + `<span>${desenho.nome}</span>`;
                 card.addEventListener('pointerdown', () => carregarPintura(desenho));
@@ -1325,8 +1328,10 @@
             const overlay = document.getElementById('drawing-overlay');
             if (desenho.tipo === 'svg') {
                 overlay.innerHTML = desenho.dado;
-            } else {
+            } else if (desenho.tipo === 'img') {
                 overlay.innerHTML = `<img src="${desenho.dado}">`;
+            } else {
+                overlay.innerHTML = ''; // Garante que a folha fique 100% vazia
             }
 
             const paletaDiv = document.getElementById('paleta-cores');
@@ -1336,6 +1341,8 @@
                 const btn = document.createElement('div');
                 btn.classList.add('cor-btn');
                 btn.style.backgroundColor = cor;
+                btn.dataset.cor = cor; // <- Salvamos a cor original aqui!
+                
                 if (cor === corAtual && !modoBorracha) btn.classList.add('selecionada');
                 
                 btn.addEventListener('pointerdown', () => {
@@ -1404,7 +1411,8 @@
         function atualizarSelecaoCor() {
             document.querySelectorAll('.cor-btn').forEach(btn => {
                 btn.classList.remove('selecionada');
-                if (btn.style.backgroundColor === rgbToHex(corAtual) && !modoBorracha) {
+                // Compara diretamente com o valor exato que salvamos no botão
+                if (btn.dataset.cor === corAtual && !modoBorracha) {
                     btn.classList.add('selecionada');
                 }
             });
@@ -1465,15 +1473,8 @@
 
         canvas.addEventListener('pointerdown', iniciarTraço);
         canvas.addEventListener('pointermove', desenharTraço);
-        window.addEventListener('pointerup', finalizarTraço);
-        
-        function rgbToHex(rgb) {
-            if(rgb.startsWith('#')) return rgb.toLowerCase();
-            const rgbArr = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-            if(!rgbArr) return rgb;
-            function hex(x) { return ("0" + parseInt(x).toString(16)).slice(-2); }
-            return ("#" + hex(rgbArr[1]) + hex(rgbArr[2]) + hex(rgbArr[3])).toLowerCase();
-        }
+        window.addEventListener('pointerup', finalizarTraço);       
+       
 
     </script>
 </body>
