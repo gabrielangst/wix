@@ -150,6 +150,49 @@
         .carta-verso { background-color: #FFCA28; font-size: 40px; color: white; border: 4px solid #FFB300; background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.2) 10px, rgba(255,255,255,0.2) 20px); }
         .carta-memoria.matched .carta-frente { background-color: #C8E6C9; border-color: #2E7D32; box-shadow: 0 0 15px #4CAF50; }
     
+        /* ================= PINTAR DESENHOS ================= */
+        .menu-desenhos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; padding: 20px; width: 95%; max-width: 800px; max-height: 70vh; overflow-y: auto; }
+        .card-desenho { background: white; border-radius: 15px; padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 6px 0 #ccc; cursor: pointer; border: 3px solid #eee; height: 140px; }
+        .card-desenho:active { transform: translateY(6px); box-shadow: 0 0 0 #ccc; }
+        .card-desenho svg, .card-desenho img { width: 80%; height: 70%; object-fit: contain; }
+        .card-desenho span { font-weight: bold; margin-top: 10px; color: #555; }
+        
+        #paleta-cores { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 95%; max-width: 600px; margin-bottom: 10px; z-index: 100; }
+        .cor-btn { width: 45px; height: 45px; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.1s; user-select: none; touch-action: none; }
+        .cor-btn:active { transform: scale(0.8); }
+        .cor-btn.selecionada { transform: scale(1.15) translateY(-5px); border-color: #555; }
+        
+        .btn-borracha { width: 45px; height: 45px; border-radius: 10px; background-color: #fff; display: flex; justify-content: center; align-items: center; font-size: 25px; border: 4px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; user-select: none; touch-action: none; }
+        .btn-borracha.selecionada { border-color: #FF5252; background-color: #FFEBEE; transform: scale(1.15) translateY(-5px); }
+        
+        #area-pintura { flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; position: relative; padding: 10px 20px; box-sizing: border-box; touch-action: none; }
+        
+        /* Aumentamos os limites máximos e usamos 'vh' para a altura acompanhar a tela */
+        #canvas-container { position: relative; width: 95vw; max-width: 1200px; height: 65vh; max-height: 800px; background-color: #fff; border-radius: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border: 4px solid #ccc; touch-action: none; overflow: hidden; }
+        
+        #drawing-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; touch-action: none; cursor: crosshair; }
+        #drawing-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; display: flex; justify-content: center; align-items: center; }
+        
+        #drawing-overlay svg, #drawing-overlay img { width: 95%; height: 95%; object-fit: contain; pointer-events: none; filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.1)); }
+
+        /* Agrupamento de Ferramentas (Paleta + Espessuras) */
+        #ferramentas-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px; width: 95%; max-width: 900px; margin-bottom: 10px; z-index: 100; }
+        #paleta-cores { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 600px; }
+        
+       #seletor-espessura { display: flex; justify-content: center; align-items: center; gap: 5px; background: rgba(255,255,255,0.6); padding: 5px 15px; border-radius: 20px; border: 2px solid #ccc; height: 55px; }
+        
+        /* O botão agora é uma área invisível grande e igual para todos (fácil de clicar) */
+        .btn-espessura { width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; cursor: pointer; touch-action: none; border-radius: 10px; }
+        
+        /* O traço visual fica desenhado no centro do botão */
+        .traco-visual { height: 35px; background-color: #9E9E9E; border-radius: 10px; transition: transform 0.1s, background-color 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); pointer-events: none; }
+        
+        /* Efeito quando selecionado */
+        .btn-espessura.selecionada .traco-visual { background-color: #FF4081; transform: scale(1.2); box-shadow: 0 4px 8px rgba(0,0,0,0.3); border: 2px solid #fff; }
+        
+        .btn-limpar-desenho { width: auto; padding: 10px 30px; font-size: 20px; background-color: #FF9800; box-shadow: 0 5px 0 #E65100; margin-top: 15px; margin-bottom: 30px; cursor: pointer; user-select: none; touch-action: none; border: none; border-radius: 20px; color: white; font-weight: bold; }
+        .btn-limpar-desenho:active { transform: translateY(5px); box-shadow: 0 0 0 #E65100; }
+        
     </style>
 </head>
 <body>
@@ -169,7 +212,7 @@
 
     <!-- MENU PRINCIPAL -->
     <div id="tela-menu" class="screen active">
-        <h1>Bela Play 1.4 🌟</h1>
+        <h1>Bela Play 1.5 🌟</h1>
         <div class="main-menu-grid">
             <button class="menu-btn btn-main btn-cooklab" onclick="navegar('tela-cooklab')">🍳 CookLab</button>
             <button class="menu-btn btn-main btn-nomes" onclick="navegar('tela-nomes-menu')">🔤 Formando Nomes</button>
@@ -177,6 +220,7 @@
             <button class="menu-btn btn-main btn-numeros" onclick="iniciarBolhasNumericas()">🔢 Bolhas Numéricas</button>
             <button class="menu-btn btn-main btn-labirinto" onclick="iniciarLabirinto()">🧭 Labirinto</button>
             <button class="menu-btn btn-main" style="background-color: #3F51B5; box-shadow: 0 8px 0 #303F9F;" onclick="iniciarMemoria()">🧠 Jogo da Memória</button>
+            <button class="menu-btn btn-main" style="background-color: #E91E63; box-shadow: 0 8px 0 #C2185B;" onclick="iniciarMenuPintura()">🖍️ Pintar Desenhos</button>
         </div>
     </div>
 
@@ -278,6 +322,33 @@
         <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
         <div id="counter-display" style="top: 20px; left: 50%; transform: translateX(-50%);">Faltam: <span id="counter-memoria">12</span></div>
         <div id="grid-memoria"></div>
+    </div>
+
+    <!-- MENU DE DESENHOS -->
+    <div id="tela-pintar-menu" class="screen">
+        <div class="btn-voltar" onclick="navegar('tela-menu')">✖</div>
+        <h1 style="margin-bottom: 20px;">O que vamos pintar?</h1>
+        <div id="grid-desenhos" class="menu-desenhos-grid"></div>
+    </div>
+
+    <!-- TELA DE PINTURA -->
+    <div id="tela-pintar-game" class="screen" style="justify-content: flex-start; padding-top: 60px; box-sizing: border-box;">
+        <div class="btn-voltar" style="top: 25px; left: 25px; z-index: 1000;" onclick="navegar('tela-pintar-menu')">✖</div>
+        
+        <!-- Contêiner que agrupa paleta e espessuras lado a lado -->
+        <div id="ferramentas-container">
+            <div id="paleta-cores"></div>
+            <div id="seletor-espessura"></div>
+        </div>
+        
+        <div id="area-pintura" style="padding-top: 5px;">
+            <div id="canvas-container">
+                <canvas id="drawing-canvas"></canvas>
+                <div id="drawing-overlay"></div>
+            </div>
+        </div>
+        
+        <button class="btn-limpar-desenho" onclick="limparPintura()">🗑️ Limpar Tudo</button>
     </div>
 
     <script>
@@ -1193,6 +1264,215 @@
         function resetarJogadaMemoria() {
             cartasViradasMemoria = [];
             bloqueioMemoria = false;
+        }
+
+        // ==========================================
+        // LÓGICA: PINTAR DESENHOS
+        // ==========================================
+        const paleta = [
+            '#F8BBD0', '#E91E63', '#F44336', '#FF9800', 
+            '#FFEB3B', '#CDDC39', '#8BC34A', '#4CAF50', 
+            '#009688', '#00BCD4', '#03A9F4', '#3F51B5', 
+            '#9C27B0', '#795548', '#9E9E9E', '#000000'
+        ];
+
+        const espessurasCaneta = [5, 10, 15, 25, 40]; 
+        let espessuraAtualIndice = 2; 
+
+        const desenhosPintura = [
+            { id: 1, nome: "Coração", tipo: "svg", dado: `<svg viewBox="0 0 100 100"><path d="M50 85 C 20 60, 10 40, 10 25 C 10 10, 35 10, 50 30 C 65 10, 90 10, 90 25 C 90 40, 80 60, 50 85 Z" fill="none" stroke="black" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/></svg>` },
+            { id: 2, nome: "Estrela", tipo: "svg", dado: `<svg viewBox="0 0 100 100"><polygon points="50,10 60,40 90,40 65,60 75,90 50,75 25,90 35,60 10,40 40,40" fill="none" stroke="black" stroke-width="4" stroke-linejoin="round"/></svg>` },
+            { id: 3, nome: "Flor", tipo: "svg", dado: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="15" fill="none" stroke="black" stroke-width="4"/><circle cx="50" cy="20" r="15" fill="none" stroke="black" stroke-width="4"/><circle cx="50" cy="80" r="15" fill="none" stroke="black" stroke-width="4"/><circle cx="20" cy="50" r="15" fill="none" stroke="black" stroke-width="4"/><circle cx="80" cy="50" r="15" fill="none" stroke="black" stroke-width="4"/></svg>` },
+            { id: 4, nome: "Sol", tipo: "svg", dado: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="25" fill="none" stroke="black" stroke-width="4"/><line x1="50" y1="5" x2="50" y2="15" stroke="black" stroke-width="4" stroke-linecap="round"/><line x1="50" y1="95" x2="50" y2="85" stroke="black" stroke-width="4" stroke-linecap="round"/><line x1="5" y1="50" x2="15" y2="50" stroke="black" stroke-width="4" stroke-linecap="round"/><line x1="95" y1="50" x2="85" y2="50" stroke="black" stroke-width="4" stroke-linecap="round"/></svg>` },
+            { id: 5, nome: "Maçã", tipo: "svg", dado: `<svg viewBox="0 0 100 100"><path d="M50 25 C 30 5, 10 30, 25 70 C 35 95, 65 95, 75 70 C 90 30, 70 5, 50 25 Z" fill="none" stroke="black" stroke-width="4"/><path d="M50 25 Q 60 5 70 10" fill="none" stroke="black" stroke-width="4" stroke-linecap="round"/></svg>` },
+            { id: 6, nome: "Peach", tipo: "img", dado: "colorir/colorir_01_Peach.png" },
+            { id: 7, nome: "Pocahontas", tipo: "img", dado: "colorir/colorir_02_Pocah.png" },
+            { id: 8, nome: "Minnie", tipo: "img", dado: "colorir/colorir_03_Minnie.png" },
+            { id: 9, nome: "Carrinho", tipo: "img", dado: "colorir/colorir_04_Princesa.png" },
+            { id: 10, nome: "Dinossauro", tipo: "img", dado: "colorir/colorir_05_Mercado.png" }
+        ];
+
+        let corAtual = '#E91E63'; 
+        let modoBorracha = false;
+        let isDrawing = false;
+        
+        const canvas = document.getElementById('drawing-canvas');
+        const ctx = canvas.getContext('2d');
+        const containerCanvas = document.getElementById('canvas-container');
+
+        function iniciarMenuPintura() {
+            navegar('tela-pintar-menu');
+            const grid = document.getElementById('grid-desenhos');
+            grid.innerHTML = '';
+            
+            desenhosPintura.forEach(desenho => {
+                const card = document.createElement('div');
+                card.classList.add('card-desenho');
+                
+                let visual = desenho.tipo === 'svg' ? desenho.dado : `<img src="${desenho.dado}" alt="${desenho.nome}">`;
+                if(desenho.tipo === 'img' && desenho.dado.includes('COLE_AQUI')) visual = '<span>🖼️</span>';
+
+                card.innerHTML = visual + `<span>${desenho.nome}</span>`;
+                card.addEventListener('pointerdown', () => carregarPintura(desenho));
+                grid.appendChild(card);
+            });
+        }
+
+        function carregarPintura(desenho) {
+            navegar('tela-pintar-game');
+            falar("Vamos pintar " + desenho.nome);
+            
+            const overlay = document.getElementById('drawing-overlay');
+            if (desenho.tipo === 'svg') {
+                overlay.innerHTML = desenho.dado;
+            } else {
+                overlay.innerHTML = `<img src="${desenho.dado}">`;
+            }
+
+            const paletaDiv = document.getElementById('paleta-cores');
+            paletaDiv.innerHTML = '';
+            
+            paleta.forEach(cor => {
+                const btn = document.createElement('div');
+                btn.classList.add('cor-btn');
+                btn.style.backgroundColor = cor;
+                if (cor === corAtual && !modoBorracha) btn.classList.add('selecionada');
+                
+                btn.addEventListener('pointerdown', () => {
+                    sndBotao.cloneNode(true).play().catch(()=>{});
+                    corAtual = cor;
+                    modoBorracha = false;
+                    atualizarSelecaoCor();
+                });
+                paletaDiv.appendChild(btn);
+            });
+
+            const btnBorracha = document.createElement('div');
+            btnBorracha.classList.add('btn-borracha');
+            btnBorracha.textContent = '🧽';
+            if (modoBorracha) btnBorracha.classList.add('selecionada');
+            btnBorracha.addEventListener('pointerdown', () => {
+                sndBotao.cloneNode(true).play().catch(()=>{});
+                modoBorracha = true;
+                atualizarSelecaoCor();
+            });
+            paletaDiv.appendChild(btnBorracha);
+
+            const espessuraDiv = document.getElementById('seletor-espessura');
+            espessuraDiv.innerHTML = '';
+            espessurasCaneta.forEach((esp, index) => {
+                const btnE = document.createElement('div');
+                btnE.classList.add('btn-espessura');
+                
+                // Cria o traço visual por dentro do botão clicável
+                const traco = document.createElement('div');
+                traco.classList.add('traco-visual');
+                traco.style.width = esp + 'px'; 
+                btnE.appendChild(traco);
+                
+                if (index === espessuraAtualIndice) btnE.classList.add('selecionada');
+                
+                btnE.addEventListener('pointerdown', () => {
+                    sndBotao.cloneNode(true).play().catch(()=>{});
+                    espessuraAtualIndice = index;
+                    atualizarSelecaoEspessura();
+                });
+                espessuraDiv.appendChild(btnE);
+            });
+
+            setTimeout(() => {
+                const rect = containerCanvas.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                atualizarCursor();
+            }, 100);
+        }
+
+        function atualizarCursor() {
+            let tamanho = modoBorracha ? 60 : espessurasCaneta[espessuraAtualIndice];
+            let cor = modoBorracha ? '#ffffff' : corAtual;
+            let strokeCor = modoBorracha ? '#000000' : '#ffffff';
+            
+            // Desenha o círculo em SVG injetado direto no CSS
+            let svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${tamanho}" height="${tamanho}" viewBox="0 0 ${tamanho} ${tamanho}"><circle cx="${tamanho/2}" cy="${tamanho/2}" r="${(tamanho/2) - 1.5}" fill="${cor}" stroke="${strokeCor}" stroke-width="2"/></svg>`;
+            let offset = Math.round(tamanho / 2);
+            canvas.style.cursor = `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}') ${offset} ${offset}, crosshair`;
+        }
+
+        function atualizarSelecaoCor() {
+            document.querySelectorAll('.cor-btn').forEach(btn => {
+                btn.classList.remove('selecionada');
+                if (btn.style.backgroundColor === rgbToHex(corAtual) && !modoBorracha) {
+                    btn.classList.add('selecionada');
+                }
+            });
+            const borracha = document.querySelector('.btn-borracha');
+            if (borracha) {
+                modoBorracha ? borracha.classList.add('selecionada') : borracha.classList.remove('selecionada');
+            }
+            atualizarCursor();
+        }
+
+        function atualizarSelecaoEspessura() {
+            const botoes = document.querySelectorAll('.btn-espessura');
+            botoes.forEach((btn, idx) => {
+                if (idx === espessuraAtualIndice) {
+                    btn.classList.add('selecionada');
+                } else {
+                    btn.classList.remove('selecionada');
+                }
+            });
+            atualizarCursor();
+        }
+
+        function iniciarTraço(e) {
+            isDrawing = true;
+            ctx.beginPath();
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            ctx.moveTo(clientX - rect.left, clientY - rect.top);
+            
+            ctx.strokeStyle = modoBorracha ? '#FFFFFF' : corAtual;
+            ctx.lineWidth = modoBorracha ? 60 : espessurasCaneta[espessuraAtualIndice]; 
+        }
+
+        function desenharTraço(e) {
+            if (!isDrawing) return;
+            e.preventDefault(); 
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            ctx.lineTo(clientX - rect.left, clientY - rect.top);
+            ctx.stroke();
+        }
+
+        function finalizarTraço() {
+            if(isDrawing) {
+                isDrawing = false;
+                ctx.closePath();
+            }
+        }
+
+        function limparPintura() {
+            sndDica.cloneNode(true).play().catch(()=>{});
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        canvas.addEventListener('pointerdown', iniciarTraço);
+        canvas.addEventListener('pointermove', desenharTraço);
+        window.addEventListener('pointerup', finalizarTraço);
+        
+        function rgbToHex(rgb) {
+            if(rgb.startsWith('#')) return rgb.toLowerCase();
+            const rgbArr = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            if(!rgbArr) return rgb;
+            function hex(x) { return ("0" + parseInt(x).toString(16)).slice(-2); }
+            return ("#" + hex(rgbArr[1]) + hex(rgbArr[2]) + hex(rgbArr[3])).toLowerCase();
         }
 
     </script>
