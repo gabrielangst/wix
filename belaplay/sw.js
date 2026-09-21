@@ -1,4 +1,4 @@
-const CACHE_NAME = 'belaplay-cache-v150';
+const CACHE_NAME = 'belaplay-cache-v151';
 const ASSETS_INICIAIS = [
   './',
   './index.html',
