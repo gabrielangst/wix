@@ -532,7 +532,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças v. 2.0.0
+                <span>📊</span> Finanças v. 2.0.1
             </div>
             <nav>
                 <ul id="main-menu">
@@ -577,6 +577,8 @@
 
                     <li class="menu-separator"></li>                    
                     <li><button data-target="view-observacoes">📌 Observações Importantes</button></li>
+                    <li class="menu-separator"></li>
+                    <li><button data-target="view-saude">🏥 Saúde</button></li>
                     <li class="menu-separator"></li>
 
                     <li><button data-target="view-import-export">🔄 Importar / Exportar</button></li>
@@ -1046,6 +1048,51 @@
             <div style="text-align: center; margin-top: 32px; margin-bottom: 16px;">
                 <button class="btn-secondary" style="padding: 12px 24px; font-weight: 600;" onclick="carregarMaisMeses('kamila')">🔄 Exibir mais 12 meses</button>
             </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW: SAÚDE (MURAL DE PASTAS E POSTAGENS)  -->
+        <!-- ========================================== -->
+        <section id="view-saude" class="view-section">
+            <div class="view-header">
+                <h1>Saúde - Histórico e Exames</h1>
+            </div>
+            
+            <!-- Seleção de Pessoa -->
+            <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;">
+                <button class="btn-secondary" onclick="abrirPainelSaude('Gabriel')" id="btn-saude-gabriel" style="flex: 1; min-width: 120px; padding: 12px; font-size: 1.1rem; font-weight: bold; border-color: var(--sidebar-active); color: var(--sidebar-active);">👨🏻 Gabriel</button>
+                <button class="btn-secondary" onclick="abrirPainelSaude('Kamila')" id="btn-saude-kamila" style="flex: 1; min-width: 120px; padding: 12px; font-size: 1.1rem; font-weight: bold;">👩🏻 Kamila</button>
+                <button class="btn-secondary" onclick="abrirPainelSaude('Isabela')" id="btn-saude-isabela" style="flex: 1; min-width: 120px; padding: 12px; font-size: 1.1rem; font-weight: bold;">👧🏻 Isabela</button>
+            </div>
+
+            <!-- Painel de Pastas e Postagens Dinâmico -->
+                <div id="painel-mural-saude" style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); min-height: 450px;">
+                    
+                    <!-- TELA 1: GRID DE PASTAS -->
+                    <div id="saude-tela-pastas">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 12px;">
+                            <h2 id="titulo-mural-saude" style="font-size: 1.3rem; color: var(--text-main); margin: 0;">Mural de Gabriel</h2>
+                            <button class="btn-secondary" onclick="abrirModalPastaSaude()" style="color: #6366f1; border-color: #c7d2fe; background: #eef2ff; font-weight: 600; padding: 8px 16px;">+ Nova Categoria (Pasta)</button>
+                        </div>
+                        <div class="card-grid" id="grid-pastas-saude" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px;">
+                            <!-- O JS injetará as pastas aqui -->
+                        </div>
+                    </div>
+
+                    <!-- TELA 2: LISTA DE POSTAGENS -->
+                    <div id="saude-tela-postagens" class="hidden">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <button class="btn-secondary" onclick="voltarPastasSaude()">← Voltar</button>
+                                <h2 id="titulo-pasta-saude" style="font-size: 1.3rem; color: var(--text-main); margin: 0;">Nome da Pasta</h2>
+                            </div>
+                            <button class="btn-secondary" onclick="abrirModalPostagemSaude()" style="color: #10b981; border-color: #a7f3d0; background: #ecfdf5; font-weight: 600; padding: 8px 16px;">+ Nova Postagem</button>
+                        </div>
+                        <div id="lista-postagens-saude" style="display: flex; flex-direction: column; gap: 16px;">
+                            <!-- O JS injetará as postagens aqui -->
+                        </div>
+                    </div>
+                </div>
         </section>
 
         <!-- ========================================== -->
@@ -1963,6 +2010,88 @@
         </div>
     </div>
 
+    <!-- MODAL: NOVA/EDITAR PASTA SAÚDE -->
+            <div id="modal-pasta-saude" class="modal-overlay hidden" style="z-index: 1200;">
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="view-header" style="margin-bottom: 20px;">
+                        <h2 id="titulo-modal-pasta-saude" style="font-size: 1.2rem;">Nova Pasta</h2>
+                        <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalPastaSaude()">✖</button>
+                    </div>
+                    <input type="hidden" id="saude-pasta-id">
+                    <div class="form-group">
+                        <label>Ícone (Emoji)</label>
+                        <input type="text" id="saude-pasta-icone" class="form-control" placeholder="Ex: 🩸, 💊, 🦷" maxlength="2" style="font-size: 1.5rem; text-align: center; width: 80px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Nome da Pasta</label>
+                        <input type="text" id="saude-pasta-nome" class="form-control" placeholder="Ex: Exames de Sangue">
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                        <button class="btn-secondary" onclick="fecharModalPastaSaude()">Cancelar</button>
+                        <button class="btn-primary" onclick="salvarPastaSaude()">Salvar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL: NOVA/EDITAR POSTAGEM SAÚDE -->
+            <div id="modal-postagem-saude" class="modal-overlay hidden" style="z-index: 1200;">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="view-header" style="margin-bottom: 20px;">
+                        <h2 id="titulo-modal-postagem-saude" style="font-size: 1.2rem;">Nova Postagem</h2>
+                        <button class="btn-secondary" style="border: none; font-size: 1.2rem;" onclick="fecharModalPostagemSaude()">✖</button>
+                    </div>
+                    <input type="hidden" id="saude-post-id">
+                    <div style="display: flex; gap: 12px;">
+                        <div class="form-group" style="flex: 2;">
+                            <label>Título / Referência</label>
+                            <input type="text" id="saude-post-titulo" class="form-control" placeholder="Ex: Hemograma Completo">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Data</label>
+                            <input type="date" id="saude-post-data" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Anotações / Resultados</label>
+                        <div class="editor-toolbar">
+                            <button type="button" onclick="formatarTexto('bold')" title="Negrito">B</button>
+                            <button type="button" onclick="formatarTexto('underline')" title="Sublinhado" style="text-decoration: underline;">U</button>
+                            <div style="width: 1px; background: var(--border-color); height: 20px; margin: 0 4px;"></div>
+                            <button type="button" onclick="formatarTexto('foreColor', '#000000')" title="Preto" style="color: #000000; font-weight: 900;">A</button>
+                            <button type="button" onclick="formatarTexto('foreColor', '#ef4444')" title="Vermelho" style="color: #ef4444; font-weight: 900;">A</button>
+                            <button type="button" onclick="formatarTexto('foreColor', '#10b981')" title="Verde" style="color: #10b981; font-weight: 900;">A</button>
+                            <button type="button" onclick="formatarTexto('foreColor', '#3b82f6')" title="Azul" style="color: #3b82f6; font-weight: 900;">A</button>
+                        </div>
+                        <div id="saude-post-texto" class="editor-content" contenteditable="true" spellcheck="false" placeholder="Escreva os detalhes, resultados do exame ou orientações médicas aqui..." style="min-height: 150px; max-height: 300px; margin-bottom: 0;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                        <button class="btn-secondary" onclick="fecharModalPostagemSaude()">Cancelar</button>
+                        <button class="btn-primary" onclick="salvarPostagemSaude()">Salvar Postagem</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL: VISUALIZAR POSTAGEM SAÚDE (MODO LEITURA) -->
+            <div id="modal-visualizar-postagem-saude" class="modal-overlay hidden" style="z-index: 1250;">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="view-header" style="margin-bottom: 20px; align-items: flex-start;">
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span id="visualizar-post-data" style="font-size: 0.85rem; color: var(--sidebar-active); font-weight: 700;"></span>
+                            <h2 id="visualizar-post-titulo" style="font-size: 1.3rem; color: var(--text-main); margin: 0;">Título</h2>
+                        </div>
+                        <button class="btn-secondary" style="border: none; font-size: 1.2rem; padding: 0;" onclick="fecharModalVisualizarPostagemSaude()" title="Fechar">✖</button>
+                    </div>
+                    
+                    <div id="visualizar-post-texto" style="white-space: pre-wrap; font-size: 1rem; color: var(--text-main); line-height: 1.6; max-height: 60vh; overflow-y: auto; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <!-- O conteúdo completo entra aqui -->
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; margin-top: 24px;">
+                        <button class="btn-secondary" onclick="fecharModalVisualizarPostagemSaude()">Fechar</button>
+                    </div>
+                </div>
+            </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -2080,7 +2209,9 @@
             getAlocacoes: () => DB.get('fin_alocacoes', []),
             setAlocacoes: (data) => DB.set('fin_alocacoes', data),
             getPostIt: () => DB.get('fin_postit', { texto: '', top: '80px', left: '300px' }),
-            setPostIt: (data) => DB.set('fin_postit', data)
+            setPostIt: (data) => DB.set('fin_postit', data),
+            getSaude: () => DB.get('fin_saude', []),
+            setSaude: (data) => DB.set('fin_saude', data)
         };
 
         // --- SISTEMA DE ROTEAMENTO DAS SEÇÕES ---
@@ -2131,6 +2262,7 @@
             await renderizarAlocacoes();
             await renderizarDividasTemporarias();
             await renderizarPostIt();
+            abrirPainelSaude('Gabriel');
         }
 
         // --- POST-IT FLUTUANTE ---
@@ -5987,6 +6119,248 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 d.pagamentos = d.pagamentos.filter(p => p.id !== idPagamento);
                 await DB.setDividasTemp(dividas);
                 renderizarPagamentosDividaTemp(d);
+            }
+        };
+
+        // ==========================================
+        // LÓGICA DE GERENCIAMENTO DE SAÚDE (MURAL)
+        // ==========================================
+        let pessoaAtivaSaude = 'Gabriel'; // Padrão
+        let pastaAtivaSaudeId = null;
+
+        window.abrirPainelSaude = async (pessoa) => {
+            pessoaAtivaSaude = pessoa;
+            
+            // Botões UI
+            ['gabriel', 'kamila', 'isabela'].forEach(p => {
+                const btn = document.getElementById(`btn-saude-${p}`);
+                if (btn) { btn.style.borderColor = 'var(--border-color)'; btn.style.color = 'var(--text-muted)'; }
+            });
+            const btnAtivo = document.getElementById(`btn-saude-${pessoa.toLowerCase()}`);
+            if (btnAtivo) { btnAtivo.style.borderColor = 'var(--sidebar-active)'; btnAtivo.style.color = 'var(--sidebar-active)'; }
+
+            document.getElementById('titulo-mural-saude').innerText = `Mural de ${pessoa}`;
+            voltarPastasSaude(); 
+            await renderizarPastasSaude();
+        };
+
+        window.voltarPastasSaude = () => {
+            pastaAtivaSaudeId = null;
+            document.getElementById('saude-tela-postagens').classList.add('hidden');
+            document.getElementById('saude-tela-pastas').classList.remove('hidden');
+        };
+
+        // --- PASTAS (CATEGORIAS) ---
+        window.renderizarPastasSaude = async () => {
+            const data = await DB.getSaude();
+            const pastasPessoa = data.filter(p => p.pessoa === pessoaAtivaSaude);
+            const grid = document.getElementById('grid-pastas-saude');
+            grid.innerHTML = '';
+            
+            if (pastasPessoa.length === 0) {
+                grid.innerHTML = '<p class="text-muted" style="grid-column: 1/-1;">Nenhuma pasta criada. Clique em "+ Nova Categoria" para iniciar.</p>';
+                return;
+            }
+
+            pastasPessoa.forEach(pasta => {
+                const qtd = pasta.postagens ? pasta.postagens.length : 0;
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.cssText = 'display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px 16px; border: 1px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: transform 0.2s;';
+                card.onclick = () => abrirPastaSaude(pasta.id);
+                card.innerHTML = `
+                    <div style="width: 100%; display: flex; justify-content: flex-end; margin-bottom: 12px; gap: 8px;">
+                        <span style="color: #94a3b8; font-size: 1.1rem; line-height: 1;" onclick="event.stopPropagation(); abrirModalPastaSaude('${pasta.id}')" title="Editar">✏️</span>
+                        <span style="color: #ef4444; font-size: 1.1rem; line-height: 1;" onclick="event.stopPropagation(); excluirPastaSaude('${pasta.id}')" title="Excluir">✖</span>
+                    </div>
+                    <div style="font-size: 2.8rem; margin-bottom: 16px; line-height: 1;">${pasta.icone || '📁'}</div>
+                    <h4 style="margin: 0 0 12px 0; font-size: 1.1rem; color: #1e293b; font-weight: 800;">${pasta.nome}</h4>
+                    <span style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 16px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em;">${qtd} POSTAGEN(S)</span>
+                `;
+                grid.appendChild(card);
+            });
+        };
+
+        window.abrirModalPastaSaude = async (id = null) => {
+            document.getElementById('saude-pasta-id').value = id || '';
+            document.getElementById('titulo-modal-pasta-saude').innerText = id ? 'Editar Pasta' : 'Nova Pasta';
+            
+            if (id) {
+                const data = await DB.getSaude();
+                const pasta = data.find(p => p.id === id);
+                document.getElementById('saude-pasta-icone').value = pasta.icone || '';
+                document.getElementById('saude-pasta-nome').value = pasta.nome || '';
+            } else {
+                document.getElementById('saude-pasta-icone').value = '';
+                document.getElementById('saude-pasta-nome').value = '';
+            }
+            document.getElementById('modal-pasta-saude').classList.remove('hidden');
+        };
+
+        window.fecharModalPastaSaude = () => document.getElementById('modal-pasta-saude').classList.add('hidden');
+
+        window.salvarPastaSaude = async () => {
+            const id = document.getElementById('saude-pasta-id').value;
+            const icone = document.getElementById('saude-pasta-icone').value.trim() || '📁';
+            const nome = document.getElementById('saude-pasta-nome').value.trim();
+
+            if (!nome) return alert('Informe o nome da pasta.');
+
+            const data = await DB.getSaude();
+            if (id) {
+                const p = data.find(x => x.id === id);
+                if (p) { p.icone = icone; p.nome = nome; }
+            } else {
+                data.push({ id: 'pasta_' + Date.now(), pessoa: pessoaAtivaSaude, icone, nome, postagens: [] });
+            }
+
+            await DB.setSaude(data);
+            fecharModalPastaSaude();
+            await renderizarPastasSaude();
+        };
+
+        window.excluirPastaSaude = async (id) => {
+            if (!confirm('Deseja excluir esta pasta E TODAS as postagens dentro dela?')) return;
+            let data = await DB.getSaude();
+            data = data.filter(p => p.id !== id);
+            await DB.setSaude(data);
+            await renderizarPastasSaude();
+        };
+
+        // --- POSTAGENS ---
+        window.abrirPastaSaude = async (idPasta) => {
+            pastaAtivaSaudeId = idPasta;
+            const data = await DB.getSaude();
+            const pasta = data.find(p => p.id === idPasta);
+            
+            document.getElementById('titulo-pasta-saude').innerText = `${pasta.icone} ${pasta.nome}`;
+            document.getElementById('saude-tela-pastas').classList.add('hidden');
+            document.getElementById('saude-tela-postagens').classList.remove('hidden');
+            
+            renderizarPostagensSaude(pasta);
+        };
+
+        window.renderizarPostagensSaude = (pasta) => {
+            const container = document.getElementById('lista-postagens-saude');
+            container.innerHTML = '';
+
+            if (!pasta.postagens || pasta.postagens.length === 0) {
+                container.innerHTML = '<p class="text-muted">Nenhuma anotação nesta pasta.</p>';
+                return;
+            }
+
+            // Ordena postagens da mais nova (data) para a mais velha
+            const postsOrdenados = [...pasta.postagens].sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            postsOrdenados.forEach(post => {
+                // Formata YYYY-MM-DD para DD/MM/YYYY
+                let dataExibicao = post.data;
+                if (post.data && post.data.includes('-')) {
+                    const [y, m, d] = post.data.split('-');
+                    dataExibicao = `${d}/${m}/${y}`;
+                }
+
+                const card = document.createElement('div');
+                card.style.cssText = 'background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; position: relative;';
+                card.innerHTML = `
+                    <div style="position: absolute; top: 16px; right: 16px; display: flex; gap: 12px;">
+                        <button onclick="abrirModalPostagemSaude('${post.id}')" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--text-muted);" title="Editar">✏️</button>
+                        <button onclick="excluirPostagemSaude('${post.id}')" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--accent-danger);" title="Excluir">✖</button>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--sidebar-active); font-weight: 700; margin-bottom: 4px;">${dataExibicao}</div>
+                    <h3 style="margin: 0 0 12px 0; font-size: 1.1rem; color: var(--text-main); padding-right: 60px;">${post.titulo}</h3>
+                    
+                    <!-- O truque do CSS para limitar a 3 linhas está nesta div abaixo -->
+                    <div style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; font-size: 0.95rem; color: var(--text-muted); line-height: 1.5;">${post.conteudo}</div>
+                    
+                    <button onclick="abrirModalVisualizarPostagemSaude('${post.id}')" class="btn-secondary" style="margin-top: 16px; padding: 6px 12px; font-size: 0.85rem; border: none; background: #e2e8f0; font-weight: 600; width: 100%;">Ler postagem completa ➔</button>
+                `;
+                container.appendChild(card);
+            });
+        };
+
+        window.abrirModalPostagemSaude = async (idPost = null) => {
+            document.getElementById('saude-post-id').value = idPost || '';
+            document.getElementById('titulo-modal-postagem-saude').innerText = idPost ? 'Editar Postagem' : 'Nova Postagem';
+            
+            if (idPost) {
+                const data = await DB.getSaude();
+                const pasta = data.find(p => p.id === pastaAtivaSaudeId);
+                const post = pasta.postagens.find(p => p.id === idPost);
+                
+                document.getElementById('saude-post-titulo').value = post.titulo;
+                document.getElementById('saude-post-data').value = post.data;
+                document.getElementById('saude-post-texto').innerHTML = post.conteudo;
+            } else {
+                document.getElementById('saude-post-titulo').value = '';
+                document.getElementById('saude-post-data').value = new Date().toISOString().split('T')[0];
+                document.getElementById('saude-post-texto').innerHTML = '';
+            }
+            document.getElementById('modal-postagem-saude').classList.remove('hidden');
+        };
+
+        window.fecharModalPostagemSaude = () => document.getElementById('modal-postagem-saude').classList.add('hidden');
+
+        window.abrirModalVisualizarPostagemSaude = async (idPost) => {
+            const data = await DB.getSaude();
+            const pasta = data.find(p => p.id === pastaAtivaSaudeId);
+            const post = pasta.postagens.find(p => p.id === idPost);
+
+            if (post) {
+                let dataExibicao = post.data;
+                if (post.data && post.data.includes('-')) {
+                    const [y, m, d] = post.data.split('-');
+                    dataExibicao = `${d}/${m}/${y}`;
+                }
+
+                document.getElementById('visualizar-post-data').innerText = dataExibicao;
+                document.getElementById('visualizar-post-titulo').innerText = post.titulo;
+                document.getElementById('visualizar-post-texto').innerHTML = post.conteudo;
+                
+                document.getElementById('modal-visualizar-postagem-saude').classList.remove('hidden');
+            }
+        };
+
+        window.fecharModalVisualizarPostagemSaude = () => {
+            document.getElementById('modal-visualizar-postagem-saude').classList.add('hidden');
+        };
+
+        window.salvarPostagemSaude = async () => {
+            const idPost = document.getElementById('saude-post-id').value;
+            const titulo = document.getElementById('saude-post-titulo').value.trim();
+            const dataStr = document.getElementById('saude-post-data').value;
+            const conteudo = document.getElementById('saude-post-texto').innerHTML.trim();
+
+            if (!titulo || !dataStr) return alert('Preencha título e data.');
+
+            const data = await DB.getSaude();
+            const pastaIdx = data.findIndex(p => p.id === pastaAtivaSaudeId);
+            
+            if (pastaIdx === -1) return;
+            if (!data[pastaIdx].postagens) data[pastaIdx].postagens = [];
+
+            if (idPost) {
+                const postIdx = data[pastaIdx].postagens.findIndex(p => p.id === idPost);
+                if (postIdx !== -1) {
+                    data[pastaIdx].postagens[postIdx] = { id: idPost, titulo, data: dataStr, conteudo };
+                }
+            } else {
+                data[pastaIdx].postagens.push({ id: 'post_' + Date.now(), titulo, data: dataStr, conteudo });
+            }
+
+            await DB.setSaude(data);
+            fecharModalPostagemSaude();
+            abrirPastaSaude(pastaAtivaSaudeId); // Atualiza a tela de posts que já está aberta
+        };
+
+        window.excluirPostagemSaude = async (idPost) => {
+            if (!confirm('Deseja excluir esta postagem?')) return;
+            const data = await DB.getSaude();
+            const pastaIdx = data.findIndex(p => p.id === pastaAtivaSaudeId);
+            if (pastaIdx !== -1) {
+                data[pastaIdx].postagens = data[pastaIdx].postagens.filter(p => p.id !== idPost);
+                await DB.setSaude(data);
+                abrirPastaSaude(pastaAtivaSaudeId);
             }
         };
 
