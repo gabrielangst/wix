@@ -192,6 +192,32 @@
         
         .btn-limpar-desenho { width: auto; padding: 10px 30px; font-size: 20px; background-color: #FF9800; box-shadow: 0 5px 0 #E65100; margin-top: 15px; margin-bottom: 30px; cursor: pointer; user-select: none; touch-action: none; border: none; border-radius: 20px; color: white; font-weight: bold; }
         .btn-limpar-desenho:active { transform: translateY(5px); box-shadow: 0 0 0 #E65100; }
+
+        /* ================= ESTÚDIO DE MODA ================= */
+        #tela-vestir-game { justify-content: flex-start; padding-top: 60px; box-sizing: border-box; background-color: #FFF3E0; }
+        
+        #layout-vestir { display: flex; flex-direction: row; width: 95%; max-width: 900px; height: 75vh; background: white; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.15); border: 4px solid #FFCA28; overflow: hidden; }
+        @media (max-width: 768px) { #layout-vestir { flex-direction: column; } }
+        
+        /* Área Esquerda: A Boneca */
+        #area-boneca { flex: 0 0 35%; min-width: 260px; position: relative; background: #E1F5FE; display: flex; justify-content: center; align-items: center; border-right: 4px solid #FFCA28; padding: 15px; box-sizing: border-box; }
+        @media (max-width: 768px) { #area-boneca { flex: 0 0 auto; width: 100%; border-right: none; border-bottom: 4px solid #FFCA28; min-height: 45vh; } }
+        
+        #boneca-container { position: relative; height: 95%; max-height: 65vh; aspect-ratio: 1/2; }
+        .camada-vestir { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .camada-vestir svg, .camada-vestir img { width: 100%; height: 100%; object-fit: contain; }
+        
+        /* Área Direita: O Menu de Roupas */
+        #menu-guarda-roupa { flex: 1; min-width: 0; display: flex; flex-direction: column; background: #FAFAFA; }
+        #abas-categorias { display: flex; overflow-x: auto; background: #FFD54F; padding: 10px; gap: 10px; }
+        .aba-btn { padding: 10px 15px; font-size: 20px; background: white; border: 3px solid #FFB300; border-radius: 15px; cursor: pointer; white-space: nowrap; font-weight: bold; color: #555; touch-action: none; user-select: none; transition: transform 0.1s; }
+        .aba-btn:active { transform: scale(0.9); }
+        .aba-btn.ativa { background: #FF4081; color: white; border-color: #C2185B; }
+        
+        #grid-roupas { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 15px; padding: 15px; overflow-y: auto; align-content: flex-start; }
+        .item-roupa { background: white; border: 3px solid #eee; border-radius: 15px; aspect-ratio: 1; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); touch-action: none; transition: transform 0.1s; position: relative; }
+        .item-roupa:active { transform: scale(0.9); }
+        .item-roupa svg, .item-roupa img { width: 80%; height: 80%; object-fit: contain; pointer-events: none; }
         
     </style>
 </head>
@@ -212,7 +238,7 @@
 
     <!-- MENU PRINCIPAL -->
     <div id="tela-menu" class="screen active">
-        <h1>Bela Play 1.5.1 🌟</h1>
+        <h1>Bela Play 1.5.2 🌟</h1>
         <div class="main-menu-grid">
             <button class="menu-btn btn-main btn-cooklab" onclick="navegar('tela-cooklab')">🍳 CookLab</button>
             <button class="menu-btn btn-main btn-nomes" onclick="navegar('tela-nomes-menu')">🔤 Formando Nomes</button>
@@ -221,6 +247,7 @@
             <button class="menu-btn btn-main btn-labirinto" onclick="iniciarLabirinto()">🧭 Labirinto</button>
             <button class="menu-btn btn-main" style="background-color: #3F51B5; box-shadow: 0 8px 0 #303F9F;" onclick="iniciarMemoria()">🧠 Jogo da Memória</button>
             <button class="menu-btn btn-main" style="background-color: #E91E63; box-shadow: 0 8px 0 #C2185B;" onclick="iniciarMenuPintura()">🖍️ Pintar Desenhos</button>
+            <button class="menu-btn btn-main" style="background-color: #9C27B0; box-shadow: 0 8px 0 #7B1FA2;" onclick="iniciarVestir()">👗 Estúdio de Moda</button>
         </div>
     </div>
 
@@ -349,6 +376,49 @@
         </div>
         
         <button class="btn-limpar-desenho" onclick="limparPintura()">🗑️ Limpar Tudo</button>
+    </div>
+
+    <!-- TELA ESTÚDIO DE MODA -->
+    <div id="tela-vestir-game" class="screen">
+        <div class="btn-voltar" style="top: 20px; left: 20px; z-index: 1000;" onclick="navegar('tela-menu')">✖</div>
+        
+        <div id="layout-vestir">
+            <div id="area-boneca">
+                <div id="boneca-container">
+                    <!-- A base do corpo nunca muda -->
+                    <div class="camada-vestir" id="layer-corpo">
+                        <svg viewBox="0 0 200 400">
+                            <!-- Braços e Pernas -->
+                            <rect x="35" y="140" width="30" height="100" rx="15" fill="#FFCCBC" transform="rotate(15 50 140)" />
+                            <rect x="135" y="140" width="30" height="100" rx="15" fill="#FFCCBC" transform="rotate(-15 150 140)" />
+                            <rect x="70" y="230" width="25" height="120" rx="12" fill="#FFCCBC" />
+                            <rect x="105" y="230" width="25" height="120" rx="12" fill="#FFCCBC" />
+                            <!-- Torso e Cabeça -->
+                            <rect x="65" y="125" width="70" height="110" rx="30" fill="#FFCCBC" />
+                            <circle cx="100" cy="80" r="45" fill="#FFCCBC" />
+                        </svg>
+                    </div>
+                    
+                    <!-- As camadas sobrepostas (z-index natural pela ordem do HTML) -->
+                    <div class="camada-vestir" id="layer-olhos"></div>
+                    <div class="camada-vestir" id="layer-boca"></div>
+                    <div class="camada-vestir" id="layer-cabelo"></div>
+                    <div class="camada-vestir" id="layer-sapato"></div>
+                    <div class="camada-vestir" id="layer-calca"></div>
+                    <div class="camada-vestir" id="layer-blusa"></div>
+                    <div class="camada-vestir" id="layer-acessorio"></div>
+                </div>
+            </div>
+            
+            <div id="menu-guarda-roupa">
+                <div id="abas-categorias">
+                    <!-- Gerado via JS -->
+                </div>
+                <div id="grid-roupas">
+                    <!-- Gerado via JS -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1473,7 +1543,157 @@
 
         canvas.addEventListener('pointerdown', iniciarTraço);
         canvas.addEventListener('pointermove', desenharTraço);
-        window.addEventListener('pointerup', finalizarTraço);       
+        window.addEventListener('pointerup', finalizarTraço);     
+        
+        // ==========================================
+        // LÓGICA: ESTÚDIO DE MODA (VESTIR)
+        // ==========================================
+        
+        // Estrutura de itens. Todos os SVGs compartilham o mesmo viewBox="0 0 200 400" do corpo para se alinharem sozinhos.
+        const guardaRoupa = {
+            olhos: [
+                { id: 'o1', nome: 'Olhos Castanhos', tipo: 'svg', icone: '👁️', dado: `<svg viewBox="0 0 200 400"><circle cx="85" cy="75" r="6" fill="#5D4037"/><circle cx="115" cy="75" r="6" fill="#5D4037"/><circle cx="83" cy="73" r="2" fill="white"/><circle cx="113" cy="73" r="2" fill="white"/></svg>` },
+                { id: 'o2', nome: 'Olhos Azuis', tipo: 'svg', icone: '👀', dado: `<svg viewBox="0 0 200 400"><circle cx="85" cy="75" r="6" fill="#1976D2"/><circle cx="115" cy="75" r="6" fill="#1976D2"/><path d="M 77 65 Q 85 60 93 65" stroke="black" stroke-width="2" fill="none"/><path d="M 107 65 Q 115 60 123 65" stroke="black" stroke-width="2" fill="none"/></svg>` },
+            ],
+            boca: [
+                { id: 'b1', nome: 'Sorriso', tipo: 'svg', icone: '😊', dado: `<svg viewBox="0 0 200 400"><path d="M 90 100 Q 100 110 110 100" stroke="#D32F2F" stroke-width="3" stroke-linecap="round" fill="none"/></svg>` },
+                { id: 'b2', nome: 'Surpresa', tipo: 'svg', icone: '😮', dado: `<svg viewBox="0 0 200 400"><circle cx="100" cy="100" r="4" fill="#D32F2F"/></svg>` },
+            ],
+            cabelo: [
+                { id: 'c1', nome: 'Longo Castanho', tipo: 'svg', icone: '👧🏽', dado: `<svg viewBox="0 0 200 400"><path d="M 40 220 L 55 60 C 55 10, 145 10, 145 60 L 160 220 L 125 220 L 125 110 C 125 40, 75 40, 75 110 L 75 220 Z" fill="#5D4037"/><path d="M 55 65 Q 100 30 145 65 Q 100 55 55 65 Z" fill="#4E342E"/></svg>` },
+                { id: 'c2', nome: 'Curto Loiro', tipo: 'svg', icone: '👱‍♀️️', dado: `<svg viewBox="0 0 200 400"><path d="M 45 130 L 55 60 C 55 10, 145 10, 145 60 L 155 130 L 125 130 L 125 110 C 125 40, 75 40, 75 110 L 75 130 Z" fill="#FDD835"/><path d="M 55 65 Q 100 30 145 65 Q 100 55 55 65 Z" fill="#FBC02D"/></svg>` },
+                { id: 'c3', nome: 'Coques Ruivos', tipo: 'svg', icone: '👧🏻', dado: `<svg viewBox="0 0 200 400"><circle cx="45" cy="70" r="25" fill="#D84315"/><circle cx="155" cy="70" r="25" fill="#D84315"/><path d="M 55 75 C 55 20, 145 20, 145 75 Q 100 45 55 75 Z" fill="#BF360C"/><rect x="60" y="65" width="10" height="20" rx="5" fill="#E91E63" transform="rotate(30 65 75)"/><rect x="130" y="65" width="10" height="20" rx="5" fill="#E91E63" transform="rotate(-30 135 75)"/></svg>` },
+                { id: 'c4', nome: 'Afro Preto', tipo: 'svg', icone: '👩🏿‍🦱', dado: `<svg viewBox="0 0 200 400"><circle cx="100" cy="35" r="30" fill="#212121"/><circle cx="65" cy="45" r="25" fill="#212121"/><circle cx="135" cy="45" r="25" fill="#212121"/><circle cx="45" cy="75" r="25" fill="#212121"/><circle cx="155" cy="75" r="25" fill="#212121"/><circle cx="55" cy="110" r="25" fill="#212121"/><circle cx="145" cy="110" r="25" fill="#212121"/></svg>` },
+                { id: 'c5', nome: 'Trança Loira', tipo: 'svg', icone: '👱‍♀️', dado: `<svg viewBox="0 0 200 400"><path d="M 55 100 C 55 20, 145 20, 145 100 Q 100 45 55 100 Z" fill="#FBC02D"/><circle cx="140" cy="110" r="16" fill="#FDD835"/><circle cx="145" cy="135" r="14" fill="#FDD835"/><circle cx="140" cy="160" r="13" fill="#FDD835"/><circle cx="145" cy="185" r="12" fill="#FDD835"/><circle cx="140" cy="210" r="10" fill="#FDD835"/><rect x="132" y="222" width="16" height="6" fill="#E91E63"/><polygon points="135,228 145,228 140,245" fill="#FDD835"/></svg>` }
+            ],
+            blusa: [
+                { id: 't1', nome: 'Camiseta Rosa', tipo: 'svg', icone: '👚', dado: `<svg viewBox="0 0 200 400"><rect x="62" y="125" width="76" height="60" rx="15" fill="#E91E63"/><rect x="50" y="130" width="30" height="40" rx="10" fill="#E91E63" transform="rotate(15 50 130)"/><rect x="120" y="130" width="30" height="40" rx="10" fill="#E91E63" transform="rotate(-15 150 130)"/></svg>` },
+                { id: 't2', nome: 'Vestido Azul', tipo: 'svg', icone: '👗', dado: `<svg viewBox="0 0 200 400"><path d="M 75 125 L 125 125 L 140 230 L 60 230 Z" fill="#03A9F4"/></svg>` },
+            ],
+            calca: [
+                { id: 'p1', nome: 'Shorts Jeans', tipo: 'svg', icone: '🩳', dado: `<svg viewBox="0 0 200 400"><path d="M 62 180 L 138 180 L 135 240 L 100 220 L 65 240 Z" fill="#3F51B5"/></svg>` },
+                { id: 'p2', nome: 'Saia Verde', tipo: 'svg', icone: '👗', dado: `<svg viewBox="0 0 200 400"><path d="M 65 180 L 135 180 L 150 220 L 50 220 Z" fill="#4CAF50"/></svg>` },
+            ],
+            sapato: [
+                { id: 's1', nome: 'Tênis Vermelho', tipo: 'svg', icone: '👟', dado: `<svg viewBox="0 0 200 400"><ellipse cx="78" cy="340" rx="18" ry="12" fill="#F44336"/><ellipse cx="122" cy="340" rx="18" ry="12" fill="#F44336"/></svg>` },
+                { id: 's2', nome: 'Bota Preta', tipo: 'svg', icone: '👢', dado: `<svg viewBox="0 0 200 400"><rect x="65" y="300" width="25" height="50" rx="5" fill="#424242"/><rect x="110" y="300" width="25" height="50" rx="5" fill="#424242"/></svg>` },
+            ],
+            acessorio: [
+                { id: 'a0', nome: 'Nenhum', tipo: 'vazio', icone: '❌', dado: '' },
+                { id: 'a1', nome: 'Óculos', tipo: 'svg', icone: '👓', dado: `<svg viewBox="0 0 200 400"><rect x="70" y="65" width="25" height="15" rx="5" fill="none" stroke="#E91E63" stroke-width="3"/><rect x="105" y="65" width="25" height="15" rx="5" fill="none" stroke="#E91E63" stroke-width="3"/><line x1="95" y1="72" x2="105" y2="72" stroke="#E91E63" stroke-width="3"/></svg>` },
+                { id: 'a2', nome: 'Laço', tipo: 'svg', icone: '🎀', dado: `<svg viewBox="0 0 200 400"><polygon points="120,40 140,20 140,60" fill="#E91E63"/><polygon points="120,40 100,20 100,60" fill="#E91E63"/><circle cx="120" cy="40" r="5" fill="#F48FB1"/></svg>` },
+            ]
+        };
+
+        const categoriasVestir = [
+            { id: 'cabelo', label: 'Cabelo', cor: '#FFB300' },
+            { id: 'olhos', label: 'Olhos', cor: '#03A9F4' },
+            { id: 'boca', label: 'Boca', cor: '#F44336' },
+            { id: 'blusa', label: 'Blusas', cor: '#E91E63' },
+            { id: 'calca', label: 'Partes de Baixo', cor: '#3F51B5' },
+            { id: 'sapato', label: 'Sapatos', cor: '#4CAF50' },
+            { id: 'acessorio', label: 'Acessórios', cor: '#9C27B0' }
+        ];
+
+        let categoriaAtualVestir = 'cabelo';
+
+        function iniciarVestir() {
+            navegar('tela-vestir-game');
+            falar("Vamos escolher uma roupa bem bonita!");
+            renderizarAbasVestir();
+            carregarItensVestir(categoriaAtualVestir);
+            
+            // Vestir itens padrão ao abrir a primeira vez
+            if(document.getElementById('layer-cabelo').innerHTML === '') {
+                aplicarPeca('cabelo', guardaRoupa.cabelo[0]);
+                aplicarPeca('olhos', guardaRoupa.olhos[0]);
+                aplicarPeca('boca', guardaRoupa.boca[0]);
+                aplicarPeca('blusa', guardaRoupa.blusa[0]);
+                aplicarPeca('calca', guardaRoupa.calca[0]);
+            }
+        }
+
+        function renderizarAbasVestir() {
+            const container = document.getElementById('abas-categorias');
+            container.innerHTML = '';
+            
+            categoriasVestir.forEach(cat => {
+                const btn = document.createElement('div');
+                btn.classList.add('aba-btn');
+                btn.textContent = cat.label;
+                
+                if (cat.id === categoriaAtualVestir) {
+                    btn.classList.add('ativa');
+                    btn.style.backgroundColor = cat.cor;
+                    btn.style.borderColor = cat.cor;
+                }
+                
+                btn.addEventListener('pointerdown', () => {
+                    sndBotao.cloneNode(true).play().catch(()=>{});
+                    categoriaAtualVestir = cat.id;
+                    renderizarAbasVestir();
+                    carregarItensVestir(cat.id);
+                });
+                
+                container.appendChild(btn);
+            });
+        }
+
+        function carregarItensVestir(idCategoria) {
+            const grid = document.getElementById('grid-roupas');
+            grid.innerHTML = '';
+            
+            const itens = guardaRoupa[idCategoria] || [];
+            
+            itens.forEach(item => {
+                const card = document.createElement('div');
+                card.classList.add('item-roupa');
+                
+                // Exibe o ícone ou o próprio SVG no botão
+                if (item.tipo === 'vazio' || item.dado.includes('COLE_URL')) {
+                    card.innerHTML = `<span style="font-size: 40px;">${item.icone}</span>`;
+                } else if (item.tipo === 'svg') {
+                    // Centraliza o SVG do corpo para aparecer bonito no botão miniatura
+                    card.innerHTML = item.dado;
+                    const svgInner = card.querySelector('svg');
+                    // Removemos a caixa vazia do rosto/corpo e focamos na roupa para o botão
+                    svgInner.setAttribute('viewBox', calcularViewBoxIdeal(idCategoria)); 
+                } else {
+                    card.innerHTML = `<img src="${item.dado}">`;
+                }
+                
+                card.addEventListener('pointerdown', () => {
+                    sndDica.cloneNode(true).play().catch(()=>{});
+                    falar(item.nome);
+                    aplicarPeca(idCategoria, item);
+                });
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function aplicarPeca(camada, item) {
+            const layer = document.getElementById(`layer-${camada}`);
+            if (item.tipo === 'vazio') {
+                layer.innerHTML = '';
+            } else if (item.tipo === 'svg') {
+                layer.innerHTML = item.dado;
+            } else {
+                layer.innerHTML = `<img src="${item.dado}">`;
+            }
+        }
+
+        // Função auxiliar para dar "zoom" na peça de roupa dentro do menu quadrado
+        function calcularViewBoxIdeal(categoria) {
+            switch(categoria) {
+                case 'cabelo': return '0 0 200 200';
+                case 'olhos': case 'boca': case 'acessorio': return '50 50 100 100';
+                case 'blusa': return '40 110 120 100';
+                case 'calca': return '40 170 120 100';
+                case 'sapato': return '50 280 100 100';
+                default: return '0 0 200 400';
+            }
+        }
        
 
     </script>
