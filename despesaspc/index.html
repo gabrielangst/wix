@@ -532,7 +532,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças v. 2.0.1
+                <span>📊</span> Finanças v. 2.0.2
             </div>
             <nav>
                 <ul id="main-menu">
@@ -574,6 +574,9 @@
                     <li><button data-target="view-dividas-temp">⏱️ Dívidas Temporárias</button></li>
                     <li><button data-target="view-taxas">🏦 Taxas Bancárias</button></li>
                     <li><button data-target="view-financiamento">🏠 Novo Financiamento (Casa)</button></li>
+
+                    <li class="menu-separator"></li>
+                    <li><button data-target="view-viagens">✈️ Viagens Projetadas</button></li>
 
                     <li class="menu-separator"></li>                    
                     <li><button data-target="view-observacoes">📌 Observações Importantes</button></li>
@@ -997,6 +1000,35 @@
                         <p class="text-muted" style="margin-bottom: 16px; font-size: 0.9rem;">Restaure de um arquivo .json. <strong>Substituirá tudo na nuvem!</strong></p>
                         <input type="file" id="input-import-file" accept=".json" class="form-control" style="margin-bottom: 10px;">
                         <button class="btn-primary" style="background-color: var(--accent-danger);" onclick="importarDados()">⬆ Restaurar Backup</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: VIAGENS PROJETADAS -->
+            <section id="view-viagens" class="view-section">
+                <div class="view-header">
+                    <h1>Viagens Projetadas (Comparador)</h1>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button class="btn-secondary" onclick="exportarViagensJSON()">⬇️ Exportar JSON</button>
+                        <label class="btn-secondary" style="cursor: pointer; margin: 0; display: flex; align-items: center; justify-content: center;">
+                            ⬆️ Importar JSON
+                            <input type="file" id="import-viagens-file" accept=".json" class="hidden" onchange="importarViagensJSON(event)" style="display: none;">
+                        </label>
+                        <button class="btn-primary" onclick="addTrip()">+ Novo Destino</button>
+                    </div>
+                </div>
+                <p class="text-muted" style="margin-bottom: 24px;">Planeje, anote e encontre o melhor custo-benefício.</p>
+
+                <!-- Container dos Cards -->
+                <div id="viagens-container" class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); margin-bottom: 30px;">
+                    <!-- Renderizado via JS -->
+                </div>
+
+                <!-- Comparativo Final -->
+                <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <h3 style="margin-bottom: 16px; color: var(--text-main); font-size: 1.2rem;">🏆 Comparativo Final</h3>
+                    <div id="viagens-summary">
+                        <!-- Renderizado via JS -->
                     </div>
                 </div>
             </section>
@@ -2211,7 +2243,9 @@
             getPostIt: () => DB.get('fin_postit', { texto: '', top: '80px', left: '300px' }),
             setPostIt: (data) => DB.set('fin_postit', data),
             getSaude: () => DB.get('fin_saude', []),
-            setSaude: (data) => DB.set('fin_saude', data)
+            setSaude: (data) => DB.set('fin_saude', data),
+            getViagens: () => DB.get('fin_viagens', []),
+            setViagens: (data) => DB.set('fin_viagens', data)
         };
 
         // --- SISTEMA DE ROTEAMENTO DAS SEÇÕES ---
@@ -2262,6 +2296,7 @@
             await renderizarAlocacoes();
             await renderizarDividasTemporarias();
             await renderizarPostIt();
+            await renderizarViagens();
             abrirPainelSaude('Gabriel');
         }
 
@@ -6362,6 +6397,237 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 await DB.setSaude(data);
                 abrirPastaSaude(pastaAtivaSaudeId);
             }
+        };
+
+        // ==========================================
+        // LÓGICA DE GERENCIAMENTO DE VIAGENS PROJETADAS
+        // ==========================================
+
+        window.renderizarViagens = async () => {
+            const trips = await DB.getViagens();
+            const container = document.getElementById('viagens-container');
+            const summary = document.getElementById('viagens-summary');
+            
+            container.innerHTML = '';
+            
+            if (trips.length === 0) {
+                container.innerHTML = '<p class="text-muted" style="grid-column: 1/-1;">Nenhum destino adicionado. Importe seu JSON no botão acima ou crie um novo destino.</p>';
+                summary.innerHTML = '<p class="text-muted">Adicione destinos para ver o comparativo detalhado.</p>';
+                return;
+            }
+
+            trips.forEach(trip => {
+                // Cálculo do total
+                const total = trip.expenses.reduce((sum, exp) => sum + (Number(exp.value) || 0), 0);
+                trip._total = total; 
+                
+                let expHtml = trip.expenses.map(exp => `
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+                        <input type="text" class="table-input" style="flex: 2; padding: 6px;" value="${exp.name}" onchange="updateExpenseData('${trip.id}', '${exp.id}', 'name', this.value)" placeholder="Despesa (ex: Hotel)">
+                        <input type="number" class="table-input" style="flex: 1; padding: 6px;" value="${exp.value}" onchange="updateExpenseData('${trip.id}', '${exp.id}', 'value', this.value)" placeholder="Valor R$">
+                        <button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; width: 24px;" onclick="removeExpense('${trip.id}', '${exp.id}')" title="Remover Gasto">✖</button>
+                    </div>
+                `).join('');
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.cssText = 'display: flex; flex-direction: column; height: 100%; border-top: 5px solid var(--sidebar-active);';
+                
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 8px;">
+                        <div style="display: flex; gap: 4px;">
+                            <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.9rem; ${index === 0 ? 'opacity: 0.4; cursor: not-allowed;' : 'cursor: pointer;'}" onclick="moveTrip('${trip.id}', -1)" ${index === 0 ? 'disabled' : ''} title="Mover para esquerda">◀</button>
+                            <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.9rem; ${index === trips.length - 1 ? 'opacity: 0.4; cursor: not-allowed;' : 'cursor: pointer;'}" onclick="moveTrip('${trip.id}', 1)" ${index === trips.length - 1 ? 'disabled' : ''} title="Mover para direita">▶</button>
+                        </div>
+                        <input type="text" class="table-input" style="font-size: 1.2rem; font-weight: 800; border: none; border-bottom: 1px solid var(--border-color); padding: 4px; flex-grow: 1;" value="${trip.name}" onchange="updateTripData('${trip.id}', 'name', this.value)" placeholder="Nome do Destino">
+                        <button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0 4px;" onclick="removeTrip('${trip.id}')" title="Excluir Destino">🗑️</button>
+                    </div>
+                    
+                    <div style="flex-grow: 1; margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <h4 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">Itens de Gasto</h4>
+                        </div>
+                        ${expHtml}
+                        <button class="btn-secondary" style="width: 100%; padding: 6px; font-size: 0.85rem; margin-top: 4px; border-style: dashed;" onclick="addExpense('${trip.id}')">+ Adicionar Linha</button>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <h4 style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Anotações</h4>
+                        <textarea class="form-control" rows="3" style="resize: vertical; font-size: 0.9rem; background: #f8fafc;" onchange="updateTripData('${trip.id}', 'notes', this.value)" placeholder="Links, detalhes de voos, roteiros...">${trip.notes || ''}</textarea>
+                    </div>
+
+                    <div style="background: var(--sidebar-active); color: white; padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                        <span style="font-weight: 600; text-transform: uppercase; font-size: 0.85rem;">Custo Total Estimado</span>
+                        <strong style="font-size: 1.4rem;">R$ ${formatarReal(total)}</strong>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Atualização do Quadro Resumo (Comparativo)
+            const sortedTrips = [...trips].sort((a, b) => a._total - b._total);
+            if (sortedTrips.length === 1) {
+                summary.innerHTML = `<p style="font-size: 1.1rem; text-align: center; margin: 20px 0;">O custo para <strong style="color: var(--sidebar-active);">${sortedTrips[0].name}</strong> é de <strong style="font-size: 1.5rem;">R$ ${formatarReal(sortedTrips[0]._total)}</strong>. <br><span class="text-muted" style="font-size:0.9rem;">Adicione outro destino para habilitar a comparação.</span></p>`;
+            } else {
+                const cheapest = sortedTrips[0];
+                let html = `
+                    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch;">
+                        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 24px; border-radius: 12px; flex: 1; min-width: 250px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; align-self: flex-start; margin-bottom: 12px;">⭐ Melhor Preço Encontrado</div>
+                            <h4 style="font-size: 1.5rem; margin: 0 0 8px 0; font-weight: 700;">${cheapest.name}</h4>
+                            <div style="font-size: 2.5rem; font-weight: 900;">R$ ${formatarReal(cheapest._total)}</div>
+                        </div>
+                        <div style="flex: 2; min-width: 250px; display: flex; flex-direction: column; gap: 12px; justify-content: center;">
+                            <h4 style="color: var(--text-muted); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; margin: 0;">Demais Opções Analisadas</h4>
+                `;
+                
+                for(let i = 1; i < sortedTrips.length; i++){
+                    const diff = sortedTrips[i]._total - cheapest._total;
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; border: 1px solid var(--border-color); border-radius: 8px; background: #f8fafc;">
+                            <div>
+                                <h5 style="font-size: 1.1rem; margin: 0 0 4px 0; color: var(--text-main);">${sortedTrips[i].name}</h5>
+                                <span class="text-muted" style="font-size: 0.9rem;">Total Estimado: R$ ${formatarReal(sortedTrips[i]._total)}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <strong style="color: var(--accent-danger); font-size: 1.2rem; display: block;">+ R$ ${formatarReal(diff)}</strong>
+                            </div>
+                        </div>
+                    `;
+                }
+                html += `</div></div>`;
+                summary.innerHTML = html;
+            }
+        };
+
+        window.addTrip = async () => {
+            const trips = await DB.getViagens();
+            const baseExpenses = trips.length > 0 
+                ? trips[trips.length - 1].expenses.map(e => ({ id: 'exp_' + Date.now() + Math.random().toString(36).substring(2,6), name: e.name, value: 0 }))
+                : [ { id: 'exp_' + Date.now(), name: 'Nova Despesa', value: 0 } ];
+
+            trips.push({
+                id: 'trip_' + Date.now(),
+                name: `Novo Destino ${trips.length + 1}`,
+                notes: '',
+                expenses: baseExpenses
+            });
+            await DB.setViagens(trips);
+            await renderizarViagens();
+        };
+
+        window.removeTrip = async (id) => {
+            if(!confirm("Tem certeza que deseja excluir as estimativas desse destino permanentemente?")) return;
+            let trips = await DB.getViagens();
+            trips = trips.filter(t => t.id !== id);
+            await DB.setViagens(trips);
+            await renderizarViagens();
+        };
+
+        window.moveTrip = async (id, direction) => {
+            const trips = await DB.getViagens();
+            const index = trips.findIndex(t => t.id === id);
+            if (index < 0) return;
+
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= trips.length) return;
+
+            // Inverte a posição do item atual com o item da direção escolhida
+            const temp = trips[index];
+            trips[index] = trips[newIndex];
+            trips[newIndex] = temp;
+
+            // Salva no Firestore e re-renderiza a tela
+            await DB.setViagens(trips);
+            await renderizarViagens();
+        };
+
+        window.addExpense = async (tripId) => {
+            const trips = await DB.getViagens();
+            const trip = trips.find(t => t.id === tripId);
+            if (trip) {
+                trip.expenses.push({ id: 'exp_' + Date.now(), name: '', value: 0 });
+                await DB.setViagens(trips);
+                await renderizarViagens();
+            }
+        };
+
+        window.removeExpense = async (tripId, expId) => {
+            const trips = await DB.getViagens();
+            const trip = trips.find(t => t.id === tripId);
+            if (trip) {
+                trip.expenses = trip.expenses.filter(e => e.id !== expId);
+                await DB.setViagens(trips);
+                await renderizarViagens();
+            }
+        };
+
+        window.updateTripData = async (id, field, value) => {
+            const trips = await DB.getViagens();
+            const trip = trips.find(t => t.id === id);
+            if (trip) {
+                trip[field] = value;
+                await DB.setViagens(trips);
+                if(field === 'name') await renderizarViagens(); 
+            }
+        };
+
+        window.updateExpenseData = async (tripId, expId, field, value) => {
+            const trips = await DB.getViagens();
+            const trip = trips.find(t => t.id === tripId);
+            if (trip) {
+                const exp = trip.expenses.find(e => e.id === expId);
+                if (exp) {
+                    exp[field] = field === 'value' ? (parseFloat(value) || 0) : value;
+                    await DB.setViagens(trips);
+                    if (field === 'value') await renderizarViagens(); // Re-renderiza para atualizar os cálculos
+                }
+            }
+        };
+
+        window.importarViagensJSON = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (Array.isArray(importedData)) {
+                        const trips = importedData.map(t => ({
+                            id: t.id || ('trip_' + Math.random().toString(36).substring(2, 10)),
+                            name: t.name || 'Viagem Importada',
+                            notes: t.notes || '',
+                            expenses: Array.isArray(t.expenses) ? t.expenses : []
+                        }));
+                        await DB.setViagens(trips); // Salva na Nuvem do Finanças App
+                        await renderizarViagens();
+                        alert('Sucesso! Seus dados de viagens foram importados com sucesso para o banco.');
+                    } else {
+                        alert('Erro: O arquivo importado não é compatível.');
+                    }
+                } catch (err) {
+                    alert('Erro ao processar o arquivo JSON.');
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Limpa o estado
+        };
+
+        window.exportarViagensJSON = async () => {
+            const trips = await DB.getViagens();
+            const dataStr = JSON.stringify(trips, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `comparador-viagens-${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         };
 
     </script>
