@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -532,7 +532,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças v. 2.0.2
+                <span>📊</span> Finanças v. 2.0.3
             </div>
             <nav>
                 <ul id="main-menu">
@@ -6416,7 +6416,8 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 return;
             }
 
-            trips.forEach(trip => {
+            // CORREÇÃO: Adicionado o "index" aqui
+            trips.forEach((trip, index) => {
                 // Cálculo do total
                 const total = trip.expenses.reduce((sum, exp) => sum + (Number(exp.value) || 0), 0);
                 trip._total = total; 
