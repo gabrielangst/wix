@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -238,7 +238,7 @@
 
     <!-- MENU PRINCIPAL -->
     <div id="tela-menu" class="screen active">
-        <h1>Bela Play 1.5.2 🌟</h1>
+        <h1>Bela Play 1.5.4 🌟</h1>
         <div class="main-menu-grid">
             <button class="menu-btn btn-main btn-cooklab" onclick="navegar('tela-cooklab')">🍳 CookLab</button>
             <button class="menu-btn btn-main btn-nomes" onclick="navegar('tela-nomes-menu')">🔤 Formando Nomes</button>
@@ -1554,6 +1554,7 @@
             olhos: [
                 { id: 'o1', nome: 'Olhos Castanhos', tipo: 'svg', icone: '👁️', dado: `<svg viewBox="0 0 200 400"><circle cx="85" cy="75" r="6" fill="#5D4037"/><circle cx="115" cy="75" r="6" fill="#5D4037"/><circle cx="83" cy="73" r="2" fill="white"/><circle cx="113" cy="73" r="2" fill="white"/></svg>` },
                 { id: 'o2', nome: 'Olhos Azuis', tipo: 'svg', icone: '👀', dado: `<svg viewBox="0 0 200 400"><circle cx="85" cy="75" r="6" fill="#1976D2"/><circle cx="115" cy="75" r="6" fill="#1976D2"/><path d="M 77 65 Q 85 60 93 65" stroke="black" stroke-width="2" fill="none"/><path d="M 107 65 Q 115 60 123 65" stroke="black" stroke-width="2" fill="none"/></svg>` },
+                { id: 'o3', nome: 'Olhos Verdes', tipo: 'svg', icone: '👁️', dado: `<svg viewBox="0 0 200 400"><circle cx="85" cy="75" r="6" fill="#4CAF50"/><circle cx="115" cy="75" r="6" fill="#4CAF50"/><circle cx="83" cy="73" r="2" fill="white"/><circle cx="113" cy="73" r="2" fill="white"/></svg>` }
             ],
             boca: [
                 { id: 'b1', nome: 'Sorriso', tipo: 'svg', icone: '😊', dado: `<svg viewBox="0 0 200 400"><path d="M 90 100 Q 100 110 110 100" stroke="#D32F2F" stroke-width="3" stroke-linecap="round" fill="none"/></svg>` },
@@ -1561,14 +1562,19 @@
             ],
             cabelo: [
                 { id: 'c1', nome: 'Longo Castanho', tipo: 'svg', icone: '👧🏽', dado: `<svg viewBox="0 0 200 400"><path d="M 40 220 L 55 60 C 55 10, 145 10, 145 60 L 160 220 L 125 220 L 125 110 C 125 40, 75 40, 75 110 L 75 220 Z" fill="#5D4037"/><path d="M 55 65 Q 100 30 145 65 Q 100 55 55 65 Z" fill="#4E342E"/></svg>` },
-                { id: 'c2', nome: 'Curto Loiro', tipo: 'svg', icone: '👱‍♀️️', dado: `<svg viewBox="0 0 200 400"><path d="M 45 130 L 55 60 C 55 10, 145 10, 145 60 L 155 130 L 125 130 L 125 110 C 125 40, 75 40, 75 110 L 75 130 Z" fill="#FDD835"/><path d="M 55 65 Q 100 30 145 65 Q 100 55 55 65 Z" fill="#FBC02D"/></svg>` },
+                { id: 'c6', nome: 'Longo Loiro', tipo: 'svg', icone: '👱‍♀️', dado: `<svg viewBox="0 0 200 400"><path d="M 40 220 L 55 60 C 55 10, 145 10, 145 60 L 160 220 L 125 220 L 125 110 C 125 40, 75 40, 75 110 L 75 220 Z" fill="#FDD835"/><path d="M 55 65 Q 100 30 145 65 Q 100 55 55 65 Z" fill="#FBC02D"/></svg>` },
+                { id: 'c2', nome: 'Curto Loiro', tipo: 'svg', icone: '👱‍♀', dado: `<svg viewBox="0 0 200 400"><path d="M 45 130 L 55 60 C 55 10, 145 10, 145 60 L 155 130 L 125 130 L 125 110 C 125 40, 75 40, 75 110 L 75 130 Z" fill="#FDD835"/><path d="M 55 65 Q 100 30 145 65 Q 100 55 55 65 Z" fill="#FBC02D"/></svg>` },
                 { id: 'c3', nome: 'Coques Ruivos', tipo: 'svg', icone: '👧🏻', dado: `<svg viewBox="0 0 200 400"><circle cx="45" cy="70" r="25" fill="#D84315"/><circle cx="155" cy="70" r="25" fill="#D84315"/><path d="M 55 75 C 55 20, 145 20, 145 75 Q 100 45 55 75 Z" fill="#BF360C"/><rect x="60" y="65" width="10" height="20" rx="5" fill="#E91E63" transform="rotate(30 65 75)"/><rect x="130" y="65" width="10" height="20" rx="5" fill="#E91E63" transform="rotate(-30 135 75)"/></svg>` },
                 { id: 'c4', nome: 'Afro Preto', tipo: 'svg', icone: '👩🏿‍🦱', dado: `<svg viewBox="0 0 200 400"><circle cx="100" cy="35" r="30" fill="#212121"/><circle cx="65" cy="45" r="25" fill="#212121"/><circle cx="135" cy="45" r="25" fill="#212121"/><circle cx="45" cy="75" r="25" fill="#212121"/><circle cx="155" cy="75" r="25" fill="#212121"/><circle cx="55" cy="110" r="25" fill="#212121"/><circle cx="145" cy="110" r="25" fill="#212121"/></svg>` },
                 { id: 'c5', nome: 'Trança Loira', tipo: 'svg', icone: '👱‍♀️', dado: `<svg viewBox="0 0 200 400"><path d="M 55 100 C 55 20, 145 20, 145 100 Q 100 45 55 100 Z" fill="#FBC02D"/><circle cx="140" cy="110" r="16" fill="#FDD835"/><circle cx="145" cy="135" r="14" fill="#FDD835"/><circle cx="140" cy="160" r="13" fill="#FDD835"/><circle cx="145" cy="185" r="12" fill="#FDD835"/><circle cx="140" cy="210" r="10" fill="#FDD835"/><rect x="132" y="222" width="16" height="6" fill="#E91E63"/><polygon points="135,228 145,228 140,245" fill="#FDD835"/></svg>` }
             ],
             blusa: [
                 { id: 't1', nome: 'Camiseta Rosa', tipo: 'svg', icone: '👚', dado: `<svg viewBox="0 0 200 400"><rect x="62" y="125" width="76" height="60" rx="15" fill="#E91E63"/><rect x="50" y="130" width="30" height="40" rx="10" fill="#E91E63" transform="rotate(15 50 130)"/><rect x="120" y="130" width="30" height="40" rx="10" fill="#E91E63" transform="rotate(-15 150 130)"/></svg>` },
-                { id: 't2', nome: 'Vestido Azul', tipo: 'svg', icone: '👗', dado: `<svg viewBox="0 0 200 400"><path d="M 75 125 L 125 125 L 140 230 L 60 230 Z" fill="#03A9F4"/></svg>` },
+                { id: 't2', nome: 'Vestido Azul', tipo: 'svg', icone: '👗', dado: `<svg viewBox="0 0 200 400"><path d="M 60 125 L 140 125 L 155 250 C 155 260, 45 260, 45 250 Z" fill="#03A9F4"/><rect x="65" y="115" width="15" height="15" fill="#03A9F4"/><rect x="120" y="115" width="15" height="15" fill="#03A9F4"/></svg>` },
+                { id: 't3', nome: 'Vestido Rosa', tipo: 'svg', icone: '👗', dado: `<svg viewBox="0 0 200 400"><path d="M 60 125 L 140 125 L 155 250 C 155 260, 45 260, 45 250 Z" fill="#E91E63"/><rect x="65" y="115" width="15" height="15" fill="#E91E63"/><rect x="120" y="115" width="15" height="15" fill="#E91E63"/></svg>` },
+                { id: 't4', nome: 'Vestido Roxo', tipo: 'svg', icone: '👗', dado: `<svg viewBox="0 0 200 400"><path d="M 60 125 L 140 125 L 155 250 C 155 260, 45 260, 45 250 Z" fill="#9C27B0"/><rect x="65" y="115" width="15" height="15" fill="#9C27B0"/><rect x="120" y="115" width="15" height="15" fill="#9C27B0"/></svg>` },
+                { id: 't5', nome: 'Vestido Verde', tipo: 'svg', icone: '👗', dado: `<svg viewBox="0 0 200 400"><path d="M 60 125 L 140 125 L 155 250 C 155 260, 45 260, 45 250 Z" fill="#4CAF50"/><rect x="65" y="115" width="15" height="15" fill="#4CAF50"/><rect x="120" y="115" width="15" height="15" fill="#4CAF50"/></svg>` },
+                { id: 't6', nome: 'Roupa de Banho', tipo: 'svg', icone: '🩱', dado: `<svg viewBox="0 0 200 400"><path d="M 65 130 C 65 130, 100 150, 135 130 L 135 220 C 120 240, 80 240, 65 220 Z" fill="#00BCD4"/><path d="M 75 135 L 75 110 M 125 135 L 125 110" stroke="#00BCD4" stroke-width="6" fill="none"/></svg>` },
             ],
             calca: [
                 { id: 'p1', nome: 'Shorts Jeans', tipo: 'svg', icone: '🩳', dado: `<svg viewBox="0 0 200 400"><path d="M 62 180 L 138 180 L 135 240 L 100 220 L 65 240 Z" fill="#3F51B5"/></svg>` },
@@ -1576,12 +1582,14 @@
             ],
             sapato: [
                 { id: 's1', nome: 'Tênis Vermelho', tipo: 'svg', icone: '👟', dado: `<svg viewBox="0 0 200 400"><ellipse cx="78" cy="340" rx="18" ry="12" fill="#F44336"/><ellipse cx="122" cy="340" rx="18" ry="12" fill="#F44336"/></svg>` },
-                { id: 's2', nome: 'Bota Preta', tipo: 'svg', icone: '👢', dado: `<svg viewBox="0 0 200 400"><rect x="65" y="300" width="25" height="50" rx="5" fill="#424242"/><rect x="110" y="300" width="25" height="50" rx="5" fill="#424242"/></svg>` },
+                { id: 's2', nome: 'Bota Preta', tipo: 'svg', icone: '👢', dado: `<svg viewBox="0 0 200 400"><rect x="65" y="270" width="33" height="85" rx="5" fill="#424242"/><rect x="102" y="270" width="33" height="85" rx="5" fill="#424242"/><rect x="65" y="345" width="33" height="10" rx="5" fill="#212121"/><rect x="102" y="345" width="33" height="10" rx="5" fill="#212121"/></svg>` },
             ],
             acessorio: [
                 { id: 'a0', nome: 'Nenhum', tipo: 'vazio', icone: '❌', dado: '' },
-                { id: 'a1', nome: 'Óculos', tipo: 'svg', icone: '👓', dado: `<svg viewBox="0 0 200 400"><rect x="70" y="65" width="25" height="15" rx="5" fill="none" stroke="#E91E63" stroke-width="3"/><rect x="105" y="65" width="25" height="15" rx="5" fill="none" stroke="#E91E63" stroke-width="3"/><line x1="95" y1="72" x2="105" y2="72" stroke="#E91E63" stroke-width="3"/></svg>` },
+                { id: 'a1', nome: 'Óculos de Grau', tipo: 'svg', icone: '👓', dado: `<svg viewBox="0 0 200 400"><rect x="70" y="65" width="25" height="15" rx="5" fill="none" stroke="#E91E63" stroke-width="3"/><rect x="105" y="65" width="25" height="15" rx="5" fill="none" stroke="#E91E63" stroke-width="3"/><line x1="95" y1="72" x2="105" y2="72" stroke="#E91E63" stroke-width="3"/></svg>` },
+                { id: 'a4', nome: 'Óculos de Sol', tipo: 'svg', icone: '🕶️', dado: `<svg viewBox="0 0 200 400"><rect x="68" y="63" width="28" height="20" rx="5" fill="#212121"/><rect x="104" y="63" width="28" height="20" rx="5" fill="#212121"/><line x1="96" y1="73" x2="104" y2="73" stroke="#212121" stroke-width="4"/><line x1="68" y1="68" x2="60" y2="60" stroke="#212121" stroke-width="3"/><line x1="132" y1="68" x2="140" y2="60" stroke="#212121" stroke-width="3"/></svg>` },
                 { id: 'a2', nome: 'Laço', tipo: 'svg', icone: '🎀', dado: `<svg viewBox="0 0 200 400"><polygon points="120,40 140,20 140,60" fill="#E91E63"/><polygon points="120,40 100,20 100,60" fill="#E91E63"/><circle cx="120" cy="40" r="5" fill="#F48FB1"/></svg>` },
+                { id: 'a3', nome: 'Relógio Rosa', tipo: 'svg', icone: '⌚', dado: `<svg viewBox="0 0 200 400"><g transform="rotate(-15 150 140)"><rect x="132" y="195" width="36" height="12" fill="#F48FB1"/><circle cx="150" cy="201" r="9" fill="#E91E63"/><circle cx="150" cy="201" r="6" fill="white"/></g></svg>` }
             ]
         };
 
