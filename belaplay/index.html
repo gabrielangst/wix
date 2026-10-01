@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -238,7 +238,7 @@
 
     <!-- MENU PRINCIPAL -->
     <div id="tela-menu" class="screen active">
-        <h1>Bela Play 1.5.5 🌟</h1>
+        <h1>Bela Play 1.5.6 🌟</h1>
         <div class="main-menu-grid">
             <button class="menu-btn btn-main btn-cooklab" onclick="navegar('tela-cooklab')">🍳 CookLab</button>
             <button class="menu-btn btn-main btn-nomes" onclick="navegar('tela-nomes-menu')">🔤 Formando Nomes</button>
@@ -1580,10 +1580,9 @@
                 { id: 't6', nome: 'Roupa de Banho', tipo: 'svg', icone: '🩱', dado: `<svg viewBox="0 0 200 400"><path d="M 64 125 C 80 145, 120 145, 136 125 L 136 215 C 120 215, 105 235, 100 235 C 95 235, 80 215, 64 215 Z" fill="#00BCD4"/><path d="M 75 130 L 75 110 M 125 130 L 125 110" stroke="#00BCD4" stroke-width="6" fill="none"/></svg>` },
             ],
             calca: [
-                // Opção para "tirar" as calças
                 { id: 'p0', nome: 'Nenhuma', tipo: 'vazio', icone: '❌', dado: '' },
-                { id: 'p1', nome: 'Shorts Jeans', tipo: 'svg', icone: '🩳', dado: `<svg viewBox="0 0 200 400"><path d="M 62 180 L 138 180 L 135 240 L 100 220 L 65 240 Z" fill="#3F51B5"/></svg>` },
-                { id: 'p2', nome: 'Saia Verde', tipo: 'svg', icone: '👗', dado: `<svg viewBox="0 0 200 400"><path d="M 65 180 L 135 180 L 150 220 L 50 220 Z" fill="#4CAF50"/></svg>` },
+                { id: 'p1', nome: 'Shorts Jeans', tipo: 'svg', icone: '🩳', dado: `<svg viewBox="0 0 200 400"><path d="M 62 210 L 138 210 L 135 270 L 100 250 L 65 270 Z" fill="#3F51B5"/></svg>` },
+                { id: 'p2', nome: 'Saia Verde', tipo: 'svg', icone: '👗', dado: `<svg viewBox="0 0 200 400"><path d="M 65 210 L 135 210 L 150 260 L 50 260 Z" fill="#4CAF50"/></svg>` },
             ],
             sapato: [
                 { id: 's1', nome: 'Tênis Vermelho', tipo: 'svg', icone: '👟', dado: `<svg viewBox="0 0 200 400"><ellipse cx="78" cy="340" rx="18" ry="12" fill="#F44336"/><ellipse cx="122" cy="340" rx="18" ry="12" fill="#F44336"/></svg>` },
@@ -1594,7 +1593,9 @@
                 { id: 'a1', nome: 'Óculos de Grau', tipo: 'svg', icone: '👓', dado: `<svg viewBox="0 0 200 400"><rect x="70" y="65" width="25" height="15" rx="5" fill="none" stroke="#E91E63" stroke-width="3"/><rect x="105" y="65" width="25" height="15" rx="5" fill="none" stroke="#E91E63" stroke-width="3"/><line x1="95" y1="72" x2="105" y2="72" stroke="#E91E63" stroke-width="3"/></svg>` },
                 { id: 'a4', nome: 'Óculos de Sol', tipo: 'svg', icone: '🕶️', dado: `<svg viewBox="0 0 200 400"><rect x="68" y="63" width="28" height="20" rx="5" fill="#212121"/><rect x="104" y="63" width="28" height="20" rx="5" fill="#212121"/><line x1="96" y1="73" x2="104" y2="73" stroke="#212121" stroke-width="4"/><line x1="68" y1="68" x2="60" y2="60" stroke="#212121" stroke-width="3"/><line x1="132" y1="68" x2="140" y2="60" stroke="#212121" stroke-width="3"/></svg>` },
                 { id: 'a2', nome: 'Laço', tipo: 'svg', icone: '🎀', dado: `<svg viewBox="0 0 200 400"><polygon points="120,40 140,20 140,60" fill="#E91E63"/><polygon points="120,40 100,20 100,60" fill="#E91E63"/><circle cx="120" cy="40" r="5" fill="#F48FB1"/></svg>` },
-                { id: 'a3', nome: 'Relógio Rosa', tipo: 'svg', icone: '⌚', dado: `<svg viewBox="0 0 200 400"><g transform="rotate(-15 150 140)"><rect x="132" y="195" width="36" height="12" fill="#F48FB1"/><circle cx="150" cy="201" r="9" fill="#E91E63"/><circle cx="150" cy="201" r="6" fill="white"/></g></svg>` }
+                { id: 'a3', nome: 'Relógio Rosa', tipo: 'svg', icone: '⌚', dado: `<svg viewBox="0 0 200 400"><g transform="rotate(-15 150 140)"><rect x="132" y="195" width="36" height="12" fill="#F48FB1"/><circle cx="150" cy="201" r="9" fill="#E91E63"/><circle cx="150" cy="201" r="6" fill="white"/></g></svg>` },
+                // O novo ursinho de pelúcia com gravatinha borboleta!
+                { id: 'a5', nome: 'Ursinho', tipo: 'svg', icone: '🧸', dado: `<svg viewBox="0 0 200 400"><circle cx="140" cy="180" r="8" fill="#8D6E63"/><circle cx="160" cy="180" r="8" fill="#8D6E63"/><ellipse cx="140" cy="235" rx="7" ry="10" fill="#8D6E63"/><ellipse cx="160" cy="235" rx="7" ry="10" fill="#8D6E63"/><ellipse cx="150" cy="220" rx="15" ry="20" fill="#8D6E63"/><ellipse cx="135" cy="210" rx="6" ry="12" fill="#8D6E63" transform="rotate(-30 135 210)"/><ellipse cx="165" cy="210" rx="6" ry="12" fill="#8D6E63" transform="rotate(30 165 210)"/><circle cx="150" cy="195" r="14" fill="#8D6E63"/><circle cx="146" cy="192" r="2" fill="black"/><circle cx="154" cy="192" r="2" fill="black"/><circle cx="150" cy="198" r="3" fill="#3E2723"/><polygon points="150,206 145,211 145,201" fill="#E91E63"/><polygon points="150,206 155,211 155,201" fill="#E91E63"/></svg>` }
             ]
         };
 
@@ -1687,12 +1688,46 @@
 
         function aplicarPeca(camada, item) {
             const layer = document.getElementById(`layer-${camada}`);
-            if (item.tipo === 'vazio') {
-                layer.innerHTML = '';
-            } else if (item.tipo === 'svg') {
-                layer.innerHTML = item.dado;
-            } else {
-                layer.innerHTML = `<img src="${item.dado}">`;
+            
+            // Lógica especial só para os acessórios (permite acumular vários)
+            if (camada === 'acessorio') {
+                if (item.tipo === 'vazio') {
+                    layer.innerHTML = ''; // Se clicou no ❌, limpa todos
+                } else {
+                    // Verifica se esse acessório específico já está na boneca
+                    const acessorioExistente = document.getElementById(`acc-${item.id}`);
+                    
+                    if (acessorioExistente) {
+                        // Se já tem, clicar de novo funciona como um botão de "Tirar"
+                        acessorioExistente.remove();
+                    } else {
+                        // Se não tem, cria uma nova camada invisível por cima dos outros e adiciona ele
+                        const divItem = document.createElement('div');
+                        divItem.id = `acc-${item.id}`;
+                        divItem.style.position = 'absolute';
+                        divItem.style.width = '100%';
+                        divItem.style.height = '100%';
+                        divItem.style.pointerEvents = 'none';
+                        
+                        if (item.tipo === 'svg') {
+                            divItem.innerHTML = item.dado;
+                        } else {
+                            divItem.innerHTML = `<img src="${item.dado}" style="width:100%; height:100%; object-fit:contain;">`;
+                        }
+                        
+                        layer.appendChild(divItem);
+                    }
+                }
+            } 
+            // Lógica normal para roupas (uma blusa substitui a outra)
+            else {
+                if (item.tipo === 'vazio') {
+                    layer.innerHTML = '';
+                } else if (item.tipo === 'svg') {
+                    layer.innerHTML = item.dado;
+                } else {
+                    layer.innerHTML = `<img src="${item.dado}">`;
+                }
             }
         }
 
@@ -1702,7 +1737,7 @@
                 case 'cabelo': return '0 0 200 200';
                 case 'olhos': case 'boca': case 'acessorio': return '50 50 100 100';
                 case 'blusa': return '40 110 120 100';
-                case 'calca': return '40 170 120 100';
+                case 'calca': return '40 190 120 100'; // <- O enquadramento desceu aqui!
                 case 'sapato': return '50 280 100 100';
                 default: return '0 0 200 400';
             }
@@ -1710,5 +1745,5 @@
        
 
     </script>
-</body> 
+</body>
 </html>
