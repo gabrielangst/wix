@@ -209,8 +209,8 @@
         
         /* Área Direita: O Menu de Roupas */
         #menu-guarda-roupa { flex: 1; min-width: 0; display: flex; flex-direction: column; background: #FAFAFA; }
-        #abas-categorias { display: flex; overflow-x: auto; background: #FFD54F; padding: 10px; gap: 10px; }
-        .aba-btn { padding: 10px 15px; font-size: 20px; background: white; border: 3px solid #FFB300; border-radius: 15px; cursor: pointer; white-space: nowrap; font-weight: bold; color: #555; touch-action: none; user-select: none; transition: transform 0.1s; }
+        #abas-categorias { display: flex; flex-wrap: wrap; justify-content: center; background: #FFD54F; padding: 10px; gap: 10px; }
+        .aba-btn { flex: 1 1 auto; text-align: center; padding: 10px 10px; font-size: 20px; background: white; border: 3px solid #FFB300; border-radius: 15px; cursor: pointer; font-weight: bold; color: #555; touch-action: none; user-select: none; transition: transform 0.1s; }
         .aba-btn:active { transform: scale(0.9); }
         .aba-btn.ativa { background: #FF4081; color: white; border-color: #C2185B; }
         
@@ -1623,7 +1623,7 @@
                 aplicarPeca('olhos', guardaRoupa.olhos[0]);
                 aplicarPeca('boca', guardaRoupa.boca[0]);
                 aplicarPeca('blusa', guardaRoupa.blusa[0]);
-                aplicarPeca('calca', guardaRoupa.calca[0]);
+                aplicarPeca('calca', guardaRoupa.calca[1]); // MUDANÇA: alterado de [0] para [1] para puxar o shorts
             }
         }
 
