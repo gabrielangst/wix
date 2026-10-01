@@ -1670,8 +1670,8 @@
                     // Centraliza o SVG do corpo para aparecer bonito no botão miniatura
                     card.innerHTML = item.dado;
                     const svgInner = card.querySelector('svg');
-                    // Removemos a caixa vazia do rosto/corpo e focamos na roupa para o botão
-                    svgInner.setAttribute('viewBox', calcularViewBoxIdeal(idCategoria)); 
+                    // Agora enviamos também o ID do item para saber para onde apontar a câmera!
+                    svgInner.setAttribute('viewBox', calcularViewBoxIdeal(idCategoria, item.id)); 
                 } else {
                     card.innerHTML = `<img src="${item.dado}">`;
                 }
@@ -1732,12 +1732,17 @@
         }
 
         // Função auxiliar para dar "zoom" na peça de roupa dentro do menu quadrado
-        function calcularViewBoxIdeal(categoria) {
+        function calcularViewBoxIdeal(categoria, itemId) {
+            // Se for o Relógio (a3) ou Ursinho (a5), apontamos a câmera para o braço!
+            if (itemId === 'a3' || itemId === 'a5') {
+                return '110 160 80 100'; 
+            }
+            
             switch(categoria) {
                 case 'cabelo': return '0 0 200 200';
                 case 'olhos': case 'boca': case 'acessorio': return '50 50 100 100';
                 case 'blusa': return '40 110 120 100';
-                case 'calca': return '40 190 120 100'; // <- O enquadramento desceu aqui!
+                case 'calca': return '40 190 120 100';
                 case 'sapato': return '50 280 100 100';
                 default: return '0 0 200 400';
             }
