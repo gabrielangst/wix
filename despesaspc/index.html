@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -532,7 +532,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças v. 2.0.3
+                <span>📊</span> Finanças v. 2.1.0
             </div>
             <nav>
                 <ul id="main-menu">
@@ -577,6 +577,7 @@
 
                     <li class="menu-separator"></li>
                     <li><button data-target="view-viagens">✈️ Viagens Projetadas</button></li>
+                    <li><button data-target="view-viagens-controle">🎒 Viagens</button></li>
 
                     <li class="menu-separator"></li>                    
                     <li><button data-target="view-observacoes">📌 Observações Importantes</button></li>
@@ -1126,6 +1127,115 @@
                     </div>
                 </div>
         </section>
+
+        <!-- ========================================== -->
+            <!-- VIEW: VIAGENS (CONTROLE) -->
+            <!-- ========================================== -->
+            <section id="view-viagens-controle" class="view-section">
+                <!-- PAINEL LISTA DE VIAGENS -->
+                <div id="panel-lista-viagens-controle">
+                    <div class="view-header">
+                        <h1>Viagens (Controle)</h1>
+                        <button class="btn-primary" onclick="criarNovaViagemControle()">+ Nova Viagem</button>
+                    </div>
+                    <p class="text-muted" style="margin-bottom: 20px;">Controle detalhado de débitos e créditos das suas viagens.</p>
+                    <div id="grid-viagens-controle" class="card-grid"></div>
+                </div>
+
+                <!-- PAINEL DETALHE DA VIAGEM -->
+                <div id="panel-detalhe-viagem-controle" class="hidden">
+                    <div class="view-header">
+                        <div>
+                            <button class="btn-secondary" onclick="fecharDetalheViagemControle()" style="margin-bottom: 8px;">← Voltar</button>
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                <img id="img-icone-viagem" src="" style="width: 38px; height: 38px; border-radius: 8px; display: none; object-fit: cover;">
+                                <div id="emoji-icone-viagem" style="width: 38px; height: 38px; border-radius: 8px; background-color: #f1f5f9; display: flex; justify-content: center; align-items: center; font-size: 1.2rem;">🎒</div>
+                                <h1 id="txt-titulo-viagem-controle" style="margin: 0;">Nome da Viagem</h1>
+                                <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem; display: flex; align-items: center;" onclick="renomearViagemControle()">✏️ Renomear</button>
+                                <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.8rem; display: flex; align-items: center;" onclick="alterarIconeViagemControle()">🖼️ Alterar Ícone</button>
+                            </div>
+                        </div>
+                        <button class="btn-secondary text-danger" onclick="excluirViagemControle()">🗑️ Excluir Viagem</button>
+                    </div>
+
+                    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <input type="hidden" id="viagem-controle-id-atual">
+                        
+                        <!-- Topo: Saldo Total -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: #f0fdf4; padding: 16px; border-radius: 8px; border: 1px solid #bbf7d0; margin-bottom: 24px;">
+                            <span style="font-size: 1.1rem; color: var(--accent-success); font-weight: 700;">SALDO TOTAL (Créditos - Débitos):</span>
+                            <strong id="txt-saldo-total-viagem" style="font-size: 1.8rem; color: var(--accent-success);">R$ 0,00</strong>
+                        </div>
+
+                        <!-- Tabela de Créditos -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3 style="color: var(--sidebar-active); font-size: 1.2rem;">Créditos</h3>
+                            <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; font-weight: 600;" onclick="adicionarItemViagemControle('credito')">+ Incluir Crédito</button>
+                        </div>
+                        <div class="table-container" style="margin-top: 0; margin-bottom: 32px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Descrição</th>
+                                        <th>Valor (R$)</th>
+                                        <th>Situação</th>
+                                        <th>Observações</th>
+                                        <th>Total transferido até agora (R$)</th>
+                                        <th>Falta transferir (R$)</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-viagem-creditos"></tbody>
+                            </table>
+                            <div style="padding: 14px 20px; background: #f8fafc; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                                <strong style="color: var(--text-main); font-size: 1.05rem;">Total Créditos: <span id="viagem-total-creditos" style="color: var(--sidebar-active);">R$ 0,00</span></strong>
+                                <strong style="color: var(--accent-danger); font-size: 1.05rem;">Saldo do que falta transferir: <span id="viagem-saldo-transferir">R$ 0,00</span></strong>
+                            </div>
+                        </div>
+
+                        <!-- Tabela de Débitos -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3 style="color: var(--accent-danger); font-size: 1.2rem;">Débitos</h3>
+                            <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; font-weight: 600;" onclick="adicionarItemViagemControle('debito')">+ Incluir Débito</button>
+                        </div>
+                        <div class="table-container" style="margin-top: 0; margin-bottom: 32px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Descrição</th>
+                                        <th>Valor (R$)</th>
+                                        <th>Foi pago?</th>
+                                        <th>Momento</th>
+                                        <th>Observações</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-viagem-debitos"></tbody>
+                            </table>
+                            <div style="padding: 14px 20px; background: #fef2f2; border-top: 1px solid #fecaca; text-align: right;">
+                                <strong style="color: var(--accent-danger); font-size: 1.05rem;">Total Débitos: <span id="viagem-total-debitos">R$ 0,00</span></strong>
+                            </div>
+                        </div>
+
+                        <!-- Bloco de Texto Livre -->
+                        <h3 style="margin-bottom: 12px; color: var(--text-main); font-size: 1.1rem;">Anotações Gerais</h3>
+                        <div class="editor-toolbar">
+                            <button type="button" onclick="formatarTexto('bold')" title="Negrito">B</button>
+                            <button type="button" onclick="formatarTexto('underline')" title="Sublinhado" style="text-decoration: underline;">U</button>
+                            <div style="width: 1px; background: var(--border-color); height: 20px; margin: 0 4px;"></div>
+                            <button type="button" onclick="formatarTexto('foreColor', '#000000')" title="Preto" style="color: #000000; font-weight: 900;">A</button>
+                            <button type="button" onclick="formatarTexto('foreColor', '#ef4444')" title="Vermelho" style="color: #ef4444; font-weight: 900;">A</button>
+                            <button type="button" onclick="formatarTexto('foreColor', '#10b981')" title="Verde" style="color: #10b981; font-weight: 900;">A</button>
+                            <button type="button" onclick="formatarTexto('foreColor', '#3b82f6')" title="Azul" style="color: #3b82f6; font-weight: 900;">A</button>
+                        </div>
+                        <div id="texto-viagem-controle" class="editor-content" contenteditable="true" spellcheck="false" placeholder="Anote detalhes da viagem..." style="min-height: 120px; overflow-y: auto;"></div>
+                        
+                        <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+                            <button class="btn-primary" onclick="salvarAnotacoesViagemControle(this)">Salvar Anotações</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
         <!-- ========================================== -->
         <!-- VIEW: MENU DE REMUNERAÇÕES (PAINEL GERAL) - líquido, terço, 13o -->
@@ -2245,7 +2355,9 @@
             getSaude: () => DB.get('fin_saude', []),
             setSaude: (data) => DB.set('fin_saude', data),
             getViagens: () => DB.get('fin_viagens', []),
-            setViagens: (data) => DB.set('fin_viagens', data)
+            setViagens: (data) => DB.set('fin_viagens', data),
+            getViagensControle: () => DB.get('fin_viagens_controle', []),
+            setViagensControle: (data) => DB.set('fin_viagens_controle', data)
         };
 
         // --- SISTEMA DE ROTEAMENTO DAS SEÇÕES ---
@@ -2297,6 +2409,7 @@
             await renderizarDividasTemporarias();
             await renderizarPostIt();
             await renderizarViagens();
+            await renderizarViagensControle();
             abrirPainelSaude('Gabriel');
         }
 
@@ -6554,6 +6667,8 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
         };
 
         window.removeExpense = async (tripId, expId) => {
+            if(!confirm("Tem certeza que deseja excluir esta despesa da estimativa? O valor total será recalculado.")) return;
+            
             const trips = await DB.getViagens();
             const trip = trips.find(t => t.id === tripId);
             if (trip) {
@@ -6629,6 +6744,258 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        };
+
+        // ==========================================
+        // LÓGICA DE VIAGENS (CONTROLE COMPLETO)
+        // ==========================================
+        
+        window.renderizarViagensControle = async () => {
+            const viagens = await DB.getViagensControle();
+            const grid = document.getElementById('grid-viagens-controle');
+            grid.innerHTML = '';
+            
+            if (viagens.length === 0) {
+                grid.innerHTML = '<p class="text-muted" style="grid-column: 1/-1;">Nenhuma viagem cadastrada. Clique em "+ Nova Viagem".</p>';
+                return;
+            }
+
+            viagens.forEach(v => {
+                const isImage = v.icone && (v.icone.startsWith('http') || v.icone.startsWith('data:image'));
+                const iconeHtml = isImage 
+                    ? `<img src="${v.icone}" style="width: 38px; height: 38px; border-radius: 8px; object-fit: cover; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">`
+                    : `<div style="width: 38px; height: 38px; border-radius: 8px; background-color: #fef2f2; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">${v.icone || '🎒'}</div>`;
+
+                let totalCreditos = (v.creditos || []).reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
+                let totalDebitos = (v.debitos || []).reduce((acc, d) => acc + (parseFloat(d.valor) || 0), 0);
+                let saldo = totalCreditos - totalDebitos;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => abrirDetalheViagemControle(v.id);
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        ${iconeHtml}
+                        <h3 style="margin: 0; font-size: 1.15rem;">${v.nome}</h3>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.95rem; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span class="text-muted">Saldo Total:</span>
+                        <strong style="color: ${saldo >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)'};">R$ ${formatarReal(saldo)}</strong>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        };
+
+        window.criarNovaViagemControle = async () => {
+            const nome = prompt("Digite o nome ou destino da Viagem:");
+            if (!nome || nome.trim() === "") return;
+            const viagens = await DB.getViagensControle();
+            viagens.push({ 
+                id: 'viag_' + Date.now(), 
+                nome: nome.trim(), 
+                icone: '✈️',
+                creditos: [],
+                debitos: [],
+                anotacoes: ''
+            });
+            await DB.setViagensControle(viagens);
+            await renderizarViagensControle();
+        };
+
+        window.abrirDetalheViagemControle = async (id) => {
+            const viagens = await DB.getViagensControle();
+            const v = viagens.find(x => x.id === id);
+            if (!v) return;
+
+            document.getElementById('txt-titulo-viagem-controle').innerText = v.nome;
+            document.getElementById('viagem-controle-id-atual').value = v.id;
+            document.getElementById('texto-viagem-controle').innerHTML = v.anotacoes || '';
+
+            const imgEl = document.getElementById('img-icone-viagem');
+            const emojiEl = document.getElementById('emoji-icone-viagem');
+            
+            if (v.icone && (v.icone.startsWith('http') || v.icone.startsWith('data:image'))) {
+                imgEl.src = v.icone;
+                imgEl.style.display = 'block';
+                emojiEl.style.display = 'none';
+            } else {
+                emojiEl.innerText = v.icone || '🎒';
+                emojiEl.style.display = 'flex';
+                imgEl.style.display = 'none';
+            }
+
+            renderizarTabelasViagemControle(v);
+
+            document.getElementById('panel-lista-viagens-controle').classList.add('hidden');
+            document.getElementById('panel-detalhe-viagem-controle').classList.remove('hidden');
+        };
+
+        window.fecharDetalheViagemControle = async () => {
+            document.getElementById('panel-detalhe-viagem-controle').classList.add('hidden');
+            document.getElementById('panel-lista-viagens-controle').classList.remove('hidden');
+            await renderizarViagensControle();
+        };
+
+        window.renomearViagemControle = async () => {
+            const id = document.getElementById('viagem-controle-id-atual').value;
+            const viagens = await DB.getViagensControle();
+            const v = viagens.find(x => x.id === id);
+            if (!v) return;
+            const novoNome = prompt("Renomear viagem para:", v.nome);
+            if (novoNome && novoNome.trim() !== "") {
+                v.nome = novoNome.trim();
+                await DB.setViagensControle(viagens);
+                document.getElementById('txt-titulo-viagem-controle').innerText = v.nome;
+                await renderizarViagensControle(); // atualiza o fundo
+            }
+        };
+
+        window.alterarIconeViagemControle = async () => {
+            const id = document.getElementById('viagem-controle-id-atual').value;
+            const viagens = await DB.getViagensControle();
+            const v = viagens.find(x => x.id === id);
+            if (!v) return;
+            const icone = prompt("Insira um Emoji (ex: 🏖️) ou o Link URL de uma imagem:");
+            if (icone !== null && icone.trim() !== "") {
+                v.icone = icone.trim();
+                await DB.setViagensControle(viagens);
+                abrirDetalheViagemControle(id); 
+            }
+        };
+
+        window.excluirViagemControle = async () => {
+            if(!confirm("CUIDADO: Tem certeza que deseja excluir esta viagem inteira? O histórico será apagado permanentemente.")) return;
+            const id = document.getElementById('viagem-controle-id-atual').value;
+            let viagens = await DB.getViagensControle();
+            viagens = viagens.filter(x => x.id !== id);
+            await DB.setViagensControle(viagens);
+            fecharDetalheViagemControle();
+        };
+
+        window.renderizarTabelasViagemControle = (v) => {
+            // == Tabela de Créditos ==
+            const tbodyCred = document.getElementById('tbody-viagem-creditos');
+            tbodyCred.innerHTML = '';
+            let totalCreditos = 0;
+            let totalFaltaTransferir = 0;
+
+            (v.creditos || []).forEach(c => {
+                const valor = parseFloat(c.valor) || 0;
+                const transferido = parseFloat(c.transferido) || 0;
+                const falta = valor - transferido;
+                
+                totalCreditos += valor;
+                totalFaltaTransferir += falta;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="text" class="table-input" value="${c.desc || ''}" placeholder="Ex: Poupança, Salário..." onchange="atualizarItemViagemControle('${v.id}', 'credito', '${c.id}', 'desc', this.value)"></td>
+                    <td><input type="number" class="table-input" value="${valor}" onchange="atualizarItemViagemControle('${v.id}', 'credito', '${c.id}', 'valor', this.value)"></td>
+                    <td><input type="text" class="table-input" value="${c.situacao || ''}" placeholder="Ex: Reservado" onchange="atualizarItemViagemControle('${v.id}', 'credito', '${c.id}', 'situacao', this.value)"></td>
+                    <td><input type="text" class="table-input" value="${c.obs || ''}" onchange="atualizarItemViagemControle('${v.id}', 'credito', '${c.id}', 'obs', this.value)"></td>
+                    <td><input type="number" class="table-input" value="${transferido}" onchange="atualizarItemViagemControle('${v.id}', 'credito', '${c.id}', 'transferido', this.value)"></td>
+                    <td style="font-weight: 600; color: ${falta > 0 ? 'var(--accent-danger)' : 'var(--text-main)'};">R$ ${formatarReal(falta)}</td>
+                    <td style="text-align:center;"><button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 1.1rem;" onclick="excluirItemViagemControle('${v.id}', 'credito', '${c.id}')" title="Remover">✖</button></td>
+                `;
+                tbodyCred.appendChild(tr);
+            });
+
+            document.getElementById('viagem-total-creditos').innerText = `R$ ${formatarReal(totalCreditos)}`;
+            document.getElementById('viagem-saldo-transferir').innerText = `R$ ${formatarReal(totalFaltaTransferir)}`;
+
+            // == Tabela de Débitos ==
+            const tbodyDeb = document.getElementById('tbody-viagem-debitos');
+            tbodyDeb.innerHTML = '';
+            let totalDebitos = 0;
+
+            (v.debitos || []).forEach(d => {
+                totalDebitos += parseFloat(d.valor) || 0;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="text" class="table-input" value="${d.desc || ''}" placeholder="Ex: Hotel, Voo..." onchange="atualizarItemViagemControle('${v.id}', 'debito', '${d.id}', 'desc', this.value)"></td>
+                    <td><input type="number" class="table-input" value="${d.valor || 0}" onchange="atualizarItemViagemControle('${v.id}', 'debito', '${d.id}', 'valor', this.value)"></td>
+                    <td>
+                        <select class="table-input" style="color: ${d.pago === 'Sim' ? 'var(--accent-success)' : 'inherit'}; font-weight: ${d.pago === 'Sim' ? 'bold' : 'normal'};" onchange="atualizarItemViagemControle('${v.id}', 'debito', '${d.id}', 'pago', this.value)">
+                            <option value="Não" ${d.pago === 'Não' ? 'selected' : ''}>Não</option>
+                            <option value="Sim" ${d.pago === 'Sim' ? 'selected' : ''}>Sim</option>
+                        </select>
+                    </td>
+                    <td><input type="text" class="table-input" value="${d.momento || ''}" placeholder="Ex: Antes da viagem, Durante" onchange="atualizarItemViagemControle('${v.id}', 'debito', '${d.id}', 'momento', this.value)"></td>
+                    <td><input type="text" class="table-input" value="${d.obs || ''}" onchange="atualizarItemViagemControle('${v.id}', 'debito', '${d.id}', 'obs', this.value)"></td>
+                    <td style="text-align:center;"><button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 1.1rem;" onclick="excluirItemViagemControle('${v.id}', 'debito', '${d.id}')" title="Remover">✖</button></td>
+                `;
+                tbodyDeb.appendChild(tr);
+            });
+            document.getElementById('viagem-total-debitos').innerText = `R$ ${formatarReal(totalDebitos)}`;
+
+            // Atualiza Saldo Total Topo
+            const saldoTotal = totalCreditos - totalDebitos;
+            const elSaldoTopo = document.getElementById('txt-saldo-total-viagem');
+            elSaldoTopo.innerText = `R$ ${formatarReal(saldoTotal)}`;
+            
+            // Controle da cor de fundo dependendo do status do saldo
+            elSaldoTopo.style.color = saldoTotal >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)';
+            elSaldoTopo.parentElement.style.backgroundColor = saldoTotal >= 0 ? '#f0fdf4' : '#fef2f2';
+            elSaldoTopo.parentElement.style.borderColor = saldoTotal >= 0 ? '#bbf7d0' : '#fecaca';
+            elSaldoTopo.previousElementSibling.style.color = saldoTotal >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)';
+        };
+
+        window.adicionarItemViagemControle = async (tipo) => {
+            const id = document.getElementById('viagem-controle-id-atual').value;
+            const viagens = await DB.getViagensControle();
+            const v = viagens.find(x => x.id === id);
+            
+            if (v) {
+                if (tipo === 'debito') {
+                    if(!v.debitos) v.debitos = [];
+                    v.debitos.push({ id: 'deb_' + Date.now(), desc: '', valor: 0, pago: 'Não', momento: '', obs: '' });
+                } else {
+                    if(!v.creditos) v.creditos = [];
+                    v.creditos.push({ id: 'cred_' + Date.now(), desc: '', valor: 0, situacao: '', obs: '', transferido: 0 });
+                }
+                await DB.setViagensControle(viagens);
+                renderizarTabelasViagemControle(v);
+            }
+        };
+
+        window.atualizarItemViagemControle = async (idViagem, tipo, idItem, campo, valor) => {
+            const viagens = await DB.getViagensControle();
+            const v = viagens.find(x => x.id === idViagem);
+            if (v) {
+                const arr = tipo === 'debito' ? v.debitos : v.creditos;
+                const item = arr.find(x => x.id === idItem);
+                if (item) {
+                    item[campo] = (campo === 'valor' || campo === 'transferido') ? (parseFloat(valor) || 0) : valor;
+                    await DB.setViagensControle(viagens);
+                    renderizarTabelasViagemControle(v); // Atualiza somas visuais de tudo
+                }
+            }
+        };
+
+        window.excluirItemViagemControle = async (idViagem, tipo, idItem) => {
+            if(!confirm("Remover esta linha? Os saldos serão recalculados automaticamente.")) return;
+            const viagens = await DB.getViagensControle();
+            const v = viagens.find(x => x.id === idViagem);
+            if (v) {
+                if (tipo === 'debito') v.debitos = v.debitos.filter(x => x.id !== idItem);
+                else v.creditos = v.creditos.filter(x => x.id !== idItem);
+                await DB.setViagensControle(viagens);
+                renderizarTabelasViagemControle(v);
+            }
+        };
+
+        window.salvarAnotacoesViagemControle = async (btnElement) => {
+            const id = document.getElementById('viagem-controle-id-atual').value;
+            const texto = document.getElementById('texto-viagem-controle').innerHTML;
+            
+            const viagens = await DB.getViagensControle();
+            const v = viagens.find(x => x.id === id);
+            if (v) {
+                v.anotacoes = texto;
+                await DB.setViagensControle(viagens);
+                animarBotaoSucesso(btnElement);
+            }
         };
 
     </script>
