@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -532,7 +532,7 @@
 
         <aside class="sidebar">
             <div class="brand">
-                <span>📊</span> Finanças v. 2.1.0
+                <span>📊</span> Finanças v. 2.1.1
             </div>
             <nav>
                 <ul id="main-menu">
@@ -1176,13 +1176,13 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Descrição</th>
-                                        <th>Valor (R$)</th>
+                                        <th style="width: 30%; min-width: 200px;">Descrição</th>
+                                        <th style="width: 15%; min-width: 120px;">Valor (R$)</th>
                                         <th>Situação</th>
                                         <th>Observações</th>
                                         <th>Total transferido até agora (R$)</th>
                                         <th>Falta transferir (R$)</th>
-                                        <th>Ações</th>
+                                        <th style="min-width: 100px; text-align: center;">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-viagem-creditos"></tbody>
@@ -1202,12 +1202,12 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Descrição</th>
-                                        <th>Valor (R$)</th>
+                                        <th style="width: 35%; min-width: 200px;">Descrição</th>
+                                        <th style="width: 15%; min-width: 120px;">Valor (R$)</th>
                                         <th>Foi pago?</th>
                                         <th>Momento</th>
                                         <th>Observações</th>
-                                        <th>Ações</th>
+                                        <th style="min-width: 100px; text-align: center;">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-viagem-debitos"></tbody>
@@ -6880,7 +6880,7 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
             let totalCreditos = 0;
             let totalFaltaTransferir = 0;
 
-            (v.creditos || []).forEach(c => {
+            (v.creditos || []).forEach((c, index) => {
                 const valor = parseFloat(c.valor) || 0;
                 const transferido = parseFloat(c.transferido) || 0;
                 const falta = valor - transferido;
@@ -6896,7 +6896,11 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                     <td><input type="text" class="table-input" value="${c.obs || ''}" onchange="atualizarItemViagemControle('${v.id}', 'credito', '${c.id}', 'obs', this.value)"></td>
                     <td><input type="number" class="table-input" value="${transferido}" onchange="atualizarItemViagemControle('${v.id}', 'credito', '${c.id}', 'transferido', this.value)"></td>
                     <td style="font-weight: 600; color: ${falta > 0 ? 'var(--accent-danger)' : 'var(--text-main)'};">R$ ${formatarReal(falta)}</td>
-                    <td style="text-align:center;"><button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 1.1rem;" onclick="excluirItemViagemControle('${v.id}', 'credito', '${c.id}')" title="Remover">✖</button></td>
+                    <td style="text-align:center; display: flex; gap: 4px; justify-content: center; align-items: center;">
+                        <button onclick="moverItemViagemControle('${v.id}', 'credito', ${index}, -1)" title="Subir" style="background: none; border: none; cursor: pointer; font-size: 1.1rem;">⬆️</button>
+                        <button onclick="moverItemViagemControle('${v.id}', 'credito', ${index}, 1)" title="Descer" style="background: none; border: none; cursor: pointer; font-size: 1.1rem;">⬇️</button>
+                        <button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; margin-left: 4px;" onclick="excluirItemViagemControle('${v.id}', 'credito', '${c.id}')" title="Remover">✖</button>
+                    </td>
                 `;
                 tbodyCred.appendChild(tr);
             });
@@ -6909,21 +6913,31 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
             tbodyDeb.innerHTML = '';
             let totalDebitos = 0;
 
-            (v.debitos || []).forEach(d => {
+            (v.debitos || []).forEach((d, index) => {
                 totalDebitos += parseFloat(d.valor) || 0;
+                
+                // Regras de cor para o Combobox "Foi Pago?"
+                const corTextoPago = d.pago === 'Sim' ? 'var(--accent-success)' : 'var(--accent-danger)';
+                const corFundoPago = d.pago === 'Sim' ? '#dcfce7' : '#fef2f2';
+                const corBordaPago = d.pago === 'Sim' ? '#bbf7d0' : '#fecaca';
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><input type="text" class="table-input" value="${d.desc || ''}" placeholder="Ex: Hotel, Voo..." onchange="atualizarItemViagemControle('${v.id}', 'debito', '${d.id}', 'desc', this.value)"></td>
                     <td><input type="number" class="table-input" value="${d.valor || 0}" onchange="atualizarItemViagemControle('${v.id}', 'debito', '${d.id}', 'valor', this.value)"></td>
                     <td>
-                        <select class="table-input" style="color: ${d.pago === 'Sim' ? 'var(--accent-success)' : 'inherit'}; font-weight: ${d.pago === 'Sim' ? 'bold' : 'normal'};" onchange="atualizarItemViagemControle('${v.id}', 'debito', '${d.id}', 'pago', this.value)">
+                        <select class="table-input" style="color: ${corTextoPago}; font-weight: bold; background-color: ${corFundoPago}; border: 1px solid ${corBordaPago}; outline: none;" onchange="atualizarItemViagemControle('${v.id}', 'debito', '${d.id}', 'pago', this.value)">
                             <option value="Não" ${d.pago === 'Não' ? 'selected' : ''}>Não</option>
                             <option value="Sim" ${d.pago === 'Sim' ? 'selected' : ''}>Sim</option>
                         </select>
                     </td>
                     <td><input type="text" class="table-input" value="${d.momento || ''}" placeholder="Ex: Antes da viagem, Durante" onchange="atualizarItemViagemControle('${v.id}', 'debito', '${d.id}', 'momento', this.value)"></td>
                     <td><input type="text" class="table-input" value="${d.obs || ''}" onchange="atualizarItemViagemControle('${v.id}', 'debito', '${d.id}', 'obs', this.value)"></td>
-                    <td style="text-align:center;"><button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 1.1rem;" onclick="excluirItemViagemControle('${v.id}', 'debito', '${d.id}')" title="Remover">✖</button></td>
+                    <td style="text-align:center; display: flex; gap: 4px; justify-content: center; align-items: center;">
+                        <button onclick="moverItemViagemControle('${v.id}', 'debito', ${index}, -1)" title="Subir" style="background: none; border: none; cursor: pointer; font-size: 1.1rem;">⬆️</button>
+                        <button onclick="moverItemViagemControle('${v.id}', 'debito', ${index}, 1)" title="Descer" style="background: none; border: none; cursor: pointer; font-size: 1.1rem;">⬇️</button>
+                        <button class="text-danger" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; margin-left: 4px;" onclick="excluirItemViagemControle('${v.id}', 'debito', '${d.id}')" title="Remover">✖</button>
+                    </td>
                 `;
                 tbodyDeb.appendChild(tr);
             });
@@ -6934,7 +6948,6 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
             const elSaldoTopo = document.getElementById('txt-saldo-total-viagem');
             elSaldoTopo.innerText = `R$ ${formatarReal(saldoTotal)}`;
             
-            // Controle da cor de fundo dependendo do status do saldo
             elSaldoTopo.style.color = saldoTotal >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)';
             elSaldoTopo.parentElement.style.backgroundColor = saldoTotal >= 0 ? '#f0fdf4' : '#fef2f2';
             elSaldoTopo.parentElement.style.borderColor = saldoTotal >= 0 ? '#bbf7d0' : '#fecaca';
@@ -6983,6 +6996,25 @@ Você tem certeza que quer excluir ela? Essa ação é irreversível`)) return; 
                 await DB.setViagensControle(viagens);
                 renderizarTabelasViagemControle(v);
             }
+        };
+
+        window.moverItemViagemControle = async (idViagem, tipo, index, direcao) => {
+            const viagens = await DB.getViagensControle();
+            const v = viagens.find(x => x.id === idViagem);
+            if (!v) return;
+
+            const arr = tipo === 'debito' ? v.debitos : v.creditos;
+            
+            // Trava se tentar subir o primeiro ou descer o último
+            if (index + direcao < 0 || index + direcao >= arr.length) return;
+
+            // Inverte a posição (swap)
+            const temp = arr[index];
+            arr[index] = arr[index + direcao];
+            arr[index + direcao] = temp;
+
+            await DB.setViagensControle(viagens);
+            renderizarTabelasViagemControle(v); // Atualiza a tela instantaneamente
         };
 
         window.salvarAnotacoesViagemControle = async (btnElement) => {
