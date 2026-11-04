@@ -1,1 +1,135 @@
-teste
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Vídeos de Viagens</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 40px;
+        }
+        h2 {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            color: #2980b9;
+            margin-top: 40px;
+        }
+        
+        .video-grid {
+            display: grid;
+            /* AQUI ESTÁ A MÁGICA: mudamos de 280px para 180px */
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px; /* Diminuí um pouco o espaço entre os cards também */
+            margin-bottom: 30px;
+        }
+        
+        .video-card {
+            background: #fff;
+            border-radius: 8px; /* Borda levemente menor */
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: #333;
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .video-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .video-title {
+            padding: 10px; /* Menos espaçamento interno */
+            font-size: 14px; /* Fonte um pouco menor */
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Viagens em Vídeo</h1>
+
+    <!-- 2026 -->
+    <h2>2026</h2>
+    <div class="video-grid">
+        <a href="https://www.youtube.com/watch?v=eDHd5j4zmd4" target="_blank" class="video-card">
+            <img src="https://img.youtube.com/vi/eDHd5j4zmd4/hqdefault.jpg" alt="Ouro Preto e Belo Horizonte">
+            <div class="video-title">Ouro Preto e Belo Horizonte</div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=Ph--Io35tU8" target="_blank" class="video-card">
+            <img src="https://img.youtube.com/vi/Ph--Io35tU8/hqdefault.jpg" alt="Disney e Estados Unidos">
+            <div class="video-title">Disney e Estados Unidos</div>
+        </a>
+    </div>
+
+    <!-- 2025 -->
+    <h2>2025</h2>
+    <div class="video-grid">
+        <a href="https://www.youtube.com/watch?v=K4tkFjO7pR8" target="_blank" class="video-card">
+            <img src="https://img.youtube.com/vi/K4tkFjO7pR8/hqdefault.jpg" alt="Goiânia">
+            <div class="video-title">Goiânia</div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=gqkP7cc9Rdg" target="_blank" class="video-card">
+            <img src="https://img.youtube.com/vi/gqkP7cc9Rdg/hqdefault.jpg" alt="Pirenópolis Artur">
+            <div class="video-title">Pirenópolis Artur</div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=2MW96hfafmY" target="_blank" class="video-card">
+            <img src="https://img.youtube.com/vi/2MW96hfafmY/hqdefault.jpg" alt="Foz do Iguaçu e São Paulo">
+            <div class="video-title">Foz do Iguaçu e São Paulo</div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=A7Cgi_wvkyk" target="_blank" class="video-card">
+            <img src="https://img.youtube.com/vi/A7Cgi_wvkyk/hqdefault.jpg" alt="Rio Quente">
+            <div class="video-title">Rio Quente</div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=Wt8LYMdEEFg" target="_blank" class="video-card">
+            <img src="https://img.youtube.com/vi/Wt8LYMdEEFg/hqdefault.jpg" alt="Pirenópolis Villa do Comendador">
+            <div class="video-title">Pirenópolis Villa do Comendador</div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=nb76QrKR50s" target="_blank" class="video-card">
+            <img src="https://img.youtube.com/vi/nb76QrKR50s/hqdefault.jpg" alt="Alto Paraíso de Goiás">
+            <div class="video-title">Alto Paraíso de Goiás</div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=OvG9uIv7dAI" target="_blank" class="video-card">
+            <img src="https://img.youtube.com/vi/OvG9uIv7dAI/hqdefault.jpg" alt="Santiago">
+            <div class="video-title">Santiago</div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=ruSueehkHpI" target="_blank" class="video-card">
+            <img src="https://img.youtube.com/vi/ruSueehkHpI/hqdefault.jpg" alt="Porto de Galinhas">
+            <div class="video-title">Porto de Galinhas</div>
+        </a>
+    </div>
+
+    <!-- 2024 -->
+    <h2>2024</h2>
+    <div class="video-grid">
+        <a href="https://www.youtube.com/watch?v=G7ulJXxlQqk" target="_blank" class="video-card">
+            <img src="https://img.youtube.com/vi/G7ulJXxlQqk/hqdefault.jpg" alt="Iberostar">
+            <div class="video-title">Bahia Iberostar</div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=CzsbUHzvOUA" target="_blank" class="video-card">
+            <img src="https://img.youtube.com/vi/CzsbUHzvOUA/hqdefault.jpg" alt="Pirenópolis Santa Bárbara">
+            <div class="video-title">Pirenópolis Santa Bárbara</div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=2TnLV8QN8Oo" target="_blank" class="video-card">
+            <img src="https://img.youtube.com/vi/2TnLV8QN8Oo/hqdefault.jpg" alt="Europa">
+            <div class="video-title">Europa</div>
+        </a>
+    </div>
+
+</body>
+</html>
