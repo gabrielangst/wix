@@ -1,1 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brasília: Guia de Viagem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .nav-item.active { border-bottom: 2px solid white; color: white; }
+        .nav-item { color: #bfdbfe; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
 
+    <!-- Header Fixo -->
+    <header class="bg-blue-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="px-4 py-4 flex justify-between items-center max-w-7xl mx-auto">
+            <a href="index.html" class="flex items-center">
+                <img src="logo_index.png" alt="Guia de Brasília" class="h-8 w-auto">
+            </a>
+        </div>
+        <div class="max-w-7xl mx-auto">
+            <nav id="menu-capitulos" class="flex flex-wrap items-center px-4 pb-3 gap-x-6 gap-y-3 no-scrollbar">
+                <!-- Injetado via JS -->
+            </nav>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-7xl mx-auto relative">
+        <!-- Cabeçalho da Seção -->
+        <div class="mb-6 flex justify-between items-center">
+            <h2 id="titulo-secao" class="text-2xl font-bold text-gray-900">Carregando...</h2>
+            
+            <!-- Botão Voltar (Oculto na visão de grade) -->
+            <button id="btn-voltar" class="hidden bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition items-center text-sm shadow-sm">
+                ← Voltar
+            </button>
+        </div>
+
+        <!-- VISÃO DE GRADE (Cards Menores) -->
+        <div id="conteudo-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div id="loader" class="col-span-full text-center text-gray-500 py-10">Conectando ao banco de dados...</div>
+        </div>
+
+        <!-- VISÃO DETALHADA (Painel Único) -->
+        <div id="detalhe-container" class="hidden bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden max-w-4xl mx-auto">
+            <!-- Injetado via JS -->
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+        import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyClUPY28pPyKv4dyhdgRLxnVpxVgBo8-Rc",
+            authDomain: "guiadebrasilia-c0a80.firebaseapp.com",
+            databaseURL: "https://guiadebrasilia-c0a80-default-rtdb.firebaseio.com",
+            projectId: "guiadebrasilia-c0a80",
+            storageBucket: "guiadebrasilia-c0a80.firebasestorage.app",
+            messagingSenderId: "515833661737",
+            appId: "1:515833661737:web:c63567a2e528dfef910f38"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const menuContainer = document.getElementById('menu-capitulos');
+        const conteudoContainer = document.getElementById('conteudo-container');
+        const detalheContainer = document.getElementById('detalhe-container');
+        const tituloSecao = document.getElementById('titulo-secao');
+        const btnVoltar = document.getElementById('btn-voltar');
+        
+        let capituloAtual = null;
+        let itensAtuais = []; // Armazena os itens do capítulo ativo para uso no detalhe
+
+        // 1. Carrega os capítulos para montar o menu
+        onValue(ref(db, 'capitulos'), (snapshot) => {
+            menuContainer.innerHTML = '';
+            const data = snapshot.val();
+            
+            if (data) {
+                const capitulos = Object.entries(data).map(([key, val]) => ({ id: key, ...val })).sort((a, b) => a.ordem - b.ordem);
+                let temSelecao = false;
+
+                capitulos.forEach((cap) => {
+                    if (cap.is_separator) {
+                        const div = document.createElement('div');
+                        div.className = "flex items-center text-blue-300 opacity-80 cursor-default select-none";
+                        div.innerHTML = `<span class="border-l-2 border-blue-400/50 h-6 mx-2"></span> <span class="text-[10px] font-bold uppercase tracking-widest ml-1">${cap.titulo || ''}</span>`;
+                        menuContainer.appendChild(div);
+                    } else {
+                        const isActive = (!capituloAtual && !temSelecao) || (capituloAtual === cap.id);
+                        if (isActive) temSelecao = true;
+
+                        const a = document.createElement('a');
+                        a.href = "#";
+                        a.className = `text-sm font-medium pb-1 nav-item transition ${isActive ? 'active' : ''}`;
+                        a.innerHTML = `<span class="mr-1">${cap.icone || ''}</span> ${cap.titulo}`;
+                        
+                        a.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                            a.classList.add('active');
+                            carregarConteudo(cap.id, cap.titulo);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        });
+
+                        menuContainer.appendChild(a);
+                    }
+                });
+
+                if (!capituloAtual && capitulos.length > 0) {
+                    const primeiroValido = capitulos.find(c => !c.is_separator);
+                    if(primeiroValido) carregarConteudo(primeiroValido.id, primeiroValido.titulo);
+                }
+            }
+        });
+
+        // 2. Carrega o conteúdo na Grade
+        function carregarConteudo(capituloId, titulo) {
+            capituloAtual = capituloId;
+            tituloSecao.textContent = titulo;
+            conteudoContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">Carregando itens...</div>';
+            
+            fecharDetalheSilencioso();
+
+            get(ref(db, `conteudo/${capituloId}`)).then((snapshot) => {
+                conteudoContainer.innerHTML = '';
+                const data = snapshot.val();
+                
+                if (data) {
+                    itensAtuais = Object.entries(data).map(([key, val]) => ({ key, ...val })).sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+                    let numeroGlobal = 1; 
+
+                    itensAtuais.forEach((item) => {
+                        if (item.is_separator) {
+                            const div = document.createElement('div');
+                            div.className = "col-span-full mt-6 mb-2 flex items-center";
+                            const titleHtml = item.titulo 
+                                ? `<h3 class="text-lg font-bold text-gray-800 uppercase tracking-widest mx-4">${item.titulo}</h3>`
+                                : '';
+                            div.innerHTML = `<div class="flex-grow border-t-2 border-gray-200"></div>${titleHtml}<div class="flex-grow border-t-2 border-gray-200"></div>`;
+                            conteudoContainer.appendChild(div);
+                        } else {
+                            const numero = numeroGlobal++;
+                            const card = document.createElement('article');
+                            
+                            // Adicionadas classes de cursor e hover shadow para feedback interativo
+                            card.className = "bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden flex flex-col h-full cursor-pointer";
+                            
+                            // Evento de clique em todo o card
+                            card.addEventListener('click', () => {
+                                window.abrirDetalhe(item.key, numero);
+                            });
+                            
+                            let tagsHTML = '';
+                            if (item.audioguia) tagsHTML += `<span class="inline-flex items-center bg-green-100 text-green-800 text-[10px] font-bold uppercase px-2 py-1 rounded mr-2 tracking-wide mb-2">🎧 Audioguia</span>`;
+                            if (item.passeio_guiado) tagsHTML += `<span class="inline-flex items-center bg-blue-100 text-blue-800 text-[10px] font-bold uppercase px-2 py-1 rounded mr-2 tracking-wide mb-2">🗣️ Passeio Guiado</span>`;
+
+                            const imgHTML = item.imagem_url 
+                                ? `<img src="${item.imagem_url}" alt="${item.titulo}" class="w-full h-48 object-cover border-b border-gray-100">` 
+                                : '';
+
+                            card.innerHTML = `
+                                ${imgHTML}
+                                <div class="p-5 flex flex-col flex-1">
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2 leading-tight flex items-start">
+                                        <span class="text-blue-600 mr-2 opacity-80 mt-0.5">${numero}.</span> 
+                                        <span>${item.titulo || ''}</span>
+                                    </h3>
+                                    
+                                    <div class="flex-1 ml-6">
+                                        ${item.descricao ? `<p class="text-gray-600 text-sm leading-relaxed whitespace-pre-line line-clamp-3">${item.descricao}</p>` : ''}
+                                    </div>
+                                    
+                                    ${ (item.funcionamento || item.valor || tagsHTML) ? `
+                                    <div class="mt-4 pt-4 border-t border-gray-100 ml-6">
+                                        ${tagsHTML ? `<div>${tagsHTML}</div>` : ''}
+                                        ${item.funcionamento ? `<div class="flex items-center text-sm text-gray-600 mt-1"><span class="mr-2 opacity-70">🕒</span> ${item.funcionamento}</div>` : ''}
+                                        ${item.valor ? `<div class="flex items-center text-sm text-gray-600 mt-1"><span class="mr-2 opacity-70">🎟️</span> ${item.valor}</div>` : ''}
+                                    </div>
+                                    ` : '' }
+                                </div>
+                            `;
+                            conteudoContainer.appendChild(card);
+                        }
+                    });
+                } else {
+                    conteudoContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10 bg-white rounded-xl border border-gray-100">Nenhum conteúdo cadastrado neste tópico ainda.</div>';
+                }
+            }).catch(error => {
+                conteudoContainer.innerHTML = `<div class="col-span-full text-red-500 text-center py-10">Erro ao carregar: ${error.message}</div>`;
+            });
+        }
+
+        // 3. Gestão da Visão Detalhada e Botão Voltar (History API)
+        window.abrirDetalhe = (itemKey, numero) => {
+            const item = itensAtuais.find(i => i.key === itemKey);
+            if (!item) return;
+
+            let tagsHTML = '';
+            if (item.audioguia) tagsHTML += `<span class="inline-flex items-center bg-green-100 text-green-800 text-xs font-bold uppercase px-3 py-1.5 rounded mr-2 tracking-wide mb-2">🎧 Audioguia</span>`;
+            if (item.passeio_guiado) tagsHTML += `<span class="inline-flex items-center bg-blue-100 text-blue-800 text-xs font-bold uppercase px-3 py-1.5 rounded mr-2 tracking-wide mb-2">🗣️ Passeio Guiado</span>`;
+
+            const imgHTML = item.imagem_url 
+                ? `<img src="${item.imagem_url}" alt="${item.titulo}" class="w-full h-64 sm:h-96 object-cover border-b border-gray-100">` 
+                : '';
+
+            detalheContainer.innerHTML = `
+                ${imgHTML}
+                <div class="p-6 sm:p-10">
+                    <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 flex items-start">
+                        <span class="text-blue-600 mr-3 opacity-80">${numero}.</span> 
+                        <span>${item.titulo || ''}</span>
+                    </h3>
+                    
+                    <div class="ml-0 sm:ml-9 space-y-6">
+                        ${item.descricao ? `<p class="text-gray-700 text-base leading-relaxed whitespace-pre-line">${item.descricao}</p>` : ''}
+                        
+                        ${item.curiosidades ? `
+                            <div class="bg-blue-50 p-5 rounded-xl border border-blue-100">
+                                <h4 class="font-bold text-blue-900 mb-2">💡 Curiosidade</h4>
+                                <p class="text-gray-700 text-sm leading-relaxed">${item.curiosidades}</p>
+                            </div>
+                        ` : ''}
+
+                        ${ (item.funcionamento || item.valor || tagsHTML) ? `
+                        <div class="pt-6 border-t border-gray-100">
+                            ${tagsHTML ? `<div class="mb-4">${tagsHTML}</div>` : ''}
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                ${item.funcionamento ? `
+                                    <div class="flex items-start text-gray-600">
+                                        <span class="mr-3 opacity-70 text-lg">🕒</span> 
+                                        <div>
+                                            <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Funcionamento</span>
+                                            <span class="text-sm font-medium">${item.funcionamento}</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                ${item.valor ? `
+                                    <div class="flex items-start text-gray-600">
+                                        <span class="mr-3 opacity-70 text-lg">🎟️</span> 
+                                        <div>
+                                            <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Ingresso / Valor</span>
+                                            <span class="text-sm font-medium">${item.valor}</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        ` : '' }
+                    </div>
+                </div>
+            `;
+
+            conteudoContainer.classList.add('hidden');
+            detalheContainer.classList.remove('hidden');
+            btnVoltar.classList.remove('hidden');
+
+            history.pushState({ modalAtivo: true, item: itemKey }, '', `#${itemKey}`);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.addEventListener('popstate', (e) => {
+            if (!e.state || !e.state.modalAtivo) {
+                fecharDetalheSilencioso();
+            }
+        });
+
+        btnVoltar.addEventListener('click', () => {
+            history.back();
+        });
+
+        function fecharDetalheSilencioso() {
+            conteudoContainer.classList.remove('hidden');
+            detalheContainer.classList.add('hidden');
+            btnVoltar.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
