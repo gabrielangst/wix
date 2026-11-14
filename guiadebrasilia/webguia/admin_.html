@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Guia de Brasília</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .topico-ativo { background-color: #eff6ff; border-left: 4px solid #2563eb; }
+        .separador { background-color: #f3f4f6; border-left: 4px solid #9ca3af; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen">
+
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen" class="flex items-center justify-center min-h-screen">
+        <div class="bg-white p-8 rounded-xl shadow-md w-full max-w-sm">
+            <h2 class="text-2xl font-bold text-center text-blue-900 mb-6">Acesso Admin</h2>
+            <form id="login-form" class="space-y-4">
+                <input type="email" id="email" placeholder="E-mail" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" required>
+                <input type="password" id="password" placeholder="Senha" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" required>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE FORMULÁRIO INDIVIDUAL -->
+    <div id="modal-form" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-xl">
+            <h2 id="form-title" class="text-xl font-bold mb-4 border-b pb-2 text-blue-900">Adicionar Item</h2>
+            <form id="content-form" class="space-y-4">
+                <input type="hidden" id="item-ordem">
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">ID Único (ex: praca_tres_poderes)</label>
+                    <input type="text" id="item-key" class="w-full border p-2 rounded text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Título do Item</label>
+                    <input type="text" id="titulo" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Caminho da Imagem (Opcional)</label>
+                    <input type="text" id="imagem-url" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="Ex: ./img/catedral.jpg">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Descrição / Texto</label>
+                    <textarea id="descricao" rows="4" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Curiosidades (Opcional)</label>
+                    <textarea id="curiosidades" rows="2" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Funcionamento</label>
+                        <input type="text" id="funcionamento" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Valor/Preço</label>
+                        <input type="text" id="valor" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4 pt-2 border-t border-gray-100 pt-4">
+                    <label class="flex items-center text-sm text-gray-700 cursor-pointer">
+                        <input type="checkbox" id="audioguia" class="mr-2 rounded text-blue-600"> Audioguia
+                    </label>
+                    <label class="flex items-center text-sm text-gray-700 cursor-pointer">
+                        <input type="checkbox" id="passeio_guiado" class="mr-2 rounded text-blue-600"> Passeio Guiado
+                    </label>
+                </div>
+
+                <div class="flex space-x-3 pt-4">
+                    <button type="button" id="btn-cancelar" class="flex-1 bg-gray-200 text-gray-800 font-bold py-2 rounded hover:bg-gray-300 transition">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-green-600 text-white font-bold py-2 rounded hover:bg-green-700 transition">Salvar Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE IMPORTAÇÃO JSON -->
+    <div id="modal-import" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl">
+            <h2 class="text-xl font-bold mb-2 border-b pb-2 text-blue-900">Importar JSON em Lote</h2>
+            <p class="text-sm text-gray-600 mb-4">Cole o JSON contendo múltiplos itens. Eles serão adicionados ao tópico selecionado atualmente.</p>
+            
+            <textarea id="json-input" class="w-full flex-1 border p-3 rounded font-mono text-xs focus:ring-2 focus:ring-blue-500 min-h-[300px]" placeholder='{"item_id": { "titulo": "...", "descricao": "..." }}'></textarea>
+            
+            <div class="flex space-x-3 pt-4 mt-4 border-t border-gray-100">
+                <button type="button" id="btn-cancelar-import" class="flex-1 bg-gray-200 text-gray-800 font-bold py-2 rounded hover:bg-gray-300 transition">Cancelar</button>
+                <button type="button" id="btn-confirmar-import" class="flex-1 bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition">Processar Importação</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAINEL DE ADMINISTRAÇÃO -->
+    <div id="admin-panel" class="hidden">
+        <header class="bg-blue-900 text-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-bold">Gestor de Conteúdo</h1>
+                <button id="logout-btn" class="bg-red-600 px-4 py-2 rounded hover:bg-red-700 font-bold text-sm transition">Sair</button>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
+            <!-- Coluna Esquerda: Tópicos -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white p-0 rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                        <h2 class="text-lg font-bold text-gray-800">Tópicos</h2>
+                        <button onclick="window.adicionarSeparadorTopico()" class="text-[10px] uppercase font-bold bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded transition">+ Divisor</button>
+                    </div>
+                    <div id="lista-capitulos" class="flex flex-col divide-y divide-gray-100">
+                        <!-- Injetado via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna Direita: Tabela de Conteúdo -->
+            <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 border-b pb-4 gap-4">
+                    <div>
+                        <h2 id="titulo-tabela" class="text-xl font-bold text-gray-800">Selecione um Tópico</h2>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="btn-abrir-import" class="hidden bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg font-bold text-xs uppercase transition shadow-sm">
+                            { } Lote JSON
+                        </button>
+                        <button id="btn-divisor-item" class="hidden bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg font-bold text-xs uppercase transition shadow-sm" onclick="window.adicionarSeparadorItem()">
+                            + Divisor
+                        </button>
+                        <button id="btn-novo-item" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition flex items-center shadow-sm">
+                            Adicionar Item
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">#</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Infos</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="4" class="px-4 py-8 text-center text-gray-500">Selecione um tópico na lista ao lado.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Script Modular do Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+        import { getDatabase, ref, onValue, set, remove, update } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyClUPY28pPyKv4dyhdgRLxnVpxVgBo8-Rc",
+            authDomain: "guiadebrasilia-c0a80.firebaseapp.com",
+            databaseURL: "https://guiadebrasilia-c0a80-default-rtdb.firebaseio.com",
+            projectId: "guiadebrasilia-c0a80",
+            storageBucket: "guiadebrasilia-c0a80.firebasestorage.app",
+            messagingSenderId: "515833661737",
+            appId: "1:515833661737:web:c63567a2e528dfef910f38"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let capitulosData = {};
+        let conteudoData = {};
+        let capituloSelecionado = null;
+        
+        const modalForm = document.getElementById('modal-form');
+        const btnNovoItem = document.getElementById('btn-novo-item');
+        const btnDivisorItem = document.getElementById('btn-divisor-item');
+        const btnAbrirImport = document.getElementById('btn-abrir-import');
+        const btnCancelar = document.getElementById('btn-cancelar');
+        const formContent = document.getElementById('content-form');
+
+        const modalImport = document.getElementById('modal-import');
+        const jsonInput = document.getElementById('json-input');
+        const btnCancelarImport = document.getElementById('btn-cancelar-import');
+        const btnConfirmarImport = document.getElementById('btn-confirmar-import');
+
+        // Autenticação
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                initAdmin();
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('admin-panel').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value)
+                .catch(err => alert("Erro: " + err.message));
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+
+        function initAdmin() {
+            onValue(ref(db, 'capitulos'), (snapshot) => {
+                capitulosData = snapshot.val() || {};
+                renderizarTopicos();
+                
+                if(!capituloSelecionado && Object.keys(capitulosData).length > 0) {
+                    const primeiro = Object.entries(capitulosData).filter(c => !c[1].is_separator).sort((a, b) => (a[1].ordem||0) - (b[1].ordem||0))[0];
+                    if(primeiro) window.selecionarTopico(primeiro[0], primeiro[1].titulo);
+                }
+            });
+
+            onValue(ref(db, 'conteudo'), (snapshot) => {
+                conteudoData = snapshot.val() || {};
+                if(capituloSelecionado) renderizarTabela();
+            });
+        }
+
+        // --- TÓPICOS E SEPARADORES DO MENU ---
+        window.adicionarSeparadorTopico = () => {
+            const titulo = prompt("Título do separador (deixe em branco se quiser apenas uma linha):");
+            if (titulo !== null) {
+                const novaOrdem = Object.values(capitulosData).length > 0 
+                    ? Math.max(...Object.values(capitulosData).map(c => c.ordem || 0)) + 1 
+                    : 1;
+                
+                const id = 'sep_cap_' + Date.now();
+                set(ref(db, `capitulos/${id}`), {
+                    titulo: titulo,
+                    is_separator: true,
+                    ordem: novaOrdem
+                });
+            }
+        };
+
+        window.excluirTopico = (key) => {
+            if (confirm("Excluir este Divisor?")) remove(ref(db, `capitulos/${key}`));
+        };
+
+        function renderizarTopicos() {
+            const container = document.getElementById('lista-capitulos');
+            container.innerHTML = '';
+            
+            const arr = Object.entries(capitulosData).sort((a, b) => (a[1].ordem||0) - (b[1].ordem||0));
+            
+            arr.forEach(([key, cap], index) => {
+                const isFirst = index === 0;
+                const isLast = index === arr.length - 1;
+                const isActive = key === capituloSelecionado;
+                
+                if (cap.is_separator) {
+                    container.innerHTML += `
+                        <div class="flex items-center justify-between p-2 separador">
+                            <div class="flex-1 text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-2">${cap.titulo || '--- DIVISOR ---'}</div>
+                            <div class="flex space-x-2">
+                                <button onclick="window.moverTopico('${key}', 'up')" class="text-gray-400 hover:text-blue-600 ${isFirst ? 'invisible' : ''}">↑</button>
+                                <button onclick="window.moverTopico('${key}', 'down')" class="text-gray-400 hover:text-blue-600 ${isLast ? 'invisible' : ''}">↓</button>
+                                <button onclick="window.excluirTopico('${key}')" class="text-red-400 hover:text-red-600 ml-1 font-bold">×</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML += `
+                        <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 transition ${isActive ? 'topico-ativo' : ''}">
+                            <div class="flex-1 flex items-center" onclick="window.selecionarTopico('${key}', '${cap.titulo}')">
+                                <span class="w-8 text-center text-lg">${cap.icone || ''}</span>
+                                <span class="font-medium text-sm ${isActive ? 'text-blue-700' : 'text-gray-700'}">${cap.titulo}</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="window.moverTopico('${key}', 'up')" class="text-gray-400 hover:text-blue-600 ${isFirst ? 'invisible' : ''}">↑</button>
+                                <button onclick="window.moverTopico('${key}', 'down')" class="text-gray-400 hover:text-blue-600 ${isLast ? 'invisible' : ''}">↓</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        window.selecionarTopico = (key, titulo) => {
+            capituloSelecionado = key;
+            document.getElementById('titulo-tabela').textContent = titulo;
+            btnNovoItem.classList.remove('hidden');
+            btnDivisorItem.classList.remove('hidden');
+            btnAbrirImport.classList.remove('hidden');
+            renderizarTopicos();
+            renderizarTabela();
+        };
+
+        window.moverTopico = (key, direcao) => {
+            const arr = Object.entries(capitulosData).sort((a, b) => (a[1].ordem||0) - (b[1].ordem||0));
+            const index = arr.findIndex(item => item[0] === key);
+            
+            if (direcao === 'up' && index > 0) {
+                const curr = arr[index];
+                const prev = arr[index - 1];
+                update(ref(db), {
+                    [`capitulos/${curr[0]}/ordem`]: prev[1].ordem || 0,
+                    [`capitulos/${prev[0]}/ordem`]: curr[1].ordem || 0
+                });
+            } else if (direcao === 'down' && index < arr.length - 1) {
+                const curr = arr[index];
+                const next = arr[index + 1];
+                update(ref(db), {
+                    [`capitulos/${curr[0]}/ordem`]: next[1].ordem || 0,
+                    [`capitulos/${next[0]}/ordem`]: curr[1].ordem || 0
+                });
+            }
+        };
+
+        // --- TABELA E ORDEM DOS ITENS ---
+        window.adicionarSeparadorItem = () => {
+            if(!capituloSelecionado) return;
+            const titulo = prompt("Título do separador (deixe em branco se quiser apenas uma linha):");
+            if (titulo !== null) {
+                const itensDoTopico = conteudoData[capituloSelecionado] || {};
+                const novaOrdem = Object.values(itensDoTopico).length > 0 
+                    ? Math.max(...Object.values(itensDoTopico).map(c => c.ordem || 0)) + 1 
+                    : 1;
+                
+                const id = 'sep_item_' + Date.now();
+                set(ref(db, `conteudo/${capituloSelecionado}/${id}`), {
+                    titulo: titulo,
+                    is_separator: true,
+                    ordem: novaOrdem
+                });
+            }
+        };
+
+        function renderizarTabela() {
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = '';
+            
+            const itensDoTopico = conteudoData[capituloSelecionado] || {};
+            const arr = Object.entries(itensDoTopico).map(([k, v], i) => ({ key: k, ordem: v.ordem ?? i, ...v })).sort((a, b) => a.ordem - b.ordem);
+
+            if (arr.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">Nenhum item cadastrado.</td></tr>`;
+                return;
+            }
+
+            let numeroGlobal = 1;
+
+            arr.forEach((item, index) => {
+                const isFirst = index === 0;
+                const isLast = index === arr.length - 1;
+                
+                const tr = document.createElement('tr');
+                
+                if (item.is_separator) {
+                    tr.className = "bg-gray-100";
+                    tr.innerHTML = `
+                        <td class="px-3 py-4 text-center"></td>
+                        <td class="px-4 py-4 text-sm font-bold text-gray-500 uppercase tracking-widest" colspan="2">
+                            --- DIVISOR: ${item.titulo || 'LINHA'} ---
+                        </td>
+                        <td class="px-4 py-4 text-sm text-right">
+                            <div class="flex justify-end items-center space-x-3">
+                                <button onclick="window.moverItem('${item.key}', 'up')" class="text-gray-400 hover:text-blue-600 ${isFirst ? 'invisible' : ''}">↑</button>
+                                <button onclick="window.moverItem('${item.key}', 'down')" class="text-gray-400 hover:text-blue-600 ${isLast ? 'invisible' : ''}">↓</button>
+                                <span class="text-gray-300">|</span>
+                                <button class="text-red-600 hover:text-red-800 font-bold uppercase text-xs" onclick="window.excluirItem('${item.key}')">Excluir</button>
+                            </div>
+                        </td>
+                    `;
+                } else {
+                    tr.className = "hover:bg-gray-50 transition";
+                    const num = numeroGlobal++;
+                    tr.innerHTML = `
+                        <td class="px-3 py-4 text-center font-bold text-gray-400 text-sm">#${num}</td>
+                        <td class="px-4 py-4 text-sm font-bold text-gray-900">
+                            <div class="flex items-center">
+                                ${item.imagem_url ? `<img src="${item.imagem_url}" class="h-8 w-8 rounded object-cover mr-3 border">` : ''}
+                                ${item.titulo}
+                            </div>
+                        </td>
+                        <td class="px-4 py-4 text-sm text-gray-500">
+                            <div class="flex items-center space-x-2">
+                                ${item.audioguia ? '<span title="Possui Audioguia">🎧</span>' : ''}
+                                ${item.passeio_guiado ? '<span title="Passeio Guiado">🗣️</span>' : ''}
+                                ${item.valor ? `<span class="bg-gray-100 border px-2 py-0.5 rounded text-xs">${item.valor}</span>` : ''}
+                            </div>
+                        </td>
+                        <td class="px-4 py-4 text-sm text-right">
+                            <div class="flex justify-end items-center space-x-3">
+                                <button onclick="window.moverItem('${item.key}', 'up')" class="text-gray-400 hover:text-blue-600 ${isFirst ? 'invisible' : ''}">↑</button>
+                                <button onclick="window.moverItem('${item.key}', 'down')" class="text-gray-400 hover:text-blue-600 ${isLast ? 'invisible' : ''}">↓</button>
+                                <span class="text-gray-300">|</span>
+                                <button class="text-blue-600 hover:text-blue-800 font-bold uppercase text-xs" onclick="window.editarItem('${item.key}')">Editar</button>
+                                <button class="text-red-600 hover:text-red-800 font-bold uppercase text-xs" onclick="window.excluirItem('${item.key}')">Excluir</button>
+                            </div>
+                        </td>
+                    `;
+                }
+                tableBody.appendChild(tr);
+            });
+        }
+
+        window.moverItem = (itemKey, direcao) => {
+            const itensDoTopico = conteudoData[capituloSelecionado] || {};
+            const arr = Object.entries(itensDoTopico).map(([k, v], i) => ({ key: k, ordem: v.ordem ?? i, ...v })).sort((a, b) => a.ordem - b.ordem);
+            const index = arr.findIndex(item => item.key === itemKey);
+            
+            if (direcao === 'up' && index > 0) {
+                const curr = arr[index];
+                const prev = arr[index - 1];
+                update(ref(db), {
+                    [`conteudo/${capituloSelecionado}/${curr.key}/ordem`]: prev.ordem,
+                    [`conteudo/${capituloSelecionado}/${prev.key}/ordem`]: curr.ordem
+                });
+            } else if (direcao === 'down' && index < arr.length - 1) {
+                const curr = arr[index];
+                const next = arr[index + 1];
+                update(ref(db), {
+                    [`conteudo/${capituloSelecionado}/${curr.key}/ordem`]: next.ordem,
+                    [`conteudo/${capituloSelecionado}/${next.key}/ordem`]: curr.ordem
+                });
+            }
+        };
+
+        // --- IMPORTAÇÃO JSON LOTE ---
+        btnAbrirImport.addEventListener('click', () => {
+            modalImport.classList.remove('hidden');
+            modalImport.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            jsonInput.value = '';
+        });
+
+        btnCancelarImport.addEventListener('click', () => {
+            modalImport.classList.add('hidden');
+            modalImport.classList.remove('flex');
+            document.body.style.overflow = '';
+        });
+
+        btnConfirmarImport.addEventListener('click', () => {
+            try {
+                const parsed = JSON.parse(jsonInput.value);
+                if(typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error("O JSON deve ser um objeto contendo chaves.");
+                
+                btnConfirmarImport.textContent = "Processando...";
+                btnConfirmarImport.disabled = true;
+
+                const itensDoTopico = conteudoData[capituloSelecionado] || {};
+                let maxOrdem = Object.values(itensDoTopico).length > 0 
+                    ? Math.max(...Object.values(itensDoTopico).map(i => i.ordem || 0)) 
+                    : 0;
+
+                const updates = {};
+                for (const [key, item] of Object.entries(parsed)) {
+                    maxOrdem++;
+                    item.ordem = maxOrdem;
+                    // Garante booleanos para segurança
+                    item.audioguia = item.audioguia === true;
+                    item.passeio_guiado = item.passeio_guiado === true;
+                    item.is_separator = item.is_separator === true;
+                    
+                    updates[`conteudo/${capituloSelecionado}/${key}`] = item;
+                }
+
+                update(ref(db), updates).then(() => {
+                    modalImport.classList.add('hidden');
+                    modalImport.classList.remove('flex');
+                    document.body.style.overflow = '';
+                    btnConfirmarImport.textContent = "Processar Importação";
+                    btnConfirmarImport.disabled = false;
+                    alert(`${Object.keys(parsed).length} itens importados com sucesso!`);
+                }).catch(err => {
+                    alert("Erro ao gravar no banco: " + err.message);
+                    btnConfirmarImport.textContent = "Processar Importação";
+                    btnConfirmarImport.disabled = false;
+                });
+                
+            } catch (e) {
+                alert("JSON Inválido. Verifique as aspas e vírgulas.\nDetalhe: " + e.message);
+            }
+        });
+
+        // --- CRUD MODAL (INDIVIDUAL) ---
+        function abrirModal(isEdit = false) {
+            modalForm.classList.remove('hidden');
+            modalForm.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            document.getElementById('form-title').textContent = isEdit ? "Editando Item" : "Adicionar Novo Item";
+        }
+
+        function fecharModal() {
+            modalForm.classList.add('hidden');
+            modalForm.classList.remove('flex');
+            document.body.style.overflow = '';
+            formContent.reset();
+            document.getElementById('item-key').disabled = false;
+        }
+
+        btnNovoItem.addEventListener('click', () => {
+            const itensDoTopico = conteudoData[capituloSelecionado] || {};
+            const ultimaOrdem = Object.values(itensDoTopico).length > 0 
+                ? Math.max(...Object.values(itensDoTopico).map(i => i.ordem || 0)) 
+                : 0;
+            document.getElementById('item-ordem').value = ultimaOrdem + 1;
+            abrirModal(false);
+        });
+        
+        btnCancelar.addEventListener('click', fecharModal);
+
+        formContent.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const itemKey = document.getElementById('item-key').value;
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = "Salvando...";
+
+            const data = {
+                titulo: document.getElementById('titulo').value,
+                descricao: document.getElementById('descricao').value,
+                curiosidades: document.getElementById('curiosidades').value,
+                funcionamento: document.getElementById('funcionamento').value,
+                valor: document.getElementById('valor').value,
+                imagem_url: document.getElementById('imagem-url').value,
+                audioguia: document.getElementById('audioguia').checked,
+                passeio_guiado: document.getElementById('passeio_guiado').checked,
+                ordem: parseInt(document.getElementById('item-ordem').value || 0),
+                is_separator: false
+            };
+
+            set(ref(db, `conteudo/${capituloSelecionado}/${itemKey}`), data).then(() => {
+                fecharModal();
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = "Salvar Item";
+            });
+        });
+
+        window.editarItem = (itemKey) => {
+            const item = conteudoData[capituloSelecionado][itemKey];
+            document.getElementById('item-key').value = itemKey;
+            document.getElementById('item-key').disabled = true;
+            document.getElementById('item-ordem').value = item.ordem ?? 0;
+            
+            document.getElementById('titulo').value = item.titulo || '';
+            document.getElementById('descricao').value = item.descricao || '';
+            document.getElementById('curiosidades').value = item.curiosidades || '';
+            document.getElementById('funcionamento').value = item.funcionamento || '';
+            document.getElementById('valor').value = item.valor || '';
+            document.getElementById('imagem-url').value = item.imagem_url || '';
+            document.getElementById('audioguia').checked = item.audioguia || false;
+            document.getElementById('passeio_guiado').checked = item.passeio_guiado || false;
+            
+            abrirModal(true);
+        };
+
+        window.excluirItem = (itemKey) => {
+            if(confirm("Deseja realmente excluir este item permanentemente?")) {
+                remove(ref(db, `conteudo/${capituloSelecionado}/${itemKey}`));
+            }
+        };
+    </script>
+</body>
+</html>
