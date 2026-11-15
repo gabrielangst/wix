@@ -7,15 +7,22 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon { display: none !important; }
-        body { top: 0px !important; }
-        #goog-gt-tt { display: none !important; }
+        /* Oculta os balões nativos de hover do Google Tradutor para não sujar a tela */
+        .goog-tooltip { display: none !important; }
+        .goog-tooltip:hover { display: none !important; }
+        .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
+        
+        /* 
+           Garante que, quando a pessoa rolar a página para baixo, 
+           o cabeçalho grude 40px abaixo do topo (exatamente sob a barra do Google) 
+        */
+        html.translated-ltr header, html.translated-rtl header { top: 40px !important; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <!-- Header com Logo Centralizada e Idioma Flutuante na Direita -->
-    <header class="bg-blue-900 shadow-md py-4 px-4 sm:px-8 relative z-50">
+    <!-- Header: A classe "sticky top-0" foi adicionada aqui para corrigir a sobreposição -->
+    <header class="bg-blue-900 shadow-md py-4 px-4 sm:px-8 sticky top-0 z-50 transition-all duration-300">
         <div class="max-w-5xl mx-auto flex items-center justify-center relative min-h-[40px]">
             
             <a href="index.html" class="flex justify-center z-10">
@@ -93,13 +100,11 @@
                                 
                                 <!-- Link para a versão em Português -->
                                 <a href="https://clubedeautores.com.br/livro/brasilia-guia-de-viagem" target="_blank" title="Versão em Português" class="hover:scale-110 transition-transform drop-shadow-sm">
-                                    <!-- Substitua 'bandeira_br.jpg' pelo nome do seu arquivo -->
                                     <img src="bandeira_br.jpg" alt="PT-BR" class="w-8 h-6 object-cover rounded-sm border border-gray-200">
                                 </a>
                                 
                                 <!-- Link para a versão em Inglês -->
                                 <a href="https://clubedeautores.com.br/livro/brasilia-travel-guide" target="_blank" title="English Version" class="hover:scale-110 transition-transform drop-shadow-sm">
-                                    <!-- Substitua 'bandeira_us.jpg' pelo nome do seu arquivo -->
                                     <img src="bandeira_us.jpg" alt="EN-US" class="w-8 h-6 object-cover rounded-sm border border-gray-200">
                                 </a>
                                 
@@ -108,7 +113,10 @@
 
                         <!-- Botão com múltiplas bandeiras para o Guia em PDF -->
                         <div class="flex items-center justify-between w-full bg-gray-50 border border-gray-200 text-gray-800 font-semibold py-2 px-5 rounded-xl">
-                            <span class="flex items-center"><span class="text-xl mr-3">📄</span> eBook PDF (Gratuito)</span>
+                            <span class="flex items-center">
+                                <img src="pdf.png" alt="Ícone PDF" class="w-6 h-auto mr-3"> 
+                                eBook PDF
+                            </span>
                             <div class="flex items-center space-x-3">
                                 <!-- Link para o PDF em Português -->
                                 <a href="livros_pdf/Brasilia_Guia_de_Viagem.pdf" target="_blank" title="Download em Português" class="hover:scale-110 transition-transform drop-shadow-sm">
