@@ -10,17 +10,61 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .nav-item.active { border-bottom: 2px solid white; color: white; }
         .nav-item { color: #bfdbfe; }
+        
+        /* Empurra o cabeçalho fixo para baixo quando traduzido */
+        html.translated-ltr header { top: 40px !important; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans">
 
-    <!-- Header Fixo -->
+    <!-- Header Fixo com Logo e Tradutor -->
     <header class="bg-blue-900 text-white sticky top-0 z-50 shadow-md">
         <div class="px-4 py-4 flex justify-between items-center max-w-7xl mx-auto">
+            
+            <!-- Logo -->
             <a href="index.html" class="flex items-center">
+                <!-- Se a imagem estiver na pasta anterior, use ../logo_index.png -->
                 <img src="logo_index.png" alt="Guia de Brasília" class="h-8 w-auto">
             </a>
+
+            <!-- Seletor de Idiomas (Flutuando à direita) -->
+            <div class="relative z-50 text-gray-800">
+                <button onclick="document.getElementById('lang-menu').classList.toggle('hidden')" class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white px-3 py-1.5 rounded-lg transition shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <svg class="w-3 h-3 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                
+                <!-- Popup Dropdown de Idiomas -->
+                <div id="lang-menu" class="hidden absolute top-full right-0 mt-2 w-44 bg-white rounded-xl shadow-xl z-50 overflow-hidden border border-gray-100 max-h-[70vh] overflow-y-auto">
+                    <button onclick="mudarIdioma('pt')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
+                        <span class="mr-3 text-lg">🇧🇷</span> Português
+                    </button>
+                    <button onclick="mudarIdioma('en')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
+                        <span class="mr-3 text-lg">🇺🇸</span> English
+                    </button>
+                    <button onclick="mudarIdioma('es')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
+                        <span class="mr-3 text-lg">🇪🇸</span> Español
+                    </button>
+                    <button onclick="mudarIdioma('it')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
+                        <span class="mr-3 text-lg">🇮🇹</span> Italiano
+                    </button>
+                    <button onclick="mudarIdioma('fr')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
+                        <span class="mr-3 text-lg">🇫🇷</span> Français
+                    </button>
+                    <button onclick="mudarIdioma('zh-CN')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
+                        <span class="mr-3 text-lg">🇨🇳</span> 中文 (Chinês)
+                    </button>
+                    <button onclick="mudarIdioma('ja')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
+                        <span class="mr-3 text-lg">🇯🇵</span> 日本語 (Japonês)
+                    </button>
+                    <button onclick="mudarIdioma('tr')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
+                        <span class="mr-3 text-lg">🇹🇷</span> Türkçe (Turco)
+                    </button>
+                </div>
+            </div>
+
         </div>
+
         <div class="max-w-7xl mx-auto">
             <nav id="menu-capitulos" class="flex flex-wrap items-center px-4 pb-3 gap-x-6 gap-y-3 no-scrollbar">
                 <!-- Injetado via JS -->
@@ -28,23 +72,22 @@
         </div>
     </header>
 
+    <!-- Elemento invisível para o Google Tradutor -->
+    <div id="google_translate_element" style="display:none;"></div>
+
     <main class="p-4 max-w-7xl mx-auto relative">
-        <!-- Cabeçalho da Seção -->
         <div class="mb-6 flex justify-between items-center">
             <h2 id="titulo-secao" class="text-2xl font-bold text-gray-900">Carregando...</h2>
             
-            <!-- Botão Voltar (Oculto na visão de grade) -->
             <button id="btn-voltar" class="hidden bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition items-center text-sm shadow-sm">
                 ← Voltar
             </button>
         </div>
 
-        <!-- VISÃO DE GRADE (Cards Menores) -->
         <div id="conteudo-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <div id="loader" class="col-span-full text-center text-gray-500 py-10">Conectando ao banco de dados...</div>
         </div>
 
-        <!-- VISÃO DETALHADA (Painel Único) -->
         <div id="detalhe-container" class="hidden bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden max-w-4xl mx-auto">
             <!-- Injetado via JS -->
         </div>
@@ -74,9 +117,8 @@
         const btnVoltar = document.getElementById('btn-voltar');
         
         let capituloAtual = null;
-        let itensAtuais = []; // Armazena os itens do capítulo ativo para uso no detalhe
+        let itensAtuais = []; 
 
-        // 1. Carrega os capítulos para montar o menu
         onValue(ref(db, 'capitulos'), (snapshot) => {
             menuContainer.innerHTML = '';
             const data = snapshot.val();
@@ -119,7 +161,6 @@
             }
         });
 
-        // 2. Carrega o conteúdo na Grade
         function carregarConteudo(capituloId, titulo) {
             capituloAtual = capituloId;
             tituloSecao.textContent = titulo;
@@ -147,11 +188,8 @@
                         } else {
                             const numero = numeroGlobal++;
                             const card = document.createElement('article');
-                            
-                            // Adicionadas classes de cursor e hover shadow para feedback interativo
                             card.className = "bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden flex flex-col h-full cursor-pointer";
                             
-                            // Evento de clique em todo o card
                             card.addEventListener('click', () => {
                                 window.abrirDetalhe(item.key, numero);
                             });
@@ -196,7 +234,6 @@
             });
         }
 
-        // 3. Gestão da Visão Detalhada e Botão Voltar (History API)
         window.abrirDetalhe = (itemKey, numero) => {
             const item = itensAtuais.find(i => i.key === itemKey);
             if (!item) return;
@@ -280,5 +317,32 @@
             btnVoltar.classList.add('hidden');
         }
     </script>
+
+    <!-- Scripts do Google Tradutor -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'pt',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        function mudarIdioma(sigla) {
+            document.cookie = `googtrans=/pt/${sigla}; path=/;`;
+            document.cookie = `googtrans=/pt/${sigla}; domain=.${location.hostname}; path=/;`;
+            document.getElementById('lang-menu').classList.add('hidden');
+            window.location.reload();
+        }
+
+        window.addEventListener('click', function(e) {
+            const menu = document.getElementById('lang-menu');
+            const btn = menu.previousElementSibling;
+            if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+    </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
 </body>
 </html>
