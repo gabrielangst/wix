@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -31,6 +31,12 @@
             <form id="content-form" class="space-y-4">
                 <input type="hidden" id="item-ordem">
 
+                <!-- COMBOBOX DE TÓPICO DESTINO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Tópico Destino</label>
+                    <select id="item-topico" class="w-full border p-2 rounded text-sm bg-white focus:ring-2 focus:ring-blue-500 font-medium text-blue-900" required></select>
+                </div>
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700">ID Único (ex: praca_tres_poderes)</label>
                     <input type="text" id="item-key" class="w-full border p-2 rounded text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500" required>
@@ -42,13 +48,24 @@
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Caminho da Imagem (Opcional)</label>
+                    <label class="block text-sm font-medium text-gray-700">Caminho da Imagem Principal (Opcional)</label>
                     <input type="text" id="imagem-url" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="Ex: ./img/catedral.jpg">
                 </div>
 
+                <!-- DESCRIÇÃO COM BARRA DE FERRAMENTAS INJETORA -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Descrição / Texto</label>
-                    <textarea id="descricao" rows="4" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500"></textarea>
+                    <div class="flex justify-between items-end mb-1">
+                        <label class="block text-sm font-medium text-gray-700">Descrição / Texto</label>
+                        <div class="flex space-x-2">
+                            <button type="button" onclick="window.inserirImagemDescricao()" class="text-[10px] uppercase font-bold bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded transition flex items-center">
+                                📸 Add Imagem
+                            </button>
+                            <button type="button" onclick="window.inserirYoutubeDescricao()" class="text-[10px] uppercase font-bold bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded transition flex items-center">
+                                ▶️ Add Vídeo
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="descricao" rows="5" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500"></textarea>
                 </div>
                 
                 <div>
@@ -67,14 +84,14 @@
                     </div>
                 </div>
 
-                <!-- Nova Seção de Links -->
+                <!-- Seção de Links -->
                 <div class="pt-4 border-t border-gray-100 mt-2">
                     <div class="flex justify-between items-center mb-3">
-                        <label class="block text-sm font-medium text-gray-700">Links (Opcional)</label>
+                        <label class="block text-sm font-medium text-gray-700">Links Úteis (Opcional)</label>
                         <button type="button" id="btn-add-link" class="text-[10px] uppercase font-bold bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded transition">+ Adicionar Link</button>
                     </div>
                     <div id="links-container" class="space-y-2">
-                        <!-- Campos de link dinâmicos injetados via JS -->
+                        <!-- Campos dinâmicos injetados via JS -->
                     </div>
                 </div>
                 
@@ -171,7 +188,6 @@
         </main>
     </div>
 
-    <!-- Script Modular do Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
@@ -203,6 +219,7 @@
         const formContent = document.getElementById('content-form');
         const linksContainer = document.getElementById('links-container');
         const btnAddLink = document.getElementById('btn-add-link');
+        const itemTopicoSelect = document.getElementById('item-topico'); 
 
         const modalImport = document.getElementById('modal-import');
         const jsonInput = document.getElementById('json-input');
@@ -244,6 +261,44 @@
                 if(capituloSelecionado) renderizarTabela();
             });
         }
+
+        /* --- FERRAMENTAS DE INJEÇÃO NO TEXTAREA (IMAGEM E YOUTUBE) --- */
+        
+        function inserirNoCursor(campoId, textoInjetado) {
+            const textarea = document.getElementById(campoId);
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const atual = textarea.value;
+            textarea.value = atual.substring(0, start) + textoInjetado + atual.substring(end);
+            textarea.focus();
+            // Posiciona o cursor logo após o texto inserido
+            textarea.selectionStart = textarea.selectionEnd = start + textoInjetado.length;
+        }
+
+        window.inserirImagemDescricao = () => {
+            const url = prompt("Cole o link (URL) da imagem:");
+            if (url) {
+                const html = `\n<img src="${url}" class="w-full rounded-xl my-4 shadow-sm">\n`;
+                inserirNoCursor('descricao', html);
+            }
+        };
+
+        window.inserirYoutubeDescricao = () => {
+            const url = prompt("Cole o link do vídeo do YouTube:");
+            if (url) {
+                // Regex para capturar o ID do vídeo em vários formatos (youtu.be/, youtube.com/watch?v=, etc)
+                const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+                if (match && match[1]) {
+                    const videoId = match[1];
+                    const html = `\n<iframe src="https://www.youtube.com/embed/${videoId}" class="w-full aspect-video rounded-xl my-4 shadow-sm" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>\n`;
+                    inserirNoCursor('descricao', html);
+                } else {
+                    alert("Link do YouTube inválido. Tente novamente colando a URL padrão do vídeo.");
+                }
+            }
+        };
+
+        /* ----------------------------------------------------------------- */
 
         window.adicionarSeparadorTopico = () => {
             const titulo = prompt("Título do separador (deixe em branco se quiser apenas uma linha):");
@@ -393,7 +448,6 @@
                     tr.className = "hover:bg-gray-50 transition";
                     const num = numeroGlobal++;
                     
-                    // Conta se existem links associados
                     const linkCount = item.links ? Object.values(item.links).length : 0;
                     
                     tr.innerHTML = `
@@ -449,7 +503,20 @@
             }
         };
 
-        // --- SISTEMA DE LINKS DINÂMICOS ---
+        function preencherSelectTopicos() {
+            itemTopicoSelect.innerHTML = '';
+            const topicosValidos = Object.entries(capitulosData)
+                .filter(([k, v]) => !v.is_separator)
+                .sort((a, b) => (a[1].ordem || 0) - (b[1].ordem || 0));
+            
+            topicosValidos.forEach(([key, cap]) => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = cap.titulo;
+                itemTopicoSelect.appendChild(opt);
+            });
+        }
+
         function criarCampoLink(titulo = '', url = '') {
             const div = document.createElement('div');
             div.className = "flex space-x-2 link-item";
@@ -462,9 +529,7 @@
         }
 
         btnAddLink.addEventListener('click', () => criarCampoLink());
-        // ------------------------------------
 
-        // --- IMPORTAÇÃO JSON LOTE ---
         btnAbrirImport.addEventListener('click', () => {
             modalImport.classList.remove('hidden');
             modalImport.classList.add('flex');
@@ -519,8 +584,8 @@
             }
         });
 
-        // --- CRUD MODAL (INDIVIDUAL) ---
         function abrirModal(isEdit = false) {
+            preencherSelectTopicos(); 
             modalForm.classList.remove('hidden');
             modalForm.classList.add('flex');
             document.body.style.overflow = 'hidden';
@@ -532,17 +597,20 @@
             modalForm.classList.remove('flex');
             document.body.style.overflow = '';
             formContent.reset();
-            linksContainer.innerHTML = ''; // Limpa os links
+            linksContainer.innerHTML = ''; 
             document.getElementById('item-key').disabled = false;
         }
 
         btnNovoItem.addEventListener('click', () => {
+            abrirModal(false);
+            
+            itemTopicoSelect.value = capituloSelecionado;
+
             const itensDoTopico = conteudoData[capituloSelecionado] || {};
             const ultimaOrdem = Object.values(itensDoTopico).length > 0 
                 ? Math.max(...Object.values(itensDoTopico).map(i => i.ordem || 0)) 
                 : 0;
             document.getElementById('item-ordem').value = ultimaOrdem + 1;
-            abrirModal(false);
         });
         
         btnCancelar.addEventListener('click', fecharModal);
@@ -550,12 +618,13 @@
         formContent.addEventListener('submit', (e) => {
             e.preventDefault();
             const itemKey = document.getElementById('item-key').value;
+            const novoCapitulo = itemTopicoSelect.value;
             const btnSubmit = e.target.querySelector('button[type="submit"]');
+            const isEdit = document.getElementById('item-key').disabled; 
             
             btnSubmit.disabled = true;
             btnSubmit.textContent = "Salvando...";
 
-            // Coletar Links Dinâmicos
             const linkElements = document.querySelectorAll('.link-item');
             const linksData = [];
             linkElements.forEach(el => {
@@ -563,6 +632,15 @@
                 const u = el.querySelector('.link-url').value.trim();
                 if (t && u) linksData.push({ titulo: t, url: u });
             });
+
+            let ordemFinal = parseInt(document.getElementById('item-ordem').value || 0);
+            if (novoCapitulo !== capituloSelecionado) {
+                const itensDoNovoTopico = conteudoData[novoCapitulo] || {};
+                const ultimaOrdemNovo = Object.values(itensDoNovoTopico).length > 0 
+                    ? Math.max(...Object.values(itensDoNovoTopico).map(i => i.ordem || 0)) 
+                    : 0;
+                ordemFinal = ultimaOrdemNovo + 1;
+            }
 
             const data = {
                 titulo: document.getElementById('titulo').value,
@@ -573,24 +651,39 @@
                 imagem_url: document.getElementById('imagem-url').value,
                 audioguia: document.getElementById('audioguia').checked,
                 passeio_guiado: document.getElementById('passeio_guiado').checked,
-                ordem: parseInt(document.getElementById('item-ordem').value || 0),
+                ordem: ordemFinal,
                 is_separator: false,
-                links: linksData // Array de links salvo no Firebase
+                links: linksData
             };
 
-            set(ref(db, `conteudo/${capituloSelecionado}/${itemKey}`), data).then(() => {
+            const updates = {};
+            updates[`conteudo/${novoCapitulo}/${itemKey}`] = data;
+
+            if (isEdit && novoCapitulo !== capituloSelecionado) {
+                updates[`conteudo/${capituloSelecionado}/${itemKey}`] = null;
+            }
+
+            update(ref(db), updates).then(() => {
                 fecharModal();
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = "Salvar Item";
+            }).catch(err => {
+                alert("Erro ao salvar: " + err.message);
                 btnSubmit.disabled = false;
                 btnSubmit.textContent = "Salvar Item";
             });
         });
 
         window.editarItem = (itemKey) => {
+            abrirModal(true); 
+            
             const item = conteudoData[capituloSelecionado][itemKey];
+            
             document.getElementById('item-key').value = itemKey;
             document.getElementById('item-key').disabled = true;
+            itemTopicoSelect.value = capituloSelecionado;
+
             document.getElementById('item-ordem').value = item.ordem ?? 0;
-            
             document.getElementById('titulo').value = item.titulo || '';
             document.getElementById('descricao').value = item.descricao || '';
             document.getElementById('curiosidades').value = item.curiosidades || '';
@@ -600,14 +693,11 @@
             document.getElementById('audioguia').checked = item.audioguia || false;
             document.getElementById('passeio_guiado').checked = item.passeio_guiado || false;
             
-            // Injetar Links existentes no formulário
             linksContainer.innerHTML = '';
             if (item.links) {
                 const arrLinks = Array.isArray(item.links) ? item.links : Object.values(item.links);
                 arrLinks.forEach(l => criarCampoLink(l.titulo, l.url));
             }
-            
-            abrirModal(true);
         };
 
         window.excluirItem = (itemKey) => {
