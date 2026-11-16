@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - Guia de Brasília</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <style>
+        .topico-ativo { background-color: #eff6ff; border-left: 4px solid #2563eb; }
+        .sortable-ghost { opacity: 0.4; background-color: #eff6ff; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen">
+
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen" class="flex items-center justify-center min-h-screen">
+        <div class="bg-white p-8 rounded-xl shadow-md w-full max-w-sm">
+            <h2 class="text-2xl font-bold text-center text-blue-900 mb-2">Portal Admin</h2>
+            <p class="text-center text-gray-500 text-sm mb-6">Gestão da Página Inicial</p>
+            <form id="login-form" class="space-y-4">
+                <input type="email" id="email" placeholder="E-mail" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" required>
+                <input type="password" id="password" placeholder="Senha" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" required>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE FORMULÁRIO -->
+    <div id="modal-form" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-xl">
+            <h2 id="form-title" class="text-xl font-bold mb-4 border-b pb-2 text-blue-900">Adicionar Postagem</h2>
+            <form id="content-form" class="space-y-4">
+                <input type="hidden" id="item-key">
+
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-sm font-medium text-gray-700">Título</label>
+                        <span class="text-[10px] text-gray-500 font-medium bg-gray-100 px-2 py-0.5 rounded">Máx. 70 caracteres</span>
+                    </div>
+                    <input type="text" id="titulo" maxlength="70" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Data da Postagem</label>
+                        <input type="date" id="data-post" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Link Externo</label>
+                        <input type="url" id="link-url" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed" placeholder="https://...">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">URL da Imagem de Capa (Opcional)</label>
+                    <input type="text" id="imagem-url" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="Link da foto">
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-end mb-1">
+                        <label class="block text-sm font-medium text-gray-700">Resumo / Descrição (Conteúdo do Post)</label>
+                        <div class="flex space-x-2">
+                            <button type="button" onclick="window.inserirImagemDescricao()" class="text-[10px] uppercase font-bold bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded transition flex items-center">📸 IMG</button>
+                            <button type="button" onclick="window.inserirYoutubeDescricao()" class="text-[10px] uppercase font-bold bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded transition flex items-center">▶️ VID</button>
+                            <button type="button" onclick="window.inserirLinkDescricao()" class="text-[10px] uppercase font-bold bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded transition flex items-center">🔗 Link</button>
+                        </div>
+                    </div>
+                    <textarea id="descricao" rows="4" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"></textarea>
+                </div>
+
+                <div class="flex space-x-3 pt-4 border-t border-gray-100">
+                    <button type="button" id="btn-cancelar" class="flex-1 bg-gray-200 text-gray-800 font-bold py-2 rounded hover:bg-gray-300 transition">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-green-600 text-white font-bold py-2 rounded hover:bg-green-700 transition">Salvar Post</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PAINEL DE ADMINISTRAÇÃO -->
+    <div id="admin-panel" class="hidden">
+        <header class="bg-blue-900 text-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-bold">Gestor do Portal Inicial</h1>
+                <button id="logout-btn" class="bg-red-600 px-4 py-2 rounded hover:bg-red-700 font-bold text-sm transition">Sair</button>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
+            
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white p-0 rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                        <h2 class="text-lg font-bold text-gray-800">Seções</h2>
+                        <button onclick="window.adicionarTopico()" class="text-[10px] uppercase font-bold bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition shadow-sm">+ Nova Seção</button>
+                    </div>
+                    <div id="lista-capitulos" class="flex flex-col divide-y divide-gray-100">
+                        <!-- Injetado via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 border-b pb-4 gap-4">
+                    <div>
+                        <h2 id="titulo-tabela" class="text-xl font-bold text-gray-800">Selecione uma Seção</h2>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="btn-divisor-item" class="hidden bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg font-bold text-xs uppercase transition shadow-sm" onclick="window.adicionarSeparadorItem()">
+                            + Divisor
+                        </button>
+                        <button id="btn-novo-item" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition shadow-sm">
+                            + Nova Postagem
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto pb-10">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Data</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título da Postagem</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="3" class="px-4 py-8 text-center text-gray-500">Selecione uma seção no menu lateral.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+        import { getDatabase, ref, onValue, set, remove, push, update, get } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyClUPY28pPyKv4dyhdgRLxnVpxVgBo8-Rc",
+            authDomain: "guiadebrasilia-c0a80.firebaseapp.com",
+            databaseURL: "https://guiadebrasilia-c0a80-default-rtdb.firebaseio.com",
+            projectId: "guiadebrasilia-c0a80",
+            storageBucket: "guiadebrasilia-c0a80.firebasestorage.app",
+            messagingSenderId: "515833661737",
+            appId: "1:515833661737:web:c63567a2e528dfef910f38"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let capitulosData = {};
+        let categoriaAtual = null;
+        let conteudoData = {};
+        
+        const modalForm = document.getElementById('modal-form');
+        const btnNovoItem = document.getElementById('btn-novo-item');
+        const btnDivisorItem = document.getElementById('btn-divisor-item');
+        const formContent = document.getElementById('content-form');
+        const descInput = document.getElementById('descricao');
+        const linkInput = document.getElementById('link-url');
+
+        const iconeArrastar = `<svg class="w-5 h-5 opacity-40 hover:opacity-100 transition" fill="currentColor" viewBox="0 0 24 24"><path d="M9 5a2 2 0 11-4 0 2 2 0 014 0zM9 12a2 2 0 11-4 0 2 2 0 014 0zM9 19a2 2 0 11-4 0 2 2 0 014 0zM19 5a2 2 0 11-4 0 2 2 0 014 0zM19 12a2 2 0 11-4 0 2 2 0 014 0zM19 19a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>`;
+
+        // SORTABLE JS (DRAG AND DROP)
+        const listaCapitulos = document.getElementById('lista-capitulos');
+        new Sortable(listaCapitulos, {
+            handle: '.drag-handle-cap',
+            animation: 150,
+            onEnd: function (evt) {
+                if (evt.oldIndex === evt.newIndex) return;
+                const rows = document.querySelectorAll('#lista-capitulos .cap-item-drag');
+                const updates = {};
+                rows.forEach((div, index) => {
+                    const key = div.getAttribute('data-key');
+                    updates[`portal_capitulos/${key}/ordem`] = index + 1;
+                });
+                update(ref(db), updates);
+            }
+        });
+
+        const tableBody = document.getElementById('table-body');
+        new Sortable(tableBody, {
+            draggable: '.row-item',
+            handle: '.drag-handle-item',
+            animation: 150,
+            onEnd: function (evt) {
+                if (evt.oldIndex === evt.newIndex) return;
+                window.salvarNovaOrdemItens();
+            }
+        });
+
+        function toggleInputs() {
+            const hasDesc = descInput.value.trim().length > 0;
+            const hasLink = linkInput.value.trim().length > 0;
+
+            if (hasDesc) {
+                linkInput.disabled = true;
+                descInput.disabled = false; 
+            } else if (hasLink) {
+                descInput.disabled = true;
+                linkInput.disabled = false; 
+            } else {
+                linkInput.disabled = false;
+                descInput.disabled = false;
+            }
+        }
+        
+        descInput.addEventListener('input', toggleInputs);
+        linkInput.addEventListener('input', toggleInputs);
+
+        function inserirNoCursor(campoId, textoInjetado) {
+            const textarea = document.getElementById(campoId);
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const atual = textarea.value;
+            textarea.value = atual.substring(0, start) + textoInjetado + atual.substring(end);
+            textarea.focus();
+            textarea.selectionStart = textarea.selectionEnd = start + textoInjetado.length;
+            toggleInputs();
+        }
+        window.inserirImagemDescricao = () => { const u = prompt("URL da imagem:"); if (u) inserirNoCursor('descricao', `\n<img src="${u}" class="w-full rounded-xl my-4 shadow-sm">\n`); };
+        window.inserirYoutubeDescricao = () => { const u = prompt("URL do YouTube:"); if (u) { const m = u.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/); if (m) inserirNoCursor('descricao', `\n<iframe src="https://www.youtube.com/embed/${m[1]}" class="w-full aspect-video rounded-xl my-4 shadow-sm" frameborder="0" allowfullscreen></iframe>\n`); else alert("Link inválido."); } };
+        window.inserirLinkDescricao = () => { const u = prompt("URL do Link:"); if (u) inserirNoCursor('descricao', `<a href="${u}" target="_blank" class="text-blue-600 underline hover:text-blue-800">${prompt("Texto do link:") || "Clique aqui"}</a>`); };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                initAdmin();
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('admin-panel').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value)
+                .catch(err => alert("Erro: " + err.message));
+        });
+        document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+
+        function initAdmin() {
+            onValue(ref(db, 'portal_capitulos'), (snapshot) => {
+                let data = snapshot.val();
+                if (!data) {
+                    data = {
+                        'novidades': { titulo: 'Novidades', icone: '📰', is_chrono: true, ordem: 1 },
+                        'agenda': { titulo: 'Agenda de Eventos', icone: '📅', is_chrono: true, ordem: 2 },
+                        'audioguias': { titulo: 'Audioguias', icone: '🎧', is_chrono: false, ordem: 3 },
+                        'voos': { titulo: 'Voos Internacionais', icone: '✈️', is_chrono: false, ordem: 4 },
+                        'restaurantes': { titulo: 'Restaurantes', icone: '🍽️', is_chrono: false, ordem: 5 },
+                        'musica': { titulo: 'Música ao Vivo', icone: '🎸', is_chrono: false, ordem: 6 },
+                        'parquinhos': { titulo: 'Parquinhos Infantis', icone: '🛝', is_chrono: false, ordem: 7 }
+                    };
+                    set(ref(db, 'portal_capitulos'), data);
+                }
+                capitulosData = data;
+                renderizarTopicos();
+
+                if(!categoriaAtual && Object.keys(capitulosData).length > 0) {
+                    const primeiro = Object.entries(capitulosData).sort((a, b) => (a[1].ordem||0) - (b[1].ordem||0))[0];
+                    if(primeiro) window.selecionarTopico(primeiro[0], primeiro[1].titulo);
+                } else if (categoriaAtual && !capitulosData[categoriaAtual]) {
+                    categoriaAtual = null;
+                    document.getElementById('table-body').innerHTML = `<tr><td colspan="3" class="px-4 py-8 text-center text-gray-500">Selecione uma seção no menu lateral.</td></tr>`;
+                    document.getElementById('titulo-tabela').textContent = "Selecione uma Seção";
+                    btnNovoItem.classList.add('hidden');
+                    btnDivisorItem.classList.add('hidden');
+                }
+            });
+
+            // ATUALIZAÇÃO: Monitoramos as alterações dentro da seção específica para não sobescrever outras abas ativas.
+            onValue(ref(db, 'portal'), (snapshot) => {
+                const fullPortalData = snapshot.val() || {};
+                if (categoriaAtual) {
+                    conteudoData = fullPortalData[categoriaAtual] || {};
+                    renderizarTabela();
+                }
+            });
+        }
+
+        window.adicionarTopico = () => {
+            const id = prompt("Digite um ID único para a nova seção (letras minúsculas, sem espaços. Ex: teatros):");
+            if (!id) return;
+            if (capitulosData[id]) { alert("Já existe uma seção com este ID."); return; }
+            const titulo = prompt("Digite o Título (ex: Teatros e Cultura):");
+            if (!titulo) return;
+            const icone = prompt("Cole o emoji ou ícone (ex: 🎭):", "📌");
+            const isChronoResp = prompt("Postagens ordenadas automaticamente por DATA (como Novidades)? Digite S (Sim) ou N (Não):", "N");
+            
+            const novaOrdem = Object.values(capitulosData).length > 0 ? Math.max(...Object.values(capitulosData).map(c => c.ordem || 0)) + 1 : 1;
+            set(ref(db, `portal_capitulos/${id}`), { titulo: titulo, icone: icone || "", is_chrono: (isChronoResp && isChronoResp.toLowerCase() === 's'), ordem: novaOrdem });
+        };
+
+        window.editarTopico = (key) => {
+            const cap = capitulosData[key];
+            const novoTitulo = prompt("Editar Título:", cap.titulo);
+            if (novoTitulo === null) return;
+            const novoIcone = prompt("Editar Ícone:", cap.icone || "");
+            if (novoIcone === null) return;
+            const isChronoResp = prompt("Ordenar automaticamente por DATA? (S/N):", cap.is_chrono ? "S" : "N");
+            if (isChronoResp === null) return;
+            
+            update(ref(db, `portal_capitulos/${key}`), { titulo: novoTitulo, icone: novoIcone, is_chrono: (isChronoResp.toLowerCase() === 's') });
+        };
+
+        window.excluirTopicoReal = (key) => {
+            if (confirm(`ATENÇÃO: Você vai excluir a seção "${capitulosData[key]?.titulo}" e TODAS as suas postagens.\nTem certeza?`)) {
+                remove(ref(db, `portal_capitulos/${key}`));
+                remove(ref(db, `portal/${key}`));
+            }
+        };
+
+        function renderizarTopicos() {
+            const container = document.getElementById('lista-capitulos');
+            container.innerHTML = '';
+            const arr = Object.entries(capitulosData).sort((a, b) => (a[1].ordem||0) - (b[1].ordem||0));
+            
+            arr.forEach(([key, cap]) => {
+                const isActive = key === categoriaAtual;
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-3 hover:bg-gray-50 transition cap-item-drag ${isActive ? 'topico-ativo bg-white' : ''}" data-key="${key}">
+                        <div class="flex-1 flex items-center cursor-pointer" onclick="window.selecionarTopico('${key}', '${cap.titulo}')">
+                            <span class="w-8 text-center text-lg">${cap.icone || ''}</span>
+                            <div class="flex flex-col">
+                                <span class="font-medium text-sm ${isActive ? 'text-blue-700' : 'text-gray-700'}">${cap.titulo}</span>
+                                <span class="text-[9px] font-bold text-gray-400 uppercase mt-0.5">${cap.is_chrono ? 'CRONOLÓGICO' : 'MANUAL'}</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2 items-center">
+                            <span class="drag-handle-cap cursor-grab active:cursor-grabbing text-gray-400 hover:text-blue-600 px-1" title="Arraste para reordenar">
+                                ${iconeArrastar}
+                            </span>
+                            <span class="text-gray-200">|</span>
+                            <button onclick="window.editarTopico('${key}')" class="text-blue-400 hover:text-blue-600 text-lg leading-none" title="Editar Seção">✎</button>
+                            <button onclick="window.excluirTopicoReal('${key}')" class="text-red-400 hover:text-red-600 font-bold text-xl leading-none" title="Excluir Seção">×</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.selecionarTopico = (id, titulo) => {
+            categoriaAtual = id;
+            document.getElementById('titulo-tabela').textContent = titulo;
+            btnNovoItem.classList.remove('hidden');
+            btnDivisorItem.classList.remove('hidden');
+            renderizarTopicos(); 
+            
+            // ATUALIZAÇÃO: Usa get() para buscar os itens da seção clicada, evitando que o ouvinte anterior sobrescreva
+            get(ref(db, `portal/${id}`)).then((snapshot) => {
+                conteudoData = snapshot.val() || {};
+                renderizarTabela();
+            });
+        };
+
+        window.adicionarSeparadorItem = () => {
+            if(!categoriaAtual) return;
+            const titulo = prompt("Título do separador (ex: JANEIRO DE 2026):");
+            if (titulo !== null) {
+                const isChrono = capitulosData[categoriaAtual]?.is_chrono || false;
+                let data = "";
+                if (isChrono) {
+                    data = prompt("Data base para alinhamento cronológico na lista (AAAA-MM-DD):", new Date().toISOString().split('T')[0]);
+                    if (!data) return; 
+                }
+                const id = 'sep_item_' + Date.now();
+                const maxOrdem = Math.max(0, ...Object.values(conteudoData || {}).map(i => i.ordem || 0));
+                
+                set(ref(db, `portal/${categoriaAtual}/${id}`), {
+                    titulo: titulo,
+                    data: data,
+                    is_separator: true,
+                    ordem: maxOrdem + 1
+                });
+            }
+        };
+
+        window.editarSeparadorItem = (key) => {
+            const item = conteudoData[key];
+            const novoTitulo = prompt("Editar Título do Divisor:", item.titulo || "");
+            if (novoTitulo === null) return;
+            const isChrono = capitulosData[categoriaAtual]?.is_chrono || false;
+            let novaData = item.data || "";
+            
+            if (isChrono) {
+                const dataEditada = prompt("Editar Data do Divisor (AAAA-MM-DD):", item.data || "");
+                if (dataEditada === null) return;
+                novaData = dataEditada;
+            }
+            update(ref(db, `portal/${categoriaAtual}/${key}`), { titulo: novoTitulo, data: novaData });
+        };
+
+        function renderizarTabela() {
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = '';
+            
+            const isChrono = capitulosData[categoriaAtual]?.is_chrono || false;
+            const arr = Object.entries(conteudoData).map(([k, v]) => ({ key: k, ordem: v.ordem || 0, ...v }));
+
+            if (isChrono) {
+                arr.sort((a, b) => {
+                    const dateDiff = new Date(b.data) - new Date(a.data);
+                    return dateDiff === 0 ? a.ordem - b.ordem : dateDiff;
+                });
+            } else {
+                arr.sort((a, b) => a.ordem - b.ordem); 
+            }
+
+            if (arr.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="px-4 py-8 text-center text-gray-500">Nenhuma postagem nesta seção.</td></tr>`;
+                return;
+            }
+
+            arr.forEach((item) => {
+                const dataFormatada = item.data ? item.data.split('-').reverse().join('/') : '';
+                const showDrag = (!isChrono || item.is_separator);
+                
+                const dragHtml = showDrag ? `
+                    <div class="drag-handle-item cursor-grab active:cursor-grabbing text-gray-400 hover:text-blue-600 px-2 py-1 mr-2 transition" title="Arraste para reordenar">
+                        ${iconeArrastar}
+                    </div>
+                    <span class="text-gray-200 mx-1">|</span>
+                ` : `<span class="text-gray-200 mr-2 border-l border-gray-200 h-4 invisible"></span>`;
+
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-key', item.key);
+                
+                if (item.is_separator) {
+                    tr.className = "bg-gray-100 row-item";
+                    tr.innerHTML = `
+                        <td class="px-4 py-4 text-sm font-medium text-gray-500 w-24">${dataFormatada}</td>
+                        <td class="px-4 py-4 text-sm font-bold text-gray-500 uppercase tracking-widest">--- DIVISOR: ${item.titulo || 'LINHA'} ---</td>
+                        <td class="px-4 py-4 text-sm text-right flex justify-end items-center h-full pt-4">
+                            ${dragHtml}
+                            <button class="text-blue-600 hover:text-blue-800 font-bold uppercase text-xs mr-3" onclick="window.editarSeparadorItem('${item.key}')">Editar</button>
+                            <button class="text-red-600 hover:text-red-800 font-bold uppercase text-xs" onclick="window.excluirItem('${item.key}')">Excluir</button>
+                        </td>
+                    `;
+                } else {
+                    const tipoIcone = item.link ? '<span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded border ml-2 flex-shrink-0">🔗 LINK</span>' : '<span class="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded border ml-2 flex-shrink-0">📄 POST</span>';
+                    tr.className = "bg-white hover:bg-gray-50 transition row-item";
+                    tr.innerHTML = `
+                        <td class="px-4 py-4 text-sm font-medium text-gray-500 w-24">${dataFormatada}</td>
+                        <td class="px-4 py-4 text-sm font-bold text-gray-900">
+                            <div class="flex items-center flex-wrap">
+                                ${item.imagem_url ? `<img src="${item.imagem_url}" class="h-8 w-8 rounded object-cover mr-3 border flex-shrink-0">` : ''}
+                                <span class="truncate max-w-xs md:max-w-md">${item.titulo}</span>
+                                ${tipoIcone}
+                            </div>
+                        </td>
+                        <td class="px-4 py-4 text-sm text-right">
+                            <div class="flex justify-end items-center">
+                                ${dragHtml}
+                                <button class="text-blue-600 hover:text-blue-800 font-bold uppercase text-xs mr-3" onclick="window.editarItem('${item.key}')">Editar</button>
+                                <button class="text-red-600 hover:text-red-800 font-bold uppercase text-xs" onclick="window.excluirItem('${item.key}')">Excluir</button>
+                            </div>
+                        </td>
+                    `;
+                }
+                tableBody.appendChild(tr);
+            });
+        }
+
+        window.salvarNovaOrdemItens = () => {
+            const rows = document.querySelectorAll('#table-body tr.row-item');
+            const isChrono = capitulosData[categoriaAtual]?.is_chrono || false;
+            const updates = {};
+            
+            rows.forEach((tr, index) => {
+                const key = tr.getAttribute('data-key');
+                updates[`portal/${categoriaAtual}/${key}/ordem`] = index + 1;
+                
+                if (isChrono) {
+                    const item = conteudoData[key];
+                    if (item && item.is_separator) {
+                        let dataAlvo = null;
+                        for (let i = index + 1; i < rows.length; i++) {
+                            const k = rows[i].getAttribute('data-key');
+                            if (!conteudoData[k].is_separator) { dataAlvo = conteudoData[k].data; break; }
+                        }
+                        if (!dataAlvo) {
+                            for (let i = index - 1; i >= 0; i--) {
+                                const k = rows[i].getAttribute('data-key');
+                                if (!conteudoData[k].is_separator) { dataAlvo = conteudoData[k].data; break; }
+                            }
+                        }
+                        if (dataAlvo) updates[`portal/${categoriaAtual}/${key}/data`] = dataAlvo;
+                    }
+                }
+            });
+
+            update(ref(db), updates).catch(err => alert("Erro ao reordenar: " + err.message));
+        };
+
+        btnNovoItem.addEventListener('click', () => {
+            formContent.reset(); document.getElementById('item-key').value = '';
+            document.getElementById('data-post').valueAsDate = new Date();
+            
+            descInput.disabled = false;
+            linkInput.disabled = false;
+            
+            modalForm.classList.remove('hidden'); modalForm.classList.add('flex');
+            document.getElementById('form-title').textContent = "Adicionar Postagem";
+        });
+        
+        document.getElementById('btn-cancelar').addEventListener('click', () => {
+            modalForm.classList.add('hidden'); modalForm.classList.remove('flex');
+        });
+
+        formContent.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (descInput.value.trim() === '' && linkInput.value.trim() === '') { alert("Preencha Resumo/Descrição OU Link Externo!"); return; }
+            
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.disabled = true; btnSubmit.textContent = "Salvando...";
+
+            let itemKey = document.getElementById('item-key').value;
+            const isEdit = !!itemKey;
+            if (!isEdit) itemKey = push(ref(db, `portal/${categoriaAtual}`)).key;
+
+            let ordemFinal = (isEdit && conteudoData[itemKey]) ? (conteudoData[itemKey].ordem || 0) : Math.max(0, ...Object.values(conteudoData || {}).map(i => i.ordem || 0)) + 1;
+
+            const data = {
+                titulo: document.getElementById('titulo').value,
+                data: document.getElementById('data-post').value,
+                link: linkInput.disabled ? "" : document.getElementById('link-url').value, 
+                imagem_url: document.getElementById('imagem-url').value,
+                descricao: descInput.disabled ? "" : document.getElementById('descricao').value,
+                is_separator: false, ordem: ordemFinal
+            };
+
+            set(ref(db, `portal/${categoriaAtual}/${itemKey}`), data).then(() => {
+                modalForm.classList.add('hidden'); modalForm.classList.remove('flex');
+                btnSubmit.disabled = false; btnSubmit.textContent = "Salvar Post";
+                // Recarrega manual para garantir reflexo após edição na aba ativa
+                get(ref(db, `portal/${categoriaAtual}`)).then((snapshot) => {
+                    conteudoData = snapshot.val() || {};
+                    renderizarTabela();
+                });
+            });
+        });
+
+        window.editarItem = (key) => {
+            const item = conteudoData[key];
+            document.getElementById('item-key').value = key;
+            document.getElementById('titulo').value = item.titulo || '';
+            document.getElementById('data-post').value = item.data || '';
+            document.getElementById('link-url').value = item.link || '';
+            document.getElementById('imagem-url').value = item.imagem_url || '';
+            document.getElementById('descricao').value = item.descricao || '';
+            
+            toggleInputs(); 
+            modalForm.classList.remove('hidden'); modalForm.classList.add('flex');
+            document.getElementById('form-title').textContent = "Editando Postagem";
+        };
+
+        window.excluirItem = (key) => {
+            if(confirm("Deseja excluir este item?")) {
+                remove(ref(db, `portal/${categoriaAtual}/${key}`)).then(() => {
+                    get(ref(db, `portal/${categoriaAtual}`)).then((snapshot) => {
+                        conteudoData = snapshot.val() || {};
+                        renderizarTabela();
+                    });
+                });
+            }
+        };
+    </script>
+</body>
+</html>
