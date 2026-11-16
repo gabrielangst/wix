@@ -11,12 +11,10 @@
         .nav-item.active { border-bottom: 2px solid white; color: white; }
         .nav-item { color: #bfdbfe; }
         
-        /* Oculta os balões nativos de hover do Google Tradutor */
         .goog-tooltip { display: none !important; }
         .goog-tooltip:hover { display: none !important; }
         .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
         
-        /* Zera o empurrão do Google Tradutor */
         body { top: 0px !important; position: static !important; }
         html.translated-ltr body, html.translated-rtl body { padding-top: 40px !important; }
         html.translated-ltr header, html.translated-rtl header { top: 40px !important; }
@@ -24,7 +22,6 @@
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans">
 
-    <!-- Header Fixo com Logo e Tradutor -->
     <header class="bg-blue-900 text-white sticky top-0 z-50 shadow-md">
         <div class="px-4 py-4 flex justify-between items-center max-w-7xl mx-auto">
             
@@ -32,7 +29,6 @@
                 <img src="../logo_index.png" alt="Guia de Brasília" class="h-8 w-auto">
             </a>
 
-            <!-- Seletor de Idiomas -->
             <div class="relative z-50 text-gray-800">
                 <button onclick="document.getElementById('lang-menu').classList.toggle('hidden')" class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white px-3 py-1.5 rounded-lg transition shadow-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -40,44 +36,25 @@
                 </button>
                 
                 <div id="lang-menu" class="hidden absolute top-full right-0 mt-2 w-44 bg-white rounded-xl shadow-xl z-50 overflow-hidden border border-gray-100 max-h-[70vh] overflow-y-auto">
-                    <button onclick="mudarIdioma('pt')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
-                        <span class="mr-3 text-lg">🇧🇷</span> Português
-                    </button>
-                    <button onclick="mudarIdioma('en')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
-                        <span class="mr-3 text-lg">🇺🇸</span> English
-                    </button>
-                    <button onclick="mudarIdioma('es')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
-                        <span class="mr-3 text-lg">🇪🇸</span> Español
-                    </button>
-                    <button onclick="mudarIdioma('it')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
-                        <span class="mr-3 text-lg">🇮🇹</span> Italiano
-                    </button>
-                    <button onclick="mudarIdioma('fr')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
-                        <span class="mr-3 text-lg">🇫🇷</span> Français
-                    </button>
-                    <button onclick="mudarIdioma('zh-CN')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
-                        <span class="mr-3 text-lg">🇨🇳</span> 中文 (Chinês)
-                    </button>
-                    <button onclick="mudarIdioma('ja')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition">
-                        <span class="mr-3 text-lg">🇯🇵</span> 日本語 (Japonês)
-                    </button>
-                    <button onclick="mudarIdioma('tr')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
-                        <span class="mr-3 text-lg">🇹🇷</span> Türkçe (Turco)
-                    </button>
+                    <button onclick="mudarIdioma('pt')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition"><span class="mr-3 text-lg">🇧🇷</span> Português</button>
+                    <button onclick="mudarIdioma('en')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition"><span class="mr-3 text-lg">🇺🇸</span> English</button>
+                    <button onclick="mudarIdioma('es')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition"><span class="mr-3 text-lg">🇪🇸</span> Español</button>
+                    <button onclick="mudarIdioma('it')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition"><span class="mr-3 text-lg">🇮🇹</span> Italiano</button>
+                    <button onclick="mudarIdioma('fr')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition"><span class="mr-3 text-lg">🇫🇷</span> Français</button>
+                    <button onclick="mudarIdioma('zh-CN')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition"><span class="mr-3 text-lg">🇨🇳</span> 中文 (Chinês)</button>
+                    <button onclick="mudarIdioma('ja')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition"><span class="mr-3 text-lg">🇯🇵</span> 日本語 (Japonês)</button>
+                    <button onclick="mudarIdioma('tr')" class="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition"><span class="mr-3 text-lg">🇹🇷</span> Türkçe (Turco)</button>
                 </div>
             </div>
         </div>
 
-        <!-- MENU RECOLHÍVEL -->
         <div class="max-w-7xl mx-auto relative px-4 pb-4">
-            
             <div id="menu-wrapper" class="overflow-hidden max-h-[28px] transition-[max-height] duration-300 ease-in-out pr-8 relative">
                 <nav id="menu-capitulos" class="flex flex-wrap items-center gap-x-6 gap-y-4 no-scrollbar">
                     <!-- Injetado via JS -->
                 </nav>
             </div>
             
-            <!-- Botão com Degradê mais largo (w-24) para caber o texto "Mais/Menos" -->
             <div id="btn-toggle-container" class="absolute right-4 top-0 h-[28px] w-24 flex items-start justify-end bg-gradient-to-l from-blue-900 via-blue-900/90 to-transparent hidden pointer-events-none">
                 <button id="btn-toggle-menu" class="pointer-events-auto flex items-center justify-center text-white h-full hover:text-blue-200 transition pl-4">
                     <span id="text-mais" class="text-sm font-medium mr-1 drop-shadow-md">Mais</span>
@@ -86,7 +63,6 @@
                     <svg id="icon-up" class="w-4 h-4 hidden drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
                 </button>
             </div>
-            
         </div>
     </header>
 
@@ -136,7 +112,6 @@
         let capituloAtual = null;
         let itensAtuais = []; 
 
-        /* ------ LÓGICA DO MENU EXPANSÍVEL ------ */
         const wrapper = document.getElementById('menu-wrapper');
         const iconDown = document.getElementById('icon-down');
         const iconUp = document.getElementById('icon-up');
@@ -175,7 +150,6 @@
             }
         }
         window.addEventListener('resize', checkMenuOverflow);
-        /* --------------------------------------- */
 
         onValue(ref(db, 'capitulos'), (snapshot) => {
             menuContainer.innerHTML = '';
@@ -305,6 +279,26 @@
             if (item.audioguia) tagsHTML += `<span class="inline-flex items-center bg-green-100 text-green-800 text-xs font-bold uppercase px-3 py-1.5 rounded mr-2 tracking-wide mb-2">🎧 Audioguia</span>`;
             if (item.passeio_guiado) tagsHTML += `<span class="inline-flex items-center bg-blue-100 text-blue-800 text-xs font-bold uppercase px-3 py-1.5 rounded mr-2 tracking-wide mb-2">🗣️ Passeio Guiado</span>`;
 
+            // Bloco dinâmico de Links gerado se existirem itens cadastrados
+            let linksHTML = '';
+            if (item.links) {
+                const arrLinks = Array.isArray(item.links) ? item.links : Object.values(item.links);
+                if (arrLinks.length > 0) {
+                    linksHTML = `
+                        <div class="col-span-1 sm:col-span-2 pt-5 mt-2 border-t border-gray-100">
+                            <span class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Links Úteis</span>
+                            <div class="flex flex-wrap gap-2">
+                                ${arrLinks.map(l => `
+                                    <a href="${l.url}" target="_blank" class="inline-flex items-center text-sm bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-2 rounded-lg transition font-medium border border-blue-100">
+                                        <span class="mr-2 opacity-70">🔗</span> ${l.titulo}
+                                    </a>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
             const imgHTML = item.imagem_url 
                 ? `<img src="${item.imagem_url}" alt="${item.titulo}" class="w-full h-64 sm:h-96 object-cover border-b border-gray-100">` 
                 : '';
@@ -327,7 +321,7 @@
                             </div>
                         ` : ''}
 
-                        ${ (item.funcionamento || item.valor || tagsHTML) ? `
+                        ${ (item.funcionamento || item.valor || tagsHTML || linksHTML) ? `
                         <div class="pt-6 border-t border-gray-100">
                             ${tagsHTML ? `<div class="mb-4">${tagsHTML}</div>` : ''}
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -349,6 +343,7 @@
                                         </div>
                                     </div>
                                 ` : ''}
+                                ${linksHTML}
                             </div>
                         </div>
                         ` : '' }
@@ -381,7 +376,6 @@
         }
     </script>
 
-    <!-- Scripts do Google Tradutor -->
     <script type="text/javascript">
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({
