@@ -1,4 +1,4 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -66,6 +66,17 @@
                         <input type="text" id="valor" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
+
+                <!-- Nova Seção de Links -->
+                <div class="pt-4 border-t border-gray-100 mt-2">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-medium text-gray-700">Links (Opcional)</label>
+                        <button type="button" id="btn-add-link" class="text-[10px] uppercase font-bold bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded transition">+ Adicionar Link</button>
+                    </div>
+                    <div id="links-container" class="space-y-2">
+                        <!-- Campos de link dinâmicos injetados via JS -->
+                    </div>
+                </div>
                 
                 <div class="flex items-center space-x-4 pt-2 border-t border-gray-100 pt-4">
                     <label class="flex items-center text-sm text-gray-700 cursor-pointer">
@@ -76,7 +87,7 @@
                     </label>
                 </div>
 
-                <div class="flex space-x-3 pt-4">
+                <div class="flex space-x-3 pt-4 border-t border-gray-100">
                     <button type="button" id="btn-cancelar" class="flex-1 bg-gray-200 text-gray-800 font-bold py-2 rounded hover:bg-gray-300 transition">Cancelar</button>
                     <button type="submit" class="flex-1 bg-green-600 text-white font-bold py-2 rounded hover:bg-green-700 transition">Salvar Item</button>
                 </div>
@@ -109,7 +120,6 @@
         </header>
 
         <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
-            <!-- Coluna Esquerda: Tópicos -->
             <div class="lg:col-span-1 space-y-6">
                 <div class="bg-white p-0 rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
@@ -122,7 +132,6 @@
                 </div>
             </div>
 
-            <!-- Coluna Direita: Tabela de Conteúdo -->
             <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 border-b pb-4 gap-4">
                     <div>
@@ -192,13 +201,14 @@
         const btnAbrirImport = document.getElementById('btn-abrir-import');
         const btnCancelar = document.getElementById('btn-cancelar');
         const formContent = document.getElementById('content-form');
+        const linksContainer = document.getElementById('links-container');
+        const btnAddLink = document.getElementById('btn-add-link');
 
         const modalImport = document.getElementById('modal-import');
         const jsonInput = document.getElementById('json-input');
         const btnCancelarImport = document.getElementById('btn-cancelar-import');
         const btnConfirmarImport = document.getElementById('btn-confirmar-import');
 
-        // Autenticação
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('login-screen').classList.add('hidden');
@@ -235,7 +245,6 @@
             });
         }
 
-        // --- TÓPICOS E SEPARADORES DO MENU ---
         window.adicionarSeparadorTopico = () => {
             const titulo = prompt("Título do separador (deixe em branco se quiser apenas uma linha):");
             if (titulo !== null) {
@@ -326,7 +335,6 @@
             }
         };
 
-        // --- TABELA E ORDEM DOS ITENS ---
         window.adicionarSeparadorItem = () => {
             if(!capituloSelecionado) return;
             const titulo = prompt("Título do separador (deixe em branco se quiser apenas uma linha):");
@@ -384,6 +392,10 @@
                 } else {
                     tr.className = "hover:bg-gray-50 transition";
                     const num = numeroGlobal++;
+                    
+                    // Conta se existem links associados
+                    const linkCount = item.links ? Object.values(item.links).length : 0;
+                    
                     tr.innerHTML = `
                         <td class="px-3 py-4 text-center font-bold text-gray-400 text-sm">#${num}</td>
                         <td class="px-4 py-4 text-sm font-bold text-gray-900">
@@ -393,10 +405,11 @@
                             </div>
                         </td>
                         <td class="px-4 py-4 text-sm text-gray-500">
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center flex-wrap gap-2">
                                 ${item.audioguia ? '<span title="Possui Audioguia">🎧</span>' : ''}
                                 ${item.passeio_guiado ? '<span title="Passeio Guiado">🗣️</span>' : ''}
                                 ${item.valor ? `<span class="bg-gray-100 border px-2 py-0.5 rounded text-xs">${item.valor}</span>` : ''}
+                                ${linkCount > 0 ? `<span class="bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded text-xs font-bold">${linkCount} Link(s)</span>` : ''}
                             </div>
                         </td>
                         <td class="px-4 py-4 text-sm text-right">
@@ -436,6 +449,21 @@
             }
         };
 
+        // --- SISTEMA DE LINKS DINÂMICOS ---
+        function criarCampoLink(titulo = '', url = '') {
+            const div = document.createElement('div');
+            div.className = "flex space-x-2 link-item";
+            div.innerHTML = `
+                <input type="text" placeholder="Nome (ex: Site Oficial)" value="${titulo}" class="w-1/3 border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 link-titulo">
+                <input type="url" placeholder="URL (ex: https://...)" value="${url}" class="flex-1 border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 link-url">
+                <button type="button" onclick="this.parentElement.remove()" class="bg-red-100 text-red-600 px-3 py-2 rounded hover:bg-red-200 font-bold text-sm transition">×</button>
+            `;
+            linksContainer.appendChild(div);
+        }
+
+        btnAddLink.addEventListener('click', () => criarCampoLink());
+        // ------------------------------------
+
         // --- IMPORTAÇÃO JSON LOTE ---
         btnAbrirImport.addEventListener('click', () => {
             modalImport.classList.remove('hidden');
@@ -467,11 +495,9 @@
                 for (const [key, item] of Object.entries(parsed)) {
                     maxOrdem++;
                     item.ordem = maxOrdem;
-                    // Garante booleanos para segurança
                     item.audioguia = item.audioguia === true;
                     item.passeio_guiado = item.passeio_guiado === true;
                     item.is_separator = item.is_separator === true;
-                    
                     updates[`conteudo/${capituloSelecionado}/${key}`] = item;
                 }
 
@@ -506,6 +532,7 @@
             modalForm.classList.remove('flex');
             document.body.style.overflow = '';
             formContent.reset();
+            linksContainer.innerHTML = ''; // Limpa os links
             document.getElementById('item-key').disabled = false;
         }
 
@@ -528,6 +555,15 @@
             btnSubmit.disabled = true;
             btnSubmit.textContent = "Salvando...";
 
+            // Coletar Links Dinâmicos
+            const linkElements = document.querySelectorAll('.link-item');
+            const linksData = [];
+            linkElements.forEach(el => {
+                const t = el.querySelector('.link-titulo').value.trim();
+                const u = el.querySelector('.link-url').value.trim();
+                if (t && u) linksData.push({ titulo: t, url: u });
+            });
+
             const data = {
                 titulo: document.getElementById('titulo').value,
                 descricao: document.getElementById('descricao').value,
@@ -538,7 +574,8 @@
                 audioguia: document.getElementById('audioguia').checked,
                 passeio_guiado: document.getElementById('passeio_guiado').checked,
                 ordem: parseInt(document.getElementById('item-ordem').value || 0),
-                is_separator: false
+                is_separator: false,
+                links: linksData // Array de links salvo no Firebase
             };
 
             set(ref(db, `conteudo/${capituloSelecionado}/${itemKey}`), data).then(() => {
@@ -562,6 +599,13 @@
             document.getElementById('imagem-url').value = item.imagem_url || '';
             document.getElementById('audioguia').checked = item.audioguia || false;
             document.getElementById('passeio_guiado').checked = item.passeio_guiado || false;
+            
+            // Injetar Links existentes no formulário
+            linksContainer.innerHTML = '';
+            if (item.links) {
+                const arrLinks = Array.isArray(item.links) ? item.links : Object.values(item.links);
+                arrLinks.forEach(l => criarCampoLink(l.titulo, l.url));
+            }
             
             abrirModal(true);
         };
