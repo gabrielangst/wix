@@ -31,7 +31,6 @@
             <form id="content-form" class="space-y-4">
                 <input type="hidden" id="item-ordem">
 
-                <!-- COMBOBOX DE TÓPICO DESTINO -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Tópico Destino</label>
                     <select id="item-topico" class="w-full border p-2 rounded text-sm bg-white focus:ring-2 focus:ring-blue-500 font-medium text-blue-900" required></select>
@@ -52,7 +51,6 @@
                     <input type="text" id="imagem-url" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="Ex: ./img/catedral.jpg">
                 </div>
 
-                <!-- DESCRIÇÃO COM BARRA DE FERRAMENTAS INJETORA -->
                 <div>
                     <div class="flex justify-between items-end mb-1">
                         <label class="block text-sm font-medium text-gray-700">Descrição / Texto</label>
@@ -84,15 +82,12 @@
                     </div>
                 </div>
 
-                <!-- Seção de Links -->
                 <div class="pt-4 border-t border-gray-100 mt-2">
                     <div class="flex justify-between items-center mb-3">
                         <label class="block text-sm font-medium text-gray-700">Links Úteis (Opcional)</label>
                         <button type="button" id="btn-add-link" class="text-[10px] uppercase font-bold bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded transition">+ Adicionar Link</button>
                     </div>
-                    <div id="links-container" class="space-y-2">
-                        <!-- Campos dinâmicos injetados via JS -->
-                    </div>
+                    <div id="links-container" class="space-y-2"></div>
                 </div>
                 
                 <div class="flex items-center space-x-4 pt-2 border-t border-gray-100 pt-4">
@@ -137,11 +132,17 @@
         </header>
 
         <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
+            
+            <!-- COLUNA TÓPICOS -->
             <div class="lg:col-span-1 space-y-6">
                 <div class="bg-white p-0 rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                         <h2 class="text-lg font-bold text-gray-800">Tópicos</h2>
-                        <button onclick="window.adicionarSeparadorTopico()" class="text-[10px] uppercase font-bold bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded transition">+ Divisor</button>
+                        <div class="flex space-x-1">
+                            <!-- NOVOS BOTÕES DE TÓPICOS -->
+                            <button onclick="window.adicionarTopico()" class="text-[10px] uppercase font-bold bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition">+ Tópico</button>
+                            <button onclick="window.adicionarSeparadorTopico()" class="text-[10px] uppercase font-bold bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded transition">+ Divisor</button>
+                        </div>
                     </div>
                     <div id="lista-capitulos" class="flex flex-col divide-y divide-gray-100">
                         <!-- Injetado via JS -->
@@ -149,6 +150,7 @@
                 </div>
             </div>
 
+            <!-- COLUNA ITENS -->
             <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 border-b pb-4 gap-4">
                     <div>
@@ -250,9 +252,18 @@
                 capitulosData = snapshot.val() || {};
                 renderizarTopicos();
                 
+                // Abre o primeiro tópico automaticamente se não houver um selecionado
                 if(!capituloSelecionado && Object.keys(capitulosData).length > 0) {
                     const primeiro = Object.entries(capitulosData).filter(c => !c[1].is_separator).sort((a, b) => (a[1].ordem||0) - (b[1].ordem||0))[0];
                     if(primeiro) window.selecionarTopico(primeiro[0], primeiro[1].titulo);
+                } else if (capituloSelecionado && !capitulosData[capituloSelecionado]) {
+                    // Se o tópico selecionado foi excluído
+                    capituloSelecionado = null;
+                    document.getElementById('table-body').innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">Selecione um tópico na lista ao lado.</td></tr>`;
+                    document.getElementById('titulo-tabela').textContent = "Selecione um Tópico";
+                    btnNovoItem.classList.add('hidden');
+                    btnDivisorItem.classList.add('hidden');
+                    btnAbrirImport.classList.add('hidden');
                 }
             });
 
@@ -262,8 +273,7 @@
             });
         }
 
-        /* --- FERRAMENTAS DE INJEÇÃO NO TEXTAREA (IMAGEM E YOUTUBE) --- */
-        
+        /* --- FERRAMENTAS DE INJEÇÃO NO TEXTAREA --- */
         function inserirNoCursor(campoId, textoInjetado) {
             const textarea = document.getElementById(campoId);
             const start = textarea.selectionStart;
@@ -271,7 +281,6 @@
             const atual = textarea.value;
             textarea.value = atual.substring(0, start) + textoInjetado + atual.substring(end);
             textarea.focus();
-            // Posiciona o cursor logo após o texto inserido
             textarea.selectionStart = textarea.selectionEnd = start + textoInjetado.length;
         }
 
@@ -286,27 +295,68 @@
         window.inserirYoutubeDescricao = () => {
             const url = prompt("Cole o link do vídeo do YouTube:");
             if (url) {
-                // Regex para capturar o ID do vídeo em vários formatos (youtu.be/, youtube.com/watch?v=, etc)
                 const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
                 if (match && match[1]) {
                     const videoId = match[1];
                     const html = `\n<iframe src="https://www.youtube.com/embed/${videoId}" class="w-full aspect-video rounded-xl my-4 shadow-sm" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>\n`;
                     inserirNoCursor('descricao', html);
                 } else {
-                    alert("Link do YouTube inválido. Tente novamente colando a URL padrão do vídeo.");
+                    alert("Link do YouTube inválido. Tente novamente.");
                 }
             }
         };
 
-        /* ----------------------------------------------------------------- */
+        /* --- GESTÃO DE TÓPICOS --- */
+        window.adicionarTopico = () => {
+            const id = prompt("Digite um ID único para o novo tópico (letras minúsculas, sem espaços. Ex: vida_noturna):");
+            if (!id) return;
+            if (capitulosData[id]) {
+                alert("Já existe um tópico com este ID. Escolha outro.");
+                return;
+            }
+            const titulo = prompt("Digite o Título do Tópico (ex: Vida Noturna):");
+            if (!titulo) return;
+            const icone = prompt("Cole o emoji ou ícone do tópico (ex: 🍻):", "📍");
+            
+            const novaOrdem = Object.values(capitulosData).length > 0 
+                ? Math.max(...Object.values(capitulosData).map(c => c.ordem || 0)) + 1 
+                : 1;
+            
+            set(ref(db, `capitulos/${id}`), {
+                titulo: titulo,
+                icone: icone || "",
+                is_separator: false,
+                ordem: novaOrdem
+            });
+        };
+
+        window.editarTopico = (key) => {
+            const cap = capitulosData[key];
+            const novoTitulo = prompt("Editar Título do Tópico:", cap.titulo);
+            if (novoTitulo === null) return;
+            
+            const novoIcone = prompt("Editar Ícone/Emoji:", cap.icone || "");
+            if (novoIcone === null) return;
+
+            update(ref(db, `capitulos/${key}`), {
+                titulo: novoTitulo,
+                icone: novoIcone
+            });
+        };
+
+        window.excluirTopicoReal = (key) => {
+            if (confirm(`ATENÇÃO: Você está prestes a excluir o tópico "${capitulosData[key]?.titulo}" e TODOS os itens cadastrados dentro dele.\n\nEsta ação não pode ser desfeita. Tem certeza?`)) {
+                remove(ref(db, `capitulos/${key}`));
+                remove(ref(db, `conteudo/${key}`));
+            }
+        };
 
         window.adicionarSeparadorTopico = () => {
-            const titulo = prompt("Título do separador (deixe em branco se quiser apenas uma linha):");
+            const titulo = prompt("Título do divisor (deixe em branco para ser apenas uma linha):");
             if (titulo !== null) {
                 const novaOrdem = Object.values(capitulosData).length > 0 
                     ? Math.max(...Object.values(capitulosData).map(c => c.ordem || 0)) + 1 
                     : 1;
-                
                 const id = 'sep_cap_' + Date.now();
                 set(ref(db, `capitulos/${id}`), {
                     titulo: titulo,
@@ -314,10 +364,6 @@
                     ordem: novaOrdem
                 });
             }
-        };
-
-        window.excluirTopico = (key) => {
-            if (confirm("Excluir este Divisor?")) remove(ref(db, `capitulos/${key}`));
         };
 
         function renderizarTopicos() {
@@ -335,23 +381,27 @@
                     container.innerHTML += `
                         <div class="flex items-center justify-between p-2 separador">
                             <div class="flex-1 text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-2">${cap.titulo || '--- DIVISOR ---'}</div>
-                            <div class="flex space-x-2">
-                                <button onclick="window.moverTopico('${key}', 'up')" class="text-gray-400 hover:text-blue-600 ${isFirst ? 'invisible' : ''}">↑</button>
-                                <button onclick="window.moverTopico('${key}', 'down')" class="text-gray-400 hover:text-blue-600 ${isLast ? 'invisible' : ''}">↓</button>
-                                <button onclick="window.excluirTopico('${key}')" class="text-red-400 hover:text-red-600 ml-1 font-bold">×</button>
+                            <div class="flex space-x-2 items-center">
+                                <button onclick="window.moverTopico('${key}', 'up')" class="text-gray-400 hover:text-blue-600 ${isFirst ? 'invisible' : ''}" title="Subir">↑</button>
+                                <button onclick="window.moverTopico('${key}', 'down')" class="text-gray-400 hover:text-blue-600 ${isLast ? 'invisible' : ''}" title="Descer">↓</button>
+                                <span class="text-gray-200">|</span>
+                                <button onclick="window.excluirTopicoReal('${key}')" class="text-red-400 hover:text-red-600 ml-1 font-bold text-lg leading-none" title="Excluir Divisor">×</button>
                             </div>
                         </div>
                     `;
                 } else {
                     container.innerHTML += `
-                        <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 transition ${isActive ? 'topico-ativo' : ''}">
-                            <div class="flex-1 flex items-center" onclick="window.selecionarTopico('${key}', '${cap.titulo}')">
+                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 transition ${isActive ? 'topico-ativo' : ''}">
+                            <div class="flex-1 flex items-center cursor-pointer" onclick="window.selecionarTopico('${key}', '${cap.titulo}')">
                                 <span class="w-8 text-center text-lg">${cap.icone || ''}</span>
                                 <span class="font-medium text-sm ${isActive ? 'text-blue-700' : 'text-gray-700'}">${cap.titulo}</span>
                             </div>
-                            <div class="flex space-x-2">
-                                <button onclick="window.moverTopico('${key}', 'up')" class="text-gray-400 hover:text-blue-600 ${isFirst ? 'invisible' : ''}">↑</button>
-                                <button onclick="window.moverTopico('${key}', 'down')" class="text-gray-400 hover:text-blue-600 ${isLast ? 'invisible' : ''}">↓</button>
+                            <div class="flex space-x-2 items-center">
+                                <button onclick="window.moverTopico('${key}', 'up')" class="text-gray-400 hover:text-blue-600 ${isFirst ? 'invisible' : ''}" title="Subir">↑</button>
+                                <button onclick="window.moverTopico('${key}', 'down')" class="text-gray-400 hover:text-blue-600 ${isLast ? 'invisible' : ''}" title="Descer">↓</button>
+                                <span class="text-gray-200">|</span>
+                                <button onclick="window.editarTopico('${key}')" class="text-blue-400 hover:text-blue-600 text-lg leading-none" title="Editar Tópico">✎</button>
+                                <button onclick="window.excluirTopicoReal('${key}')" class="text-red-400 hover:text-red-600 font-bold text-xl leading-none" title="Excluir Tópico">×</button>
                             </div>
                         </div>
                     `;
@@ -365,7 +415,7 @@
             btnNovoItem.classList.remove('hidden');
             btnDivisorItem.classList.remove('hidden');
             btnAbrirImport.classList.remove('hidden');
-            renderizarTopicos();
+            renderizarTopicos(); // Atualiza marcação visual de ativo
             renderizarTabela();
         };
 
@@ -390,6 +440,7 @@
             }
         };
 
+        /* --- GESTÃO DE ITENS DO TÓPICO --- */
         window.adicionarSeparadorItem = () => {
             if(!capituloSelecionado) return;
             const titulo = prompt("Título do separador (deixe em branco se quiser apenas uma linha):");
@@ -398,7 +449,6 @@
                 const novaOrdem = Object.values(itensDoTopico).length > 0 
                     ? Math.max(...Object.values(itensDoTopico).map(c => c.ordem || 0)) + 1 
                     : 1;
-                
                 const id = 'sep_item_' + Date.now();
                 set(ref(db, `conteudo/${capituloSelecionado}/${id}`), {
                     titulo: titulo,
@@ -603,7 +653,6 @@
 
         btnNovoItem.addEventListener('click', () => {
             abrirModal(false);
-            
             itemTopicoSelect.value = capituloSelecionado;
 
             const itensDoTopico = conteudoData[capituloSelecionado] || {};
