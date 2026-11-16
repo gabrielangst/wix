@@ -51,15 +51,19 @@
                     <input type="text" id="imagem-url" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="Ex: ./img/catedral.jpg">
                 </div>
 
+                <!-- DESCRIÇÃO COM BARRA DE FERRAMENTAS INJETORA -->
                 <div>
                     <div class="flex justify-between items-end mb-1">
                         <label class="block text-sm font-medium text-gray-700">Descrição / Texto</label>
                         <div class="flex space-x-2">
                             <button type="button" onclick="window.inserirImagemDescricao()" class="text-[10px] uppercase font-bold bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded transition flex items-center">
-                                📸 Add Imagem
+                                📸 IMG
                             </button>
                             <button type="button" onclick="window.inserirYoutubeDescricao()" class="text-[10px] uppercase font-bold bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded transition flex items-center">
-                                ▶️ Add Vídeo
+                                ▶️ VID
+                            </button>
+                            <button type="button" onclick="window.inserirLinkDescricao()" class="text-[10px] uppercase font-bold bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded transition flex items-center">
+                                🔗 Link
                             </button>
                         </div>
                     </div>
@@ -139,7 +143,6 @@
                     <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                         <h2 class="text-lg font-bold text-gray-800">Tópicos</h2>
                         <div class="flex space-x-1">
-                            <!-- NOVOS BOTÕES DE TÓPICOS -->
                             <button onclick="window.adicionarTopico()" class="text-[10px] uppercase font-bold bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition">+ Tópico</button>
                             <button onclick="window.adicionarSeparadorTopico()" class="text-[10px] uppercase font-bold bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded transition">+ Divisor</button>
                         </div>
@@ -252,12 +255,10 @@
                 capitulosData = snapshot.val() || {};
                 renderizarTopicos();
                 
-                // Abre o primeiro tópico automaticamente se não houver um selecionado
                 if(!capituloSelecionado && Object.keys(capitulosData).length > 0) {
                     const primeiro = Object.entries(capitulosData).filter(c => !c[1].is_separator).sort((a, b) => (a[1].ordem||0) - (b[1].ordem||0))[0];
                     if(primeiro) window.selecionarTopico(primeiro[0], primeiro[1].titulo);
                 } else if (capituloSelecionado && !capitulosData[capituloSelecionado]) {
-                    // Se o tópico selecionado foi excluído
                     capituloSelecionado = null;
                     document.getElementById('table-body').innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">Selecione um tópico na lista ao lado.</td></tr>`;
                     document.getElementById('titulo-tabela').textContent = "Selecione um Tópico";
@@ -303,6 +304,15 @@
                 } else {
                     alert("Link do YouTube inválido. Tente novamente.");
                 }
+            }
+        };
+
+        window.inserirLinkDescricao = () => {
+            const url = prompt("Cole o link (URL):");
+            if (url) {
+                const texto = prompt("Digite o texto do link:") || "Clique aqui";
+                const html = `<a href="${url}" target="_blank" class="text-blue-600 underline hover:text-blue-800">${texto}</a>`;
+                inserirNoCursor('descricao', html);
             }
         };
 
@@ -415,7 +425,7 @@
             btnNovoItem.classList.remove('hidden');
             btnDivisorItem.classList.remove('hidden');
             btnAbrirImport.classList.remove('hidden');
-            renderizarTopicos(); // Atualiza marcação visual de ativo
+            renderizarTopicos(); 
             renderizarTabela();
         };
 
