@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Guia de Brasília</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Biblioteca SortableJS para Arrastar e Soltar -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         .topico-ativo { background-color: #eff6ff; border-left: 4px solid #2563eb; }
         .separador { background-color: #f3f4f6; border-left: 4px solid #9ca3af; }
+        .sortable-ghost { opacity: 0.4; background-color: #eff6ff; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans min-h-screen">
@@ -172,7 +175,7 @@
                     </div>
                 </div>
                 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto pb-10">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -231,6 +234,37 @@
         const btnCancelarImport = document.getElementById('btn-cancelar-import');
         const btnConfirmarImport = document.getElementById('btn-confirmar-import');
 
+        // Ícone SVG para arrastar (Grip)
+        const iconeArrastar = `<svg class="w-5 h-5 opacity-40 hover:opacity-100 transition" fill="currentColor" viewBox="0 0 24 24"><path d="M9 5a2 2 0 11-4 0 2 2 0 014 0zM9 12a2 2 0 11-4 0 2 2 0 014 0zM9 19a2 2 0 11-4 0 2 2 0 014 0zM19 5a2 2 0 11-4 0 2 2 0 014 0zM19 12a2 2 0 11-4 0 2 2 0 014 0zM19 19a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>`;
+
+        // INICIALIZANDO SORTABLE JS (DRAG AND DROP)
+        const listaCapitulos = document.getElementById('lista-capitulos');
+        new Sortable(listaCapitulos, {
+            handle: '.drag-handle-cap',
+            animation: 150,
+            onEnd: function (evt) {
+                if (evt.oldIndex === evt.newIndex) return;
+                const rows = document.querySelectorAll('#lista-capitulos .cap-item-drag');
+                const updates = {};
+                rows.forEach((div, index) => {
+                    const key = div.getAttribute('data-key');
+                    updates[`capitulos/${key}/ordem`] = index + 1;
+                });
+                update(ref(db), updates);
+            }
+        });
+
+        const tableBody = document.getElementById('table-body');
+        new Sortable(tableBody, {
+            draggable: '.row-item',
+            handle: '.drag-handle-item',
+            animation: 150,
+            onEnd: function (evt) {
+                if (evt.oldIndex === evt.newIndex) return;
+                window.salvarNovaOrdemItens();
+            }
+        });
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('login-screen').classList.add('hidden');
@@ -274,7 +308,6 @@
             });
         }
 
-        /* --- FERRAMENTAS DE INJEÇÃO NO TEXTAREA --- */
         function inserirNoCursor(campoId, textoInjetado) {
             const textarea = document.getElementById(campoId);
             const start = textarea.selectionStart;
@@ -299,7 +332,7 @@
                 const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
                 if (match && match[1]) {
                     const videoId = match[1];
-                    const html = `\n<iframe src="https://www.youtube.com/embed/${videoId}" class="w-full aspect-video rounded-xl my-4 shadow-sm" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>\n`;
+                    const html = `\n<iframe src="https://www.youtube.com/embed/${videoId}" class="w-full aspect-video rounded-xl my-4 shadow-sm" frameborder="0" allowfullscreen></iframe>\n`;
                     inserirNoCursor('descricao', html);
                 } else {
                     alert("Link do YouTube inválido. Tente novamente.");
@@ -316,7 +349,6 @@
             }
         };
 
-        /* --- GESTÃO DE TÓPICOS --- */
         window.adicionarTopico = () => {
             const id = prompt("Digite um ID único para o novo tópico (letras minúsculas, sem espaços. Ex: vida_noturna):");
             if (!id) return;
@@ -382,18 +414,17 @@
             
             const arr = Object.entries(capitulosData).sort((a, b) => (a[1].ordem||0) - (b[1].ordem||0));
             
-            arr.forEach(([key, cap], index) => {
-                const isFirst = index === 0;
-                const isLast = index === arr.length - 1;
+            arr.forEach(([key, cap]) => {
                 const isActive = key === capituloSelecionado;
                 
                 if (cap.is_separator) {
                     container.innerHTML += `
-                        <div class="flex items-center justify-between p-2 separador">
+                        <div class="flex items-center justify-between p-2 separador cap-item-drag" data-key="${key}">
                             <div class="flex-1 text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-2">${cap.titulo || '--- DIVISOR ---'}</div>
                             <div class="flex space-x-2 items-center">
-                                <button onclick="window.moverTopico('${key}', 'up')" class="text-gray-400 hover:text-blue-600 ${isFirst ? 'invisible' : ''}" title="Subir">↑</button>
-                                <button onclick="window.moverTopico('${key}', 'down')" class="text-gray-400 hover:text-blue-600 ${isLast ? 'invisible' : ''}" title="Descer">↓</button>
+                                <span class="drag-handle-cap cursor-grab active:cursor-grabbing text-gray-400 hover:text-blue-600 px-1" title="Arraste para reordenar">
+                                    ${iconeArrastar}
+                                </span>
                                 <span class="text-gray-200">|</span>
                                 <button onclick="window.excluirTopicoReal('${key}')" class="text-red-400 hover:text-red-600 ml-1 font-bold text-lg leading-none" title="Excluir Divisor">×</button>
                             </div>
@@ -401,14 +432,15 @@
                     `;
                 } else {
                     container.innerHTML += `
-                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 transition ${isActive ? 'topico-ativo' : ''}">
+                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 transition cap-item-drag ${isActive ? 'topico-ativo bg-white' : ''}" data-key="${key}">
                             <div class="flex-1 flex items-center cursor-pointer" onclick="window.selecionarTopico('${key}', '${cap.titulo}')">
                                 <span class="w-8 text-center text-lg">${cap.icone || ''}</span>
                                 <span class="font-medium text-sm ${isActive ? 'text-blue-700' : 'text-gray-700'}">${cap.titulo}</span>
                             </div>
                             <div class="flex space-x-2 items-center">
-                                <button onclick="window.moverTopico('${key}', 'up')" class="text-gray-400 hover:text-blue-600 ${isFirst ? 'invisible' : ''}" title="Subir">↑</button>
-                                <button onclick="window.moverTopico('${key}', 'down')" class="text-gray-400 hover:text-blue-600 ${isLast ? 'invisible' : ''}" title="Descer">↓</button>
+                                <span class="drag-handle-cap cursor-grab active:cursor-grabbing text-gray-400 hover:text-blue-600 px-1" title="Arraste para reordenar">
+                                    ${iconeArrastar}
+                                </span>
                                 <span class="text-gray-200">|</span>
                                 <button onclick="window.editarTopico('${key}')" class="text-blue-400 hover:text-blue-600 text-lg leading-none" title="Editar Tópico">✎</button>
                                 <button onclick="window.excluirTopicoReal('${key}')" class="text-red-400 hover:text-red-600 font-bold text-xl leading-none" title="Excluir Tópico">×</button>
@@ -426,31 +458,10 @@
             btnDivisorItem.classList.remove('hidden');
             btnAbrirImport.classList.remove('hidden');
             renderizarTopicos(); 
-            renderizarTabela();
-        };
-
-        window.moverTopico = (key, direcao) => {
-            const arr = Object.entries(capitulosData).sort((a, b) => (a[1].ordem||0) - (b[1].ordem||0));
-            const index = arr.findIndex(item => item[0] === key);
             
-            if (direcao === 'up' && index > 0) {
-                const curr = arr[index];
-                const prev = arr[index - 1];
-                update(ref(db), {
-                    [`capitulos/${curr[0]}/ordem`]: prev[1].ordem || 0,
-                    [`capitulos/${prev[0]}/ordem`]: curr[1].ordem || 0
-                });
-            } else if (direcao === 'down' && index < arr.length - 1) {
-                const curr = arr[index];
-                const next = arr[index + 1];
-                update(ref(db), {
-                    [`capitulos/${curr[0]}/ordem`]: next[1].ordem || 0,
-                    [`capitulos/${next[0]}/ordem`]: curr[1].ordem || 0
-                });
-            }
+            renderizarTabela(); // Renderiza instantaneamente com os dados já cacheados na memória
         };
 
-        /* --- GESTÃO DE ITENS DO TÓPICO --- */
         window.adicionarSeparadorItem = () => {
             if(!capituloSelecionado) return;
             const titulo = prompt("Título do separador (deixe em branco se quiser apenas uma linha):");
@@ -468,6 +479,19 @@
             }
         };
 
+        // NOVA LÓGICA DE SALVAMENTO DE ORDEM (DRAG AND DROP)
+        window.salvarNovaOrdemItens = () => {
+            const rows = document.querySelectorAll('#table-body tr.row-item');
+            const updates = {};
+            
+            rows.forEach((tr, index) => {
+                const key = tr.getAttribute('data-key');
+                updates[`conteudo/${capituloSelecionado}/${key}/ordem`] = index + 1; // Renumera de 1 a N
+            });
+
+            update(ref(db), updates).catch(err => alert("Erro ao reordenar: " + err.message));
+        };
+
         function renderizarTabela() {
             const tableBody = document.getElementById('table-body');
             tableBody.innerHTML = '';
@@ -482,14 +506,19 @@
 
             let numeroGlobal = 1;
 
-            arr.forEach((item, index) => {
-                const isFirst = index === 0;
-                const isLast = index === arr.length - 1;
-                
+            arr.forEach((item) => {
                 const tr = document.createElement('tr');
+                tr.setAttribute('data-key', item.key);
+                
+                const dragHtml = `
+                    <div class="drag-handle-item cursor-grab active:cursor-grabbing text-gray-400 hover:text-blue-600 px-2 py-1 mr-2 transition" title="Arraste para reordenar">
+                        ${iconeArrastar}
+                    </div>
+                    <span class="text-gray-200 mx-1">|</span>
+                `;
                 
                 if (item.is_separator) {
-                    tr.className = "bg-gray-100";
+                    tr.className = "bg-gray-100 row-item";
                     tr.innerHTML = `
                         <td class="px-3 py-4 text-center"></td>
                         <td class="px-4 py-4 text-sm font-bold text-gray-500 uppercase tracking-widest" colspan="2">
@@ -497,17 +526,14 @@
                         </td>
                         <td class="px-4 py-4 text-sm text-right">
                             <div class="flex justify-end items-center space-x-3">
-                                <button onclick="window.moverItem('${item.key}', 'up')" class="text-gray-400 hover:text-blue-600 ${isFirst ? 'invisible' : ''}">↑</button>
-                                <button onclick="window.moverItem('${item.key}', 'down')" class="text-gray-400 hover:text-blue-600 ${isLast ? 'invisible' : ''}">↓</button>
-                                <span class="text-gray-300">|</span>
+                                ${dragHtml}
                                 <button class="text-red-600 hover:text-red-800 font-bold uppercase text-xs" onclick="window.excluirItem('${item.key}')">Excluir</button>
                             </div>
                         </td>
                     `;
                 } else {
-                    tr.className = "hover:bg-gray-50 transition";
+                    tr.className = "hover:bg-gray-50 transition bg-white row-item";
                     const num = numeroGlobal++;
-                    
                     const linkCount = item.links ? Object.values(item.links).length : 0;
                     
                     tr.innerHTML = `
@@ -515,7 +541,7 @@
                         <td class="px-4 py-4 text-sm font-bold text-gray-900">
                             <div class="flex items-center">
                                 ${item.imagem_url ? `<img src="${item.imagem_url}" class="h-8 w-8 rounded object-cover mr-3 border">` : ''}
-                                ${item.titulo}
+                                <span class="truncate max-w-xs md:max-w-md">${item.titulo}</span>
                             </div>
                         </td>
                         <td class="px-4 py-4 text-sm text-gray-500">
@@ -528,10 +554,8 @@
                         </td>
                         <td class="px-4 py-4 text-sm text-right">
                             <div class="flex justify-end items-center space-x-3">
-                                <button onclick="window.moverItem('${item.key}', 'up')" class="text-gray-400 hover:text-blue-600 ${isFirst ? 'invisible' : ''}">↑</button>
-                                <button onclick="window.moverItem('${item.key}', 'down')" class="text-gray-400 hover:text-blue-600 ${isLast ? 'invisible' : ''}">↓</button>
-                                <span class="text-gray-300">|</span>
-                                <button class="text-blue-600 hover:text-blue-800 font-bold uppercase text-xs" onclick="window.editarItem('${item.key}')">Editar</button>
+                                ${dragHtml}
+                                <button class="text-blue-600 hover:text-blue-800 font-bold uppercase text-xs mr-3" onclick="window.editarItem('${item.key}')">Editar</button>
                                 <button class="text-red-600 hover:text-red-800 font-bold uppercase text-xs" onclick="window.excluirItem('${item.key}')">Excluir</button>
                             </div>
                         </td>
@@ -540,28 +564,6 @@
                 tableBody.appendChild(tr);
             });
         }
-
-        window.moverItem = (itemKey, direcao) => {
-            const itensDoTopico = conteudoData[capituloSelecionado] || {};
-            const arr = Object.entries(itensDoTopico).map(([k, v], i) => ({ key: k, ordem: v.ordem ?? i, ...v })).sort((a, b) => a.ordem - b.ordem);
-            const index = arr.findIndex(item => item.key === itemKey);
-            
-            if (direcao === 'up' && index > 0) {
-                const curr = arr[index];
-                const prev = arr[index - 1];
-                update(ref(db), {
-                    [`conteudo/${capituloSelecionado}/${curr.key}/ordem`]: prev.ordem,
-                    [`conteudo/${capituloSelecionado}/${prev.key}/ordem`]: curr.ordem
-                });
-            } else if (direcao === 'down' && index < arr.length - 1) {
-                const curr = arr[index];
-                const next = arr[index + 1];
-                update(ref(db), {
-                    [`conteudo/${capituloSelecionado}/${curr.key}/ordem`]: next.ordem,
-                    [`conteudo/${capituloSelecionado}/${next.key}/ordem`]: curr.ordem
-                });
-            }
-        };
 
         function preencherSelectTopicos() {
             itemTopicoSelect.innerHTML = '';
