@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -64,6 +64,17 @@
             border: none !important;
             box-shadow: none !important;
             pointer-events: none !important; /* Desarma o gatilho de toque na tela */
+        }
+
+        /* Remove o fundo azul (highlight) que o Google Tradutor aplica ao passar o mouse */
+        font {
+            background-color: transparent !important;
+            box-shadow: none !important;
+        }
+
+        .goog-text-highlight {
+            background-color: transparent !important;
+            box-shadow: none !important;
         }
 
     </style>
@@ -296,7 +307,7 @@
                                     </h3>
                                     
                                     <div class="flex-1 ml-6">
-                                        ${item.descricao ? `<p class="text-gray-600 text-sm leading-relaxed whitespace-pre-line line-clamp-3">${item.descricao}</p>` : ''}
+                                        ${item.descricao ? `<p class="text-gray-600 text-sm leading-relaxed line-clamp-3">${item.descricao.replace(/\n/g, '<br>')}</p>` : ''}
                                     </div>
                                     
                                     ${ (item.funcionamento || item.valor || tagsHTML) ? `
@@ -360,12 +371,12 @@
                     </h3>
                     
                     <div class="ml-0 sm:ml-9 space-y-6">
-                        ${item.descricao ? `<p class="text-gray-700 text-base leading-relaxed whitespace-pre-line">${item.descricao}</p>` : ''}
+                        ${item.descricao ? `<p class="text-gray-700 text-base leading-relaxed">${item.descricao.replace(/\n/g, '<br>')}</p>` : ''}
                         
                         ${item.curiosidades ? `
                             <div class="bg-blue-50 p-5 rounded-xl border border-blue-100">
                                 <h4 class="font-bold text-blue-900 mb-2">💡 Curiosidade</h4>
-                                <p class="text-gray-700 text-sm leading-relaxed">${item.curiosidades}</p>
+                                <p class="text-gray-700 text-sm leading-relaxed">${item.curiosidades.replace(/\n/g, '<br>')}</p>
                             </div>
                         ` : ''}
 
