@@ -50,6 +50,22 @@
             box-shadow: none !important;
         }
     </style>
+
+    <!-- Auto-Tradutor via URL - Chega o link com final ?lang=en e ele já abre o site em inglês -->
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const langParam = urlParams.get('lang');
+        if (langParam) {
+            // Injeta o cookie de idioma antes do Google Tradutor carregar
+            document.cookie = `googtrans=/pt/${langParam}; path=/;`;
+            document.cookie = `googtrans=/pt/${langParam}; domain=.${location.hostname}; path=/;`;
+            
+            // Limpa o '?lang=en' da barra de endereços para não "travar" o usuário 
+            // caso ele queira trocar de idioma manualmente no menu depois
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + window.location.hash;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+    </script>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans">
 
