@@ -13,24 +13,11 @@
         
         .goog-tooltip { display: none !important; }
         .goog-tooltip:hover { display: none !important; }
-        .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
         
-        /* Esconde a barra superior (banner) do Google Tradutor */
-        .goog-te-banner-frame.skiptranslate {
-            display: none !important;
-        }
+        .goog-te-banner-frame.skiptranslate { display: none !important; }
+        body { top: 0px !important; }
+        html.translated-ltr header, html.translated-rtl header { top: 0 !important; }
 
-        /* Força o body a não descer os 40px que o Google tenta injetar */
-        body {
-            top: 0px !important;
-        }
-
-        /* Garante que o cabeçalho fique grudado no topo mesmo após a tradução */
-        html.translated-ltr header, html.translated-rtl header { 
-            top: 0 !important; 
-        }
-
-        /* Esconde o popup de feedback/texto original do Google Tradutor */
         .VIpgJd-ZVi9od-ORHb, 
         .VIpgJd-ZVi9od-ORHb-OEVmcd, 
         .VIpgJd-yAWNEb-hvhgNd-IuizWc-i3jM8c,
@@ -39,44 +26,29 @@
             display: none !important;
         }       
 
-        /* Garante que o fundo amarelo de highlight (que aparece ao passar o mouse) não seja exibido */
         .VIpgJd-ZVi9od-aZ2wEe-wOHMyf {
             background-color: transparent !important;
             box-shadow: none !important;
             border-bottom: none !important;
         }
 
-        /* 1. Mata o balão pelo ID raiz fixo do Google (mais seguro que a classe dinâmica) */
         #goog-gt-tt {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
         }
 
-        /* 2. Mantém o bloqueio da classe que inspecionamos */
-        .VIpgJd-suFOdc {
-            display: none !important;
-        }
-
-        /* 3. O SEGREDO DO MOBILE: Impede que o texto traduzido receba cliques/toques */
         .goog-text-highlight {
             background-color: transparent !important;
             border: none !important;
             box-shadow: none !important;
-            pointer-events: none !important; /* Desarma o gatilho de toque na tela */
+            pointer-events: none !important; 
         }
 
-        /* Remove o fundo azul (highlight) que o Google Tradutor aplica ao passar o mouse */
         font {
             background-color: transparent !important;
             box-shadow: none !important;
         }
-
-        .goog-text-highlight {
-            background-color: transparent !important;
-            box-shadow: none !important;
-        }
-
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans">
@@ -210,54 +182,93 @@
         }
         window.addEventListener('resize', checkMenuOverflow);
 
+        // NOVA LÓGICA DE INICIALIZAÇÃO PARA DEEP LINKING (Tópicos ou Itens)
         onValue(ref(db, 'capitulos'), (snapshot) => {
-            menuContainer.innerHTML = '';
             const data = snapshot.val();
+            if (!data) return;
+
+            const capitulos = Object.entries(data).map(([key, val]) => ({ id: key, ...val })).sort((a, b) => a.ordem - b.ordem);
             
-            if (data) {
-                const capitulos = Object.entries(data).map(([key, val]) => ({ id: key, ...val })).sort((a, b) => a.ordem - b.ordem);
-                let temSelecao = false;
+            // Só executa o rastreio da URL no primeiro carregamento
+            if (!capituloAtual) {
+                const hashNaUrl = window.location.hash.substring(1);
+                
+                // Puxa o conteúdo global apenas uma vez para descobrir de onde o link veio
+                get(ref(db, 'conteudo')).then(contSnapshot => {
+                    const todoConteudo = contSnapshot.val() || {};
+                    let idParaCarregar = null;
+                    let itemParaAbrir = null;
 
-                capitulos.forEach((cap) => {
-                    if (cap.is_separator) {
-                        const div = document.createElement('div');
-                        div.className = "flex items-center text-blue-300 opacity-80 cursor-default select-none";
-                        div.innerHTML = `<span class="border-l-2 border-blue-400/50 h-6 mx-2"></span> <span class="text-[10px] font-bold uppercase tracking-widest ml-1">${cap.titulo || ''}</span>`;
-                        menuContainer.appendChild(div);
-                    } else {
-                        const isActive = (!capituloAtual && !temSelecao) || (capituloAtual === cap.id);
-                        if (isActive) temSelecao = true;
+                    if (hashNaUrl) {
+                        // 1. Tenta achar se o link é um Tópico Direto
+                        if (capitulos.find(c => c.id === hashNaUrl && !c.is_separator)) {
+                            idParaCarregar = hashNaUrl;
+                        } else {
+                            // 2. Se não achou Tópico, varre todas as pastas procurando se o link é um Item (ex: royal_tulip)
+                            for (const topicoId in todoConteudo) {
+                                if (todoConteudo[topicoId][hashNaUrl]) {
+                                    idParaCarregar = topicoId;       // Descobre o Tópico Pai
+                                    itemParaAbrir = hashNaUrl;       // Grava o Item que deve ser aberto
+                                    break;
+                                }
+                            }
+                        }
+                    }
 
-                        const a = document.createElement('a');
-                        a.href = "#";
-                        a.className = `text-sm font-medium pb-1 nav-item transition whitespace-nowrap ${isActive ? 'active' : ''}`;
-                        a.innerHTML = `<span class="mr-1">${cap.icone || ''}</span> ${cap.titulo}`;
-                        
-                        a.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-                            a.classList.add('active');
-                            carregarConteudo(cap.id, cap.titulo);
-                            
-                            if (menuExpanded) btnToggleMenu.click();
-                            
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                        });
+                    // Se o link for inválido ou a home limpa, carrega a primeira aba padrão
+                    if (!idParaCarregar) {
+                        const primeiroValido = capitulos.find(c => !c.is_separator);
+                        if (primeiroValido) idParaCarregar = primeiroValido.id;
+                    }
 
-                        menuContainer.appendChild(a);
+                    renderizarMenu(capitulos, idParaCarregar);
+                    
+                    // Inicia o carregamento com o gatilho ativado para abrir o modal no final
+                    if (idParaCarregar) {
+                        const capAlvo = capitulos.find(c => c.id === idParaCarregar);
+                        carregarConteudo(capAlvo.id, capAlvo.titulo, itemParaAbrir);
                     }
                 });
-
-                setTimeout(checkMenuOverflow, 100);
-
-                if (!capituloAtual && capitulos.length > 0) {
-                    const primeiroValido = capitulos.find(c => !c.is_separator);
-                    if(primeiroValido) carregarConteudo(primeiroValido.id, primeiroValido.titulo);
-                }
+            } else {
+                // Atualizações posteriores em tempo real apenas repintam o menu
+                renderizarMenu(capitulos, capituloAtual);
             }
         });
 
-        function carregarConteudo(capituloId, titulo) {
+        function renderizarMenu(capitulos, idAtivo) {
+            menuContainer.innerHTML = '';
+            capitulos.forEach((cap) => {
+                if (cap.is_separator) {
+                    const div = document.createElement('div');
+                    div.className = "flex items-center text-blue-300 opacity-80 cursor-default select-none";
+                    div.innerHTML = `<span class="border-l-2 border-blue-400/50 h-6 mx-2"></span> <span class="text-[10px] font-bold uppercase tracking-widest ml-1">${cap.titulo || ''}</span>`;
+                    menuContainer.appendChild(div);
+                } else {
+                    const isActive = (cap.id === idAtivo);
+                    const a = document.createElement('a');
+                    a.href = "#" + cap.id;
+                    a.className = `text-sm font-medium pb-1 nav-item transition whitespace-nowrap ${isActive ? 'active' : ''}`;
+                    a.innerHTML = `<span class="mr-1">${cap.icone || ''}</span> ${cap.titulo}`;
+                    
+                    a.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                        a.classList.add('active');
+                        
+                        history.pushState(null, '', '#' + cap.id); // Altera o link ao clicar na aba
+                        carregarConteudo(cap.id, cap.titulo);
+                        
+                        if (menuExpanded) btnToggleMenu.click();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                    menuContainer.appendChild(a);
+                }
+            });
+            setTimeout(checkMenuOverflow, 100);
+        }
+
+        // Adicionado o parâmetro opcional itemParaAbrir
+        function carregarConteudo(capituloId, titulo, itemParaAbrir = null) {
             capituloAtual = capituloId;
             tituloSecao.textContent = titulo;
             conteudoContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">Carregando itens...</div>';
@@ -322,6 +333,21 @@
                             conteudoContainer.appendChild(card);
                         }
                     });
+
+                    // Gatilho final: se a URL solicitava um item, abre o modal dele agora que a lista carregou
+                    if (itemParaAbrir) {
+                        let calcNum = 1;
+                        for (let i = 0; i < itensAtuais.length; i++) {
+                            if (!itensAtuais[i].is_separator) {
+                                if (itensAtuais[i].key === itemParaAbrir) {
+                                    window.abrirDetalhe(itemParaAbrir, calcNum);
+                                    break;
+                                }
+                                calcNum++;
+                            }
+                        }
+                    }
+
                 } else {
                     conteudoContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10 bg-white rounded-xl border border-gray-100">Nenhum conteúdo cadastrado neste tópico ainda.</div>';
                 }
@@ -338,7 +364,6 @@
             if (item.audioguia) tagsHTML += `<span class="inline-flex items-center bg-green-100 text-green-800 text-xs font-bold uppercase px-3 py-1.5 rounded mr-2 tracking-wide mb-2">🎧 Audioguia</span>`;
             if (item.passeio_guiado) tagsHTML += `<span class="inline-flex items-center bg-blue-100 text-blue-800 text-xs font-bold uppercase px-3 py-1.5 rounded mr-2 tracking-wide mb-2">🗣️ Passeio Guiado</span>`;
 
-            // Bloco dinâmico de Links gerado se existirem itens cadastrados
             let linksHTML = '';
             if (item.links) {
                 const arrLinks = Array.isArray(item.links) ? item.links : Object.values(item.links);
@@ -414,7 +439,13 @@
             detalheContainer.classList.remove('hidden');
             btnVoltar.classList.remove('hidden');
 
-            history.pushState({ modalAtivo: true, item: itemKey }, '', `#${itemKey}`);
+            // Impede a criação de registros duplicados no histórico caso já tenhamos entrado pelo link
+            if (window.location.hash === `#${itemKey}`) {
+                history.replaceState({ modalAtivo: true, item: itemKey }, '', `#${itemKey}`);
+            } else {
+                history.pushState({ modalAtivo: true, item: itemKey }, '', `#${itemKey}`);
+            }
+            
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
@@ -432,6 +463,11 @@
             conteudoContainer.classList.remove('hidden');
             detalheContainer.classList.add('hidden');
             btnVoltar.classList.add('hidden');
+            
+            // Restaura o link para o nome do tópico quando o item é fechado
+            if (capituloAtual && window.location.hash !== `#${capituloAtual}`) {
+                history.replaceState(null, '', '#' + capituloAtual);
+            }
         }
     </script>
 
