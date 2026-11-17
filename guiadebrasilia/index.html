@@ -23,6 +23,65 @@
             -webkit-box-orient: vertical;  
             overflow: hidden;
         }
+
+        /* Esconde a barra superior (banner) do Google Tradutor */
+        .goog-te-banner-frame.skiptranslate {
+            display: none !important;
+        }
+
+        /* Força o body a não descer os 40px que o Google tenta injetar */
+        body {
+            top: 0px !important;
+        }
+
+        /* Garante que o cabeçalho fique grudado no topo mesmo após a tradução */
+        html.translated-ltr header, html.translated-rtl header { 
+            top: 0 !important; 
+        }
+
+        /* Esconde o popup de feedback/texto original do Google Tradutor */
+        .VIpgJd-ZVi9od-ORHb, 
+        .VIpgJd-ZVi9od-ORHb-OEVmcd, 
+        .VIpgJd-yAWNEb-hvhgNd-IuizWc-i3jM8c,
+        .VIpgJd-suFOdc,
+        .VIpgJd-ZVi9od-smMQSb {
+            display: none !important;
+        }       
+
+        /* Garante que o fundo amarelo de highlight (que aparece ao passar o mouse) não seja exibido */
+        .VIpgJd-ZVi9od-aZ2wEe-wOHMyf {
+            background-color: transparent !important;
+            box-shadow: none !important;
+            border-bottom: none !important;
+        }
+
+        /* Garante que o fundo amarelo de highlight (que aparece ao passar o mouse) não seja exibido */
+        .VIpgJd-ZVi9od-aZ2wEe-wOHMyf {
+            background-color: transparent !important;
+            box-shadow: none !important;
+            border-bottom: none !important;
+        }
+
+        /* 1. Mata o balão pelo ID raiz fixo do Google (mais seguro que a classe dinâmica) */
+        #goog-gt-tt {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+
+        /* 2. Mantém o bloqueio da classe que inspecionamos */
+        .VIpgJd-suFOdc {
+            display: none !important;
+        }
+
+        /* 3. O SEGREDO DO MOBILE: Impede que o texto traduzido receba cliques/toques */
+        .goog-text-highlight {
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            pointer-events: none !important; /* Desarma o gatilho de toque na tela */
+        }
+
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
