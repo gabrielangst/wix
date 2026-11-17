@@ -150,6 +150,7 @@
                             <button onclick="window.adicionarSeparadorTopico()" class="text-[10px] uppercase font-bold bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded transition">+ Divisor</button>
                         </div>
                     </div>
+                    <!-- A lista de tópicos agora é arrastável -->
                     <div id="lista-capitulos" class="flex flex-col divide-y divide-gray-100">
                         <!-- Injetado via JS -->
                     </div>
@@ -185,6 +186,7 @@
                                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                             </tr>
                         </thead>
+                        <!-- A tabela de itens agora é arrastável -->
                         <tbody id="table-body" class="bg-white divide-y divide-gray-200">
                             <tr>
                                 <td colspan="4" class="px-4 py-8 text-center text-gray-500">Selecione um tópico na lista ao lado.</td>
@@ -349,6 +351,7 @@
             }
         };
 
+        /* --- GESTÃO DE TÓPICOS --- */
         window.adicionarTopico = () => {
             const id = prompt("Digite um ID único para o novo tópico (letras minúsculas, sem espaços. Ex: vida_noturna):");
             if (!id) return;
@@ -458,10 +461,10 @@
             btnDivisorItem.classList.remove('hidden');
             btnAbrirImport.classList.remove('hidden');
             renderizarTopicos(); 
-            
-            renderizarTabela(); // Renderiza instantaneamente com os dados já cacheados na memória
+            renderizarTabela(); 
         };
 
+        /* --- GESTÃO DE ITENS DO TÓPICO --- */
         window.adicionarSeparadorItem = () => {
             if(!capituloSelecionado) return;
             const titulo = prompt("Título do separador (deixe em branco se quiser apenas uma linha):");
@@ -479,7 +482,18 @@
             }
         };
 
-        // NOVA LÓGICA DE SALVAMENTO DE ORDEM (DRAG AND DROP)
+        // NOVA FUNÇÃO: Editar Título do Divisor de Itens
+        window.editarSeparadorItem = (key) => {
+            const item = conteudoData[capituloSelecionado][key];
+            const novoTitulo = prompt("Editar Título do Divisor:", item.titulo || "");
+            if (novoTitulo === null) return;
+            
+            update(ref(db, `conteudo/${capituloSelecionado}/${key}`), {
+                titulo: novoTitulo
+            });
+        };
+
+        // SALVAMENTO DE ORDEM (DRAG AND DROP)
         window.salvarNovaOrdemItens = () => {
             const rows = document.querySelectorAll('#table-body tr.row-item');
             const updates = {};
@@ -527,6 +541,7 @@
                         <td class="px-4 py-4 text-sm text-right">
                             <div class="flex justify-end items-center space-x-3">
                                 ${dragHtml}
+                                <button class="text-blue-600 hover:text-blue-800 font-bold uppercase text-xs" onclick="window.editarSeparadorItem('${item.key}')">Editar</button>
                                 <button class="text-red-600 hover:text-red-800 font-bold uppercase text-xs" onclick="window.excluirItem('${item.key}')">Excluir</button>
                             </div>
                         </td>
@@ -555,7 +570,7 @@
                         <td class="px-4 py-4 text-sm text-right">
                             <div class="flex justify-end items-center space-x-3">
                                 ${dragHtml}
-                                <button class="text-blue-600 hover:text-blue-800 font-bold uppercase text-xs mr-3" onclick="window.editarItem('${item.key}')">Editar</button>
+                                <button class="text-blue-600 hover:text-blue-800 font-bold uppercase text-xs" onclick="window.editarItem('${item.key}')">Editar</button>
                                 <button class="text-red-600 hover:text-red-800 font-bold uppercase text-xs" onclick="window.excluirItem('${item.key}')">Excluir</button>
                             </div>
                         </td>
